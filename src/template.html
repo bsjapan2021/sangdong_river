@@ -1,0 +1,430 @@
+<title>상동호수공원 디지털트윈</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: full-bleed 3D scene, glass control panels floating at the corners (control-room overlay) */
+:root{
+  --ink:#e8f1f2; --ink-2:#9fb4b8; --ink-3:#6c8286;
+  --glass:rgba(12,24,28,.78); --glass-line:rgba(160,210,215,.18);
+  --water:#3fb6c9; --intake:#4ea8ff; --return:#ff9a3d; --ok:#5fd39a; --warn:#f2c14e;
+  --bg:#0b1417;
+  --ui:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--ui);overflow:hidden}
+#stage{position:fixed;inset:0}
+#stage canvas{display:block;width:100%;height:100%}
+#labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.lbl{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;font-size:12px;font-weight:500;color:var(--ink);
+  background:rgba(8,18,21,.72);border:1px solid var(--glass-line);padding:2px 8px;border-radius:4px;letter-spacing:.01em}
+.lbl.big{font-size:14px;font-weight:600;background:rgba(10,40,48,.78);border-color:rgba(63,182,201,.5)}
+.lbl.sensor{font-family:var(--mono);font-size:11px;pointer-events:auto;cursor:pointer}
+.lbl.sensor.in{border-color:var(--intake)} .lbl.sensor.ctr{border-color:var(--ok)} .lbl.sensor.out{border-color:var(--return)}
+.lbl.sensor.sel{background:rgba(20,60,70,.95)}
+.lbl.module{border-color:var(--warn);color:#fff3cf}
+.panel{position:fixed;background:var(--glass);border:1px solid var(--glass-line);border-radius:10px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#head{top:calc(12px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));padding:12px 14px;max-width:min(340px,calc(100vw - 24px))}
+#head .eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--water)}
+#head h1{margin:4px 0 2px;font-size:18px;font-weight:600;text-wrap:balance}
+#head p{margin:0;font-size:12px;color:var(--ink-2);line-height:1.5}
+#layers{top:calc(118px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));padding:10px 12px;width:200px}
+.sec{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:2px 0 6px}
+.tg{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 0;cursor:pointer;user-select:none}
+.tg input{accent-color:var(--water);width:15px;height:15px;margin:0}
+.tg .sw{width:10px;height:10px;border-radius:2px;flex:none}
+#views{bottom:calc(12px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);display:flex;gap:4px;padding:5px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px)}
+#views button{font:500 12.5px var(--ui);color:var(--ink);background:transparent;border:1px solid transparent;border-radius:6px;padding:7px 12px;cursor:pointer}
+#views button:hover{background:rgba(160,210,215,.08)}
+#views button[aria-pressed="true"]{background:rgba(63,182,201,.18);border-color:rgba(63,182,201,.45)}
+#views button:focus-visible,.tg input:focus-visible,#tod:focus-visible{outline:2px solid var(--water);outline-offset:2px}
+#info{top:calc(12px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));width:270px;padding:12px 14px}
+#info h2{margin:0 0 2px;font-size:15px;font-weight:600}
+#info .sub{font-size:11.5px;color:var(--ink-2);margin-bottom:10px}
+.kv{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:12.5px}
+.kv span:nth-child(odd){color:var(--ink-2)}
+.kv b{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+.pill{display:inline-block;font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(242,193,78,.14);color:var(--warn);border:1px solid rgba(242,193,78,.35)}
+.flow{margin-top:10px;padding-top:10px;border-top:1px solid var(--glass-line);font-size:11.5px;color:var(--ink-2);line-height:1.6}
+.flow i{font-style:normal;color:var(--ink)}
+#tbar{bottom:calc(70px + env(safe-area-inset-bottom,0px));right:max(12px,env(safe-area-inset-right,0px));width:270px;padding:10px 14px}
+#tbar label{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-2)}
+#tbar label b{font-family:var(--mono);color:var(--ink);font-weight:600}
+#tod{width:100%;accent-color:var(--water);margin:6px 0 0}
+#legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:11px;color:var(--ink-2)}
+#legend span{display:inline-flex;align-items:center;gap:5px}
+#legend i{width:14px;height:3px;border-radius:2px;display:inline-block}
+#heatbar{display:none;margin-top:8px}
+#heatbar .g{height:8px;border-radius:4px;background:linear-gradient(90deg,#2b4a8a,#2f9fb3,#6fdc8c,#f5e35c)}
+#heatbar .t{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-top:3px}
+#compass{bottom:calc(70px + env(safe-area-inset-bottom,0px));left:max(12px,env(safe-area-inset-left,0px));width:52px;height:52px;display:grid;place-items:center;border-radius:50%}
+#compass svg{width:40px;height:40px}
+#credit{position:fixed;bottom:calc(4px + env(safe-area-inset-bottom,0px));right:max(12px,env(safe-area-inset-right,0px));font-size:10px;color:var(--ink-3)}
+#loading{position:fixed;inset:0;display:grid;place-items:center;font-family:var(--mono);font-size:12px;color:var(--ink-2);background:var(--bg);transition:opacity .6s}
+#loading.done{opacity:0;pointer-events:none}
+#toggleUI{display:none}
+@media (max-width:720px){
+  #head{max-width:calc(100vw - 24px)} #head p{display:none}
+  #layers{top:auto;bottom:calc(64px + env(safe-area-inset-bottom,0px));width:auto;right:auto}
+  #layers .tgs{display:grid;grid-template-columns:1fr 1fr;column-gap:12px}
+  #info{top:auto;bottom:calc(64px + env(safe-area-inset-bottom,0px));right:max(12px,env(safe-area-inset-right,0px));width:min(270px,calc(100vw - 24px))}
+  #tbar,#compass{display:none}
+  body.panel-info #layers{display:none}
+  body:not(.panel-info) #info{display:none}
+  #views button{padding:7px 9px;font-size:12px}
+}
+@media (prefers-reduced-motion:reduce){#loading{transition:none}}
+</style>
+
+<div id="stage"></div>
+<div id="labels"></div>
+<div id="loading">상동호수공원 지형·시설 데이터를 불러오는 중…</div>
+
+<div id="head" class="panel">
+  <div class="eyebrow">K-TESTBED 2026 · NHI PhotoNano</div>
+  <h1>상동호수공원 디지털트윈</h1>
+  <p>부천시 원미구 · 실측 지형(OpenStreetMap) 기반 3D 모델. 측정 3지점과 Side-stream 모듈 배치안을 표시합니다.</p>
+</div>
+
+<div id="layers" class="panel" aria-label="레이어">
+  <div class="sec">레이어</div>
+  <div class="tgs">
+    <label class="tg"><input type="checkbox" id="lyBuild" checked><span class="sw" style="background:#cfd6d6"></span>건물</label>
+    <label class="tg"><input type="checkbox" id="lyTree" checked><span class="sw" style="background:#4f8a4a"></span>수목</label>
+    <label class="tg"><input type="checkbox" id="lyLabel" checked><span class="sw" style="background:#9fb4b8"></span>명칭</label>
+    <label class="tg"><input type="checkbox" id="lyTB" checked><span class="sw" style="background:#f2c14e"></span>테스트베드</label>
+    <label class="tg"><input type="checkbox" id="lyHeat"><span class="sw" style="background:linear-gradient(90deg,#2b4a8a,#f5e35c)"></span>DO 분포</label>
+    <label class="tg"><input type="checkbox" id="lyRot"><span class="sw" style="background:#3fb6c9"></span>자동 회전</label>
+  </div>
+</div>
+
+<aside id="info" class="panel" aria-live="polite"></aside>
+
+<div id="tbar" class="panel">
+  <label for="tod">시간대 <b id="todv">14:00</b></label>
+  <input type="range" id="tod" min="6" max="20" step="0.25" value="14">
+  <div id="legend">
+    <span><i style="background:var(--intake)"></i>취수 라인</span>
+    <span><i style="background:var(--return)"></i>환수 라인</span>
+  </div>
+  <div id="heatbar"><div class="g"></div><div class="t"><span>6.0</span><span>DO mg/L (시뮬레이션)</span><span>10.0</span></div></div>
+</div>
+
+<div id="compass" class="panel" aria-hidden="true"><svg viewBox="0 0 40 40"><g id="cneedle"><path d="M20 4 L25 20 L20 17 L15 20 Z" fill="#ff7a5a"/><path d="M20 36 L25 20 L20 23 L15 20 Z" fill="#9fb4b8"/></g><text x="20" y="12" text-anchor="middle" font-size="0" fill="#fff">N</text></svg></div>
+
+<nav id="views" class="panel" aria-label="시점">
+  <button data-v="bird" aria-pressed="true">전경</button>
+  <button data-v="top" aria-pressed="false">평면</button>
+  <button data-v="tb" aria-pressed="false">테스트베드</button>
+  <button data-v="water" aria-pressed="false">수면 시점</button>
+  <button data-v="info" aria-pressed="false" id="toggleUI">정보</button>
+</nav>
+<div id="credit">지도 데이터 © OpenStreetMap contributors (ODbL)</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const OSM = __DATA__;
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const stage=$('#stage');
+const renderer=new THREE.WebGLRenderer({antialias:true,logarithmicDepthBuffer:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+stage.appendChild(renderer.domElement);
+
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,1,6000);
+camera.position.set(260,240,330);
+const controls=new THREE.OrbitControls(camera,renderer.domElement);
+controls.target.set(-10,0,0);
+controls.enableDamping=true;controls.dampingFactor=.08;
+controls.maxPolarAngle=Math.PI*0.495;controls.minDistance=12;controls.maxDistance=1400;
+controls.update();
+
+const hemi=new THREE.HemisphereLight(0xdfefff,0x55633f,0.55);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xffffff,1.1);
+sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+const sc=sun.shadow.camera;sc.left=-420;sc.right=420;sc.top=420;sc.bottom=-420;sc.near=10;sc.far=1600;
+sun.shadow.bias=-0.0006;sun.shadow.normalBias=0.6;
+scene.add(sun);scene.add(sun.target);
+
+/* ---------- geometry helpers ---------- */
+const pairs=a=>{const o=[];for(let i=0;i<a.length;i+=2)o.push([a[i],a[i+1]]);return o};
+function inPoly(p,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if(((a[1]>p[1])!==(b[1]>p[1]))&&(p[0]<(b[0]-a[0])*(p[1]-a[1])/(b[1]-a[1])+a[0]))c=!c}return c}
+function segDist(p,a,b){const dx=b[0]-a[0],dz=b[1]-a[1];const l=dx*dx+dz*dz;let t=l?((p[0]-a[0])*dx+(p[1]-a[1])*dz)/l:0;t=Math.max(0,Math.min(1,t));return Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dz)}
+function polyEdgeDist(p,poly){let d=1e9;for(let i=0;i<poly.length-1;i++)d=Math.min(d,segDist(p,poly[i],poly[i+1]));return d}
+function shapeOf(pts){const s=new THREE.Shape();pts.forEach((p,i)=>i?s.lineTo(p[0],-p[1]):s.moveTo(p[0],-p[1]));return s}
+function flat(pts,y,mat,holes){const s=shapeOf(pts);(holes||[]).forEach(h=>{const hp=new THREE.Path();h.forEach((p,i)=>i?hp.lineTo(p[0],-p[1]):hp.moveTo(p[0],-p[1]));s.holes.push(hp)});
+  const g=new THREE.ShapeGeometry(s);g.rotateX(-Math.PI/2);const m=new THREE.Mesh(g,mat);m.position.y=y;m.receiveShadow=true;return m}
+function ribbon(pts,w,y,out,yFn){const n=pts.length;if(n<2)return;const L=[],R=[];
+  for(let i=0;i<n;i++){const p=pts[i],a=pts[Math.max(0,i-1)],b=pts[Math.min(n-1,i+1)];
+    let dx=b[0]-a[0],dz=b[1]-a[1];const l=Math.hypot(dx,dz)||1;dx/=l;dz/=l;
+    let nx=-dz,nz=dx,k=1;
+    if(i>0&&i<n-1){const d1=[p[0]-a[0],p[1]-a[1]],l1=Math.hypot(...d1)||1;const n1=[-d1[1]/l1,d1[0]/l1];k=1/Math.max(0.5,n1[0]*nx+n1[1]*nz)}
+    const h=w/2*k,yy=yFn?yFn(i,n):y;L.push([p[0]+nx*h,yy,p[1]+nz*h]);R.push([p[0]-nx*h,yy,p[1]-nz*h])}
+  for(let i=0;i<n-1;i++){out.push(...L[i],...R[i],...L[i+1],...R[i],...R[i+1],...L[i+1])}}
+function meshFrom(arr,mat,shadow){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(arr,3));g.computeVertexNormals();
+  const m=new THREE.Mesh(g,mat);m.receiveShadow=true;if(shadow)m.castShadow=true;return m}
+const M=c=>new THREE.MeshLambertMaterial({color:c});
+
+/* ---------- parse OSM ---------- */
+const F=OSM.filter(f=>f[0]!=='L').map(f=>({c:f[0],name:f[1],h:f[2],fl:f[3],pts:pairs(f[4])}));
+const lakeF=F.find(f=>f.c==='water'&&f.name==='상동호수');const LAKE=lakeF.pts;
+const sangdong=F.find(f=>f.c==='park'&&f.name==='상동호수공원');
+
+/* ground with lake hole */
+const groundPts=[[-900,-900],[900,-900],[900,900],[-900,900],[-900,-900]];
+const groundMat=M(0x8a877d);
+scene.add(flat(groundPts,0,groundMat,[LAKE]));
+
+const AREA={residential:[0xa7a291,0.03],school:[0xb3a98d,0.04],park:[0x6f9a52,0.07],grass:[0x86a95e,0.07],garden:[0x8fb36a,0.09],
+  pitch:[0x4f9a5a,0.12],parking:[0x5d6266,0.12],playground:[0xc9a26b,0.14],pedestrian:[0xb3aa94,0.14],service:[0x6b6f72,0.12]};
+const areaMeshes=[];
+F.forEach(f=>{ if(!(f.fl&8))return; if(f.c==='building'||f.c==='water'&&f===lakeF)return;
+  let key=f.c; if(key==='water'){scene.add(flat(f.pts,0.1,new THREE.MeshLambertMaterial({color:0x3d8ea0}),[]));return}
+  if((f.c==='pedestrian'||f.c==='service')&&!(f.fl&4)&&f.c!=='service'){/* closed path ring, drawn as line later */return}
+  const a=AREA[key]; if(!a)return;
+  const holes=f===sangdong?[LAKE]:[];
+  const m=flat(f.pts,a[1],M(a[0]),holes);scene.add(m);areaMeshes.push(m)});
+
+/* pitch lines */
+{const arr=[];F.filter(f=>f.c==='pitch').forEach(f=>{const p=f.pts.slice();ribbon(p,0.5,0.16,arr)});scene.add(meshFrom(arr,M(0xe9efe4)))}
+
+/* lake basin, rim, water */
+{const bed=flat(LAKE,-2.4,M(0x2f4a46));scene.add(bed);
+ const wall=[];for(let i=0;i<LAKE.length-1;i++){const a=LAKE[i],b=LAKE[i+1];wall.push(a[0],0.05,a[1],b[0],0.05,b[1],a[0],-2.4,a[1],b[0],0.05,b[1],b[0],-2.4,b[1],a[0],-2.4,a[1])}
+ const wm=meshFrom(wall,new THREE.MeshLambertMaterial({color:0x6d6a60,side:THREE.DoubleSide}));scene.add(wm);
+ const rim=[];ribbon(LAKE,1.6,0.18,rim);scene.add(meshFrom(rim,M(0xb9b4a6)))}
+
+const RET=[-36,104],INT=[-72,-45],CTR=[-35,30],MOD=[-122,-56];
+const waterU={uTime:{value:0},uHeat:{value:0},uRet:{value:new THREE.Vector2(RET[0],RET[1])},uSun:{value:new THREE.Vector3(0,1,0)},uSky:{value:new THREE.Color(0x9fd0e6)}};
+const waterMat=new THREE.ShaderMaterial({uniforms:waterU,transparent:true,
+ vertexShader:`#include <common>
+#include <logdepthbuf_pars_vertex>
+varying vec3 vW;void main(){vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;
+#include <logdepthbuf_vertex>
+}`,
+ fragmentShader:`#include <common>
+#include <logdepthbuf_pars_fragment>
+uniform float uTime,uHeat;uniform vec2 uRet;uniform vec3 uSun,uSky;varying vec3 vW;
+ float h(vec2 p){return sin(p.x*.35+uTime*1.1)*.5+sin(p.y*.42-uTime*.9)*.5+sin((p.x+p.y)*.21+uTime*.6)*.5;}
+ vec3 heat(float t){vec3 a=vec3(.17,.29,.54),b=vec3(.18,.62,.70),c=vec3(.44,.86,.55),d=vec3(.96,.89,.36);
+   return t<.33?mix(a,b,t/.33):t<.66?mix(b,c,(t-.33)/.33):mix(c,d,(t-.66)/.34);}
+ void main(){
+#include <logdepthbuf_fragment>
+vec2 p=vW.xz;float e=.6;vec3 n=normalize(vec3(h(p+vec2(e,0.))-h(p-vec2(e,0.)),6.,h(p+vec2(0.,e))-h(p-vec2(0.,e))));
+  vec3 V=normalize(cameraPosition-vW);float fr=pow(1.-max(dot(n,V),0.),3.);
+  vec3 base=mix(vec3(.10,.30,.33),vec3(.20,.47,.47),.5+.5*sin(p.x*.03+p.y*.02));
+  float d=distance(p,uRet);float t=clamp(1.-d/150.+.06*sin(d*.15-uTime*1.5),0.,1.);
+  base=mix(base,heat(t),uHeat*.85);
+  vec3 R=reflect(-V,n);float sp=pow(max(dot(R,normalize(uSun)),0.),120.)*1.4;
+  vec3 col=mix(base,uSky,fr*.55)+sp;
+  gl_FragColor=vec4(col,.93);}`});
+{const wg=new THREE.ShapeGeometry(shapeOf(LAKE),1);wg.rotateX(-Math.PI/2);const w=new THREE.Mesh(wg,waterMat);w.position.y=-0.55;scene.add(w)}
+
+/* fountain jets in lake (decor) */
+
+/* roads & paths */
+const W={motorway:20,motorway_link:8,secondary:16,tertiary:11,tertiary_link:7,service:5,living_street:4,pedestrian:3.4,footway:2,path:1.6,cycleway:2.4,steps:2.2};
+const RC={motorway:0x4a4d52,motorway_link:0x4f5257,secondary:0x505357,tertiary:0x585b5f,tertiary_link:0x585b5f,service:0x64676a,living_street:0x6a6d70,
+  pedestrian:0xd9d0bb,footway:0xd2c7ae,path:0xb89f78,cycleway:0xb86a5a,steps:0xb7b0a2};
+const RY={motorway:0.22,motorway_link:0.22,secondary:0.2,tertiary:0.2,tertiary_link:0.2,service:0.18,living_street:0.18,pedestrian:0.24,footway:0.25,path:0.25,cycleway:0.26,steps:0.25};
+const buckets={};const pillars=[];const bridgeDecks=[];
+F.forEach(f=>{ if(!W[f.c])return; if((f.fl&8)&&(f.fl&4))return; if(f.fl&2)return;
+  const isBridge=f.fl&1;const pts=f.pts;
+  let by=RY[f.c];let yFn=null;
+  if(isBridge){const mid=pts[Math.floor(pts.length/2)];const overLake=pts.some(p=>inPoly(p,LAKE))||inPoly([(pts[0][0]+pts[pts.length-1][0])/2,(pts[0][1]+pts[pts.length-1][1])/2],LAKE);
+    const top=f.c==='motorway'?11:f.c==='motorway_link'?7:overLake?1.1:6;
+    yFn=(i,n)=>{if(f.c==='motorway')return top;const t=i/(n-1);return overLake?top:by+(top-by)*Math.min(1,Math.sin(Math.PI*t)*1.6)};
+    if(f.c==='motorway'||f.c==='motorway_link'){for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1];const L=Math.hypot(b[0]-a[0],b[1]-a[1]);for(let s=0;s<L;s+=38){const t=s/L;pillars.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,top])}}}
+    const k='bridge_'+f.c;(buckets[k]=buckets[k]||{c:f.c,arr:[],bridge:true});ribbon(pts,W[f.c],0,buckets[k].arr,yFn);return}
+  (buckets[f.c]=buckets[f.c]||{c:f.c,arr:[]});ribbon(pts,W[f.c],by,buckets[f.c].arr)});
+Object.values(buckets).forEach(b=>{const mat=new THREE.MeshLambertMaterial({color:RC[b.c],side:b.bridge?THREE.DoubleSide:THREE.FrontSide});const m=meshFrom(b.arr,mat,b.bridge);scene.add(m)});
+/* lane markings on main roads */
+{const arr=[];F.filter(f=>(f.c==='secondary'||f.c==='tertiary')&&!(f.fl&2)).forEach(f=>ribbon(f.pts,0.3,0.23,arr));scene.add(meshFrom(arr,M(0xd8d3c2)))}
+{const pg=new THREE.CylinderGeometry(1.2,1.4,1,8);const pm=M(0x8d8f8f);const inst=new THREE.InstancedMesh(pg,pm,pillars.length);const o=new THREE.Object3D();
+ pillars.forEach((p,i)=>{o.position.set(p[0],p[2]/2,p[1]);o.scale.set(1,p[2],1);o.updateMatrix();inst.setMatrixAt(i,o.matrix)});inst.castShadow=true;scene.add(inst)}
+
+/* buildings */
+const buildGroup=new THREE.Group();scene.add(buildGroup);
+F.filter(f=>f.c==='building').forEach(f=>{let h=f.h||(Math.abs(f.pts[0][0])<160&&Math.abs(f.pts[0][1])<220?5:12);
+  const g=new THREE.ExtrudeGeometry(shapeOf(f.pts),{depth:h,bevelEnabled:false});g.rotateX(-Math.PI/2);
+  const tall=h>30;const col=f.name==='웅진플레이도시'?0xb9c4c9:tall?0xe4e1d8:0xd4cfc4;
+  const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:col}));m.castShadow=true;m.receiveShadow=true;buildGroup.add(m);
+  if(tall){const rg=new THREE.ShapeGeometry(shapeOf(f.pts));rg.rotateX(-Math.PI/2);const r=new THREE.Mesh(rg,M(0x9a958b));r.position.y=h+0.05;buildGroup.add(r)}});
+/* window bands for apartments */
+{const arr=[];F.filter(f=>f.c==='building'&&f.h>30).forEach(f=>{for(let y=4;y<f.h-2;y+=3){const p=f.pts;for(let i=0;i<p.length-1;i++){const a=p[i],b=p[i+1];
+  const nx=(b[1]-a[1]),nz=-(b[0]-a[0]),l=Math.hypot(nx,nz)||1;const o=0.08;const ax=a[0]+nx/l*o*0,az=a[1]+nz/l*o*0;
+  arr.push(a[0],y,a[1],b[0],y,b[1],a[0],y+1.1,a[1],b[0],y,b[1],b[0],y+1.1,b[1],a[0],y+1.1,a[1])}}});
+ const wm=meshFrom(arr,new THREE.MeshLambertMaterial({color:0x7e95a3,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2}));buildGroup.add(wm)}
+
+/* ---------- trees ---------- */
+let seed=20261026;const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
+const exclPolys=F.filter(f=>(f.fl&8)&&['pitch','parking','playground','building','water'].includes(f.c)||((f.fl&4)&&f.c==='pedestrian')).map(f=>f.pts);
+const lineSegs=[];F.forEach(f=>{if(W[f.c]&&!((f.fl&8)&&(f.fl&4))){for(let i=0;i<f.pts.length-1;i++)lineSegs.push([f.pts[i],f.pts[i+1],W[f.c]/2+1.6])}});
+function okTree(p){if(inPoly(p,LAKE)||polyEdgeDist(p,LAKE)<4)return false;for(const e of exclPolys)if(inPoly(p,e))return false;
+  for(const s of lineSegs){if(Math.abs(p[0]-s[0][0])>60&&Math.abs(p[0]-s[1][0])>60)continue;if(segDist(p,s[0],s[1])<s[2])return false}
+  if(Math.hypot(p[0]-MOD[0],p[1]-MOD[1])<10)return false;return true}
+const treePts=[];
+function scatter(poly,n,minGap){const xs=poly.map(p=>p[0]),zs=poly.map(p=>p[1]);const x0=Math.min(...xs),x1=Math.max(...xs),z0=Math.min(...zs),z1=Math.max(...zs);
+  let tries=0,made=0;while(made<n&&tries<n*30){tries++;const p=[x0+rnd()*(x1-x0),z0+rnd()*(z1-z0)];if(!inPoly(p,poly)||!okTree(p))continue;
+    let near=false;for(let k=treePts.length-1;k>=Math.max(0,treePts.length-400);k--){const q=treePts[k];if((q[0]-p[0])**2+(q[1]-p[1])**2<minGap*minGap){near=true;break}}if(near)continue;treePts.push(p);made++}}
+scatter(sangdong.pts,1500,4.2);
+F.filter(f=>f.c==='park'&&f!==sangdong).forEach(f=>scatter(f.pts,350,5));
+F.filter(f=>f.c==='garden').forEach(f=>scatter(f.pts,80,3.2));
+F.filter(f=>f.c==='residential'||f.c==='school').forEach(f=>scatter(f.pts,70,8));
+/* street trees along 조마루로/길주로/수변로 */
+F.filter(f=>['secondary','tertiary'].includes(f.c)&&!(f.fl&3)).forEach(f=>{for(let i=0;i<f.pts.length-1;i++){const a=f.pts[i],b=f.pts[i+1];const L=Math.hypot(b[0]-a[0],b[1]-a[1]);const nx=-(b[1]-a[1])/L,nz=(b[0]-a[0])/L;
+  for(let s=6;s<L;s+=11){const t=s/L;for(const sd of[-1,1]){const o=W[f.c]/2+2.2;const p=[a[0]+(b[0]-a[0])*t+nx*o*sd,a[1]+(b[1]-a[1])*t+nz*o*sd];if(Math.abs(p[0])<520&&Math.abs(p[1])<520&&!inPoly(p,LAKE))treePts.push(p)}}}});
+const treeGroup=new THREE.Group();scene.add(treeGroup);
+{const crownG=new THREE.IcosahedronGeometry(1,1);const trunkG=new THREE.CylinderGeometry(.18,.26,1,6);
+ const crown=new THREE.InstancedMesh(crownG,new THREE.MeshLambertMaterial({color:0xffffff}),treePts.length);
+ const trunk=new THREE.InstancedMesh(trunkG,M(0x6b4f36),treePts.length);
+ const o=new THREE.Object3D();const c=new THREE.Color();
+ const pal=[0x3f7a3c,0x4f8a44,0x5c9a4e,0x3a6e3f,0x6aa055,0x7a9a4a];
+ treePts.forEach((p,i)=>{const s=2.2+rnd()*2.2,th=2+rnd()*1.6;
+  o.position.set(p[0],th,p[1]);o.scale.set(.25,th*2,.25);o.rotation.set(0,0,0);o.updateMatrix();trunk.setMatrixAt(i,o.matrix);
+  o.position.set(p[0],th+s*.85,p[1]);o.scale.set(s,s*(1.05+rnd()*.35),s);o.rotation.y=rnd()*6;o.updateMatrix();crown.setMatrixAt(i,o.matrix);
+  c.setHex(pal[Math.floor(rnd()*pal.length)]);c.offsetHSL(0,0,(rnd()-.5)*.06);crown.setColorAt(i,c)});
+ crown.castShadow=true;crown.receiveShadow=true;trunk.castShadow=true;treeGroup.add(trunk,crown)}
+
+/* ---------- testbed: sensors, module, side-stream pipes ---------- */
+const tbGroup=new THREE.Group();scene.add(tbGroup);
+const SENS=[
+ {id:'in',name:'취수부',code:'S-01',p:INT,col:0x4ea8ff,base:{do:6.2,orp:142,ph:7.6,t:16.8,ntu:11.8}},
+ {id:'ctr',name:'연못 중앙부',code:'S-02',p:CTR,col:0x5fd39a,base:{do:7.3,orp:168,ph:7.7,t:16.9,ntu:10.4}},
+ {id:'out',name:'환수부',code:'S-03',p:RET,col:0xff9a3d,base:{do:9.1,orp:214,ph:7.8,t:17.0,ntu:8.9}}];
+const buoys=[];
+SENS.forEach(s=>{const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(.9,1.1,1.4,16),new THREE.MeshLambertMaterial({color:0xf3f0e8}));body.position.y=0.1;
+  const band=new THREE.Mesh(new THREE.CylinderGeometry(.95,.95,.35,16),new THREE.MeshBasicMaterial({color:s.col}));band.position.y=.55;
+  const mast=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,2.6,6),M(0x3c4447));mast.position.y=1.9;
+  const lamp=new THREE.Mesh(new THREE.SphereGeometry(.28,12,8),new THREE.MeshBasicMaterial({color:s.col}));lamp.position.y=3.3;
+  const ring=new THREE.Mesh(new THREE.RingGeometry(2.2,2.6,40),new THREE.MeshBasicMaterial({color:s.col,transparent:true,opacity:.6,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.y=-.45;
+  g.add(body,band,mast,lamp,ring);g.position.set(s.p[0],-0.55,s.p[1]);body.castShadow=true;
+  g.userData={sensor:s,ring,lamp};tbGroup.add(g);buoys.push(g);s.obj=g});
+/* PhotoNano module (container skid) */
+{const g=new THREE.Group();
+ const pad=new THREE.Mesh(new THREE.BoxGeometry(9,.3,6),M(0xa8a59c));pad.position.y=.15;
+ const box=new THREE.Mesh(new THREE.BoxGeometry(6,2.6,3.2),new THREE.MeshLambertMaterial({color:0x2f6f7a}));box.position.y=1.6;
+ const roof=new THREE.Mesh(new THREE.BoxGeometry(6.2,.18,3.4),M(0xe9e6dd));roof.position.y=2.98;
+ const panel=new THREE.Mesh(new THREE.BoxGeometry(.1,1.2,1.6),new THREE.MeshBasicMaterial({color:0xf2c14e}));panel.position.set(3.05,1.7,0);
+ const uv=new THREE.Mesh(new THREE.CylinderGeometry(.35,.35,3.4,12),new THREE.MeshBasicMaterial({color:0x8e7dff}));uv.rotation.z=Math.PI/2;uv.position.set(0,3.4,1.2);
+ const tank=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,1.8,12),M(0xd8dde0));tank.position.set(-3.6,1.05,1.6);
+ [pad,box,roof,tank].forEach(m=>{m.castShadow=true;m.receiveShadow=true});
+ g.add(pad,box,roof,panel,uv,tank);g.position.set(MOD[0],0,MOD[1]);g.rotation.y=0.5;tbGroup.add(g)}
+/* pipes */
+function pipe(points,color){const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(p[0],p[2],p[1])));
+  const tube=new THREE.Mesh(new THREE.TubeGeometry(curve,160,.35,8,false),new THREE.MeshLambertMaterial({color}));tube.castShadow=true;tbGroup.add(tube);
+  const dots=[];const dg=new THREE.SphereGeometry(.42,8,6),dm=new THREE.MeshBasicMaterial({color:0xffffff});
+  for(let i=0;i<14;i++){const d=new THREE.Mesh(dg,dm);d.userData.t=i/14;tbGroup.add(d);dots.push(d)}
+  return {curve,dots}}
+const intakePipe=pipe([[INT[0],INT[1],-0.9],[-86,-42,-.4],[-98,-46,.4],[-110,-52,.5],[MOD[0]+3,MOD[1]+2,.6]],0x4ea8ff);
+const returnPipe=pipe([[MOD[0]+2,MOD[1]+3,.6],[-112,-20,.5],[-112,10,.5],[-108,40,.5],[-96,62,.5],[-72,86,.5],[-50,97,.4],[RET[0],RET[1],-0.9]],0xff9a3d);
+
+/* ---------- labels ---------- */
+const labelsEl=$('#labels');const LBL=[];
+function addLabel(text,x,y,z,cls,group){const el=document.createElement('div');el.className='lbl '+(cls||'');el.textContent=text;labelsEl.appendChild(el);const o={el,v:new THREE.Vector3(x,y,z),group:group||'name'};LBL.push(o);return o}
+addLabel('상동호수',25,4,8,'big');
+addLabel('상동호수공원',100,8,-60,'big');
+addLabel('부천호수식물원 수피아',115,10,-175);
+addLabel('웅진플레이도시',-70,20,440);
+addLabel('삼산체육관역',-236,8,-298);
+addLabel('상동호수공원 매점',22,8,150);
+addLabel('청운공원',-180,8,160);
+addLabel('조마루로',60,4,252);addLabel('길주로',40,4,-290);addLabel('수변로',-168,4,-150);
+addLabel('수도권제1순환고속도로',230,16,-60);
+SENS.forEach(s=>{const l=addLabel(`${s.code} ${s.name}`,s.p[0],4.6,s.p[1],'sensor '+s.id,'tb');s.lbl=l;l.el.addEventListener('click',()=>select(s))});
+addLabel('NHI PhotoNano 모듈',MOD[0],6,MOD[1],'module','tb');
+
+/* ---------- sky / time of day ---------- */
+const skyTop=new THREE.Color(),skyHor=new THREE.Color();
+function setTime(h){const t=(h-6)/14;const el=Math.sin(Math.PI*t);const az=Math.PI*(0.15+t*0.7);
+  const r=900;sun.position.set(Math.cos(az)*r*0.8,Math.max(40,el*r),-Math.sin(az)*r*0.2+r*0.55);sun.target.position.set(0,0,0);
+  const warm=1-Math.min(1,el*1.6);
+  sun.color.setHSL(0.09,0.6*warm+0.1,0.5+0.45*(1-warm*.5));sun.intensity=0.22+el*0.62;hemi.intensity=0.32+el*0.22;
+  skyTop.setHSL(0.57,0.55,0.25+el*0.45);skyHor.setHSL(0.08+0.47*(1-warm),0.5,0.45+el*0.35);
+  scene.background=skyHor.clone().lerp(skyTop,0.45);scene.fog=new THREE.Fog(scene.background,1400,3600);
+  waterU.uSun.value.copy(sun.position).normalize();waterU.uSky.value.copy(skyTop).lerp(skyHor,.5);
+  const hh=Math.floor(h),mm=Math.round((h-hh)*60);$('#todv').textContent=String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0')}
+setTime(14);
+$('#tod').addEventListener('input',e=>setTime(+e.target.value));
+
+/* ---------- sensor info panel (simulated) ---------- */
+let selected=null;const live={};
+SENS.forEach(s=>live[s.id]={...s.base});
+function drift(){SENS.forEach(s=>{const v=live[s.id],b=s.base;const j=(k,a)=>v[k]=+(b[k]+(Math.random()-.5)*a).toFixed(k==='orp'?0:k==='do'||k==='ph'?2:1);
+  j('do',.25);j('orp',8);j('ph',.06);j('t',.2);j('ntu',.5)});render();}
+function render(){const el=$('#info');
+  if(!selected){el.innerHTML=`<h2>테스트베드 배치안</h2><div class="sub">Side-stream 순환처리 · 측정 3지점</div>
+   <div class="kv"><span>호수 면적(OSM)</span><b>약 2.2 ha</b><span>취수–환수 이격</span><b>${Math.round(Math.hypot(RET[0]-INT[0],RET[1]-INT[1]))} m</b>
+   <span>취수 배관</span><b>${Math.round(intakePipe.curve.getLength())} m</b><span>환수 배관</span><b>${Math.round(returnPipe.curve.getLength())} m</b></div>
+   <div class="flow">취수 <i>S-01</i> → 펌프 → O₂ 공급 → UFB 발생부 → 와류 TiO₂/UVA 반응부 → 환수 <i>S-03</i><br>부표를 누르면 지점별 수질값을 볼 수 있습니다.</div>
+   <div style="margin-top:8px"><span class="pill">배치 위치는 제안안 · 현장 협의 후 확정</span></div>`;return}
+  const v=live[selected.id];
+  el.innerHTML=`<h2>${selected.code} · ${selected.name}</h2><div class="sub">수심 0.5 m 다항목 수질계 · 2초 갱신</div>
+   <div class="kv"><span>DO</span><b>${v.do.toFixed(2)} mg/L</b><span>ORP</span><b>${v.orp} mV</b><span>pH</span><b>${v.ph.toFixed(2)}</b>
+   <span>수온</span><b>${v.t.toFixed(1)} °C</b><span>탁도</span><b>${v.ntu.toFixed(1)} NTU</b>
+   <span>좌표(공원 기준)</span><b>${selected.p[0]}, ${selected.p[1]} m</b></div>
+   <div style="margin-top:10px"><span class="pill">시뮬레이션 데이터 · 실측 연동 전</span></div>
+   <div class="flow">표 5 판정: DO 운전 전 대비 30~50% 증가 · 탁도 20% 이상 저감 목표</div>`}
+function select(s){selected=s;SENS.forEach(o=>o.lbl.el.classList.toggle('sel',o===s));document.body.classList.add('panel-info');render();
+  flyTo([s.p[0]+28,22,s.p[1]+34],[s.p[0],0,s.p[1]]);setPressed(null)}
+render();setInterval(drift,2000);
+
+/* ---------- picking ---------- */
+const ray=new THREE.Raycaster(),mouse=new THREE.Vector2();let downAt=null;
+renderer.domElement.addEventListener('pointerdown',e=>downAt=[e.clientX,e.clientY]);
+renderer.domElement.addEventListener('pointerup',e=>{if(!downAt||Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1])>5)return;
+  mouse.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);ray.setFromCamera(mouse,camera);
+  const hit=ray.intersectObjects(buoys,true)[0];if(hit){let o=hit.object;while(o&&!o.userData.sensor)o=o.parent;if(o)select(o.userData.sensor)}
+  else if(selected){selected=null;SENS.forEach(o=>o.lbl.el.classList.remove('sel'));render()}});
+
+/* ---------- views ---------- */
+let fly=null;
+function flyTo(pos,tgt,dur){fly={p0:camera.position.clone(),t0:controls.target.clone(),p1:new THREE.Vector3(...pos),t1:new THREE.Vector3(...tgt),s:performance.now(),d:dur||1400}}
+const VIEWS={bird:[[260,240,330],[-10,0,0]],top:[[-9,820,10],[-10,0,0]],tb:[[-170,46,-120],[-85,0,-20]],water:[[40,4,150],[-50,1,-10]]};
+function setPressed(v){document.querySelectorAll('#views button[data-v]').forEach(b=>{if(b.dataset.v!=='info')b.setAttribute('aria-pressed',String(b.dataset.v===v))})}
+document.querySelectorAll('#views button').forEach(b=>b.addEventListener('click',()=>{const v=b.dataset.v;
+  if(v==='info'){document.body.classList.toggle('panel-info');return}
+  setPressed(v);flyTo(...VIEWS[v])}));
+
+/* ---------- toggles ---------- */
+const bind=(id,fn)=>{const el=$(id);el.addEventListener('change',()=>fn(el.checked))};
+bind('#lyBuild',v=>buildGroup.visible=v);
+bind('#lyTree',v=>treeGroup.visible=v);
+bind('#lyLabel',v=>LBL.forEach(l=>{if(l.group==='name')l.hidden=!v}));
+bind('#lyTB',v=>{tbGroup.visible=v;LBL.forEach(l=>{if(l.group==='tb')l.hidden=!v})});
+bind('#lyHeat',v=>{waterU.uHeat.value=v?1:0;$('#heatbar').style.display=v?'block':'none'});
+bind('#lyRot',v=>{controls.autoRotate=v;controls.autoRotateSpeed=0.6});
+
+/* ---------- loop ---------- */
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const tmp=new THREE.Vector3();const clock=new THREE.Clock();
+function ease(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}
+function loop(){requestAnimationFrame(loop);const dt=clock.getDelta(),T=clock.elapsedTime;
+  if(!reduce)waterU.uTime.value=T;
+  if(fly){let t=Math.min(1,(performance.now()-fly.s)/fly.d);const k=reduce?1:ease(t);camera.position.lerpVectors(fly.p0,fly.p1,k);controls.target.lerpVectors(fly.t0,fly.t1,k);if(t>=1||reduce)fly=null}
+  controls.update();
+  [intakePipe,returnPipe].forEach(pp=>pp.dots.forEach(d=>{d.userData.t=(d.userData.t+dt*(reduce?0:0.06))%1;d.position.copy(pp.curve.getPointAt(d.userData.t))}));
+  buoys.forEach((b,i)=>{const s=1+0.25*Math.sin(T*2+i);b.userData.ring.scale.set(s,s,s);b.userData.ring.material.opacity=.65-.35*(s-1)/.25*.5;b.position.y=-0.55+0.06*Math.sin(T*1.4+i)});
+  renderer.render(scene,camera);
+  const w=innerWidth,h=innerHeight;
+  LBL.forEach(l=>{if(l.hidden){l.el.style.display='none';return}tmp.copy(l.v).project(camera);
+    const vis=tmp.z<1&&tmp.x>-1.1&&tmp.x<1.1&&tmp.y>-1.1&&tmp.y<1.1;const d=camera.position.distanceTo(l.v);
+    if(!vis||(l.group==='name'&&!l.el.classList.contains('big')&&d>900)){l.el.style.display='none';return}
+    l.el.style.display='block';l.el.style.left=((tmp.x+1)/2*w)+'px';l.el.style.top=((1-tmp.y)/2*h)+'px'});
+  const az=Math.atan2(camera.position.x-controls.target.x,camera.position.z-controls.target.z);
+  $('#cneedle').setAttribute('transform',`rotate(${-az*180/Math.PI} 20 20)`);
+}
+loop();
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+setTimeout(()=>$('#loading').classList.add('done'),300);
+})();
+</script>
