@@ -4,7 +4,7 @@
 NHI PhotoNano(UFB–TiO₂ 광촉매 융합 수질개선) 테스트베드의 측정 3지점과 Side-stream 모듈 배치안을 표시합니다.
 
 ## 실행
-- 웹: 배포 주소의 `/` (실사판 v2), `/v1` (단순 모델)
+- 웹: https://park.nanohydroin.com (실사판 v2) · https://park.nanohydroin.com/v1 (단순 모델) · 보조 주소 https://sangdong.vercel.app
 - 로컬: `index.html` 더블클릭 (완전 오프라인). 저사양 PC는 주소 뒤에 `?q=low`
 
 ## 주요 기능
