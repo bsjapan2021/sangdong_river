@@ -99,7 +99,7 @@ button:focus-visible,.tg input:focus-visible,input[type=range]:focus-visible{out
 <div id="head" class="panel">
   <div class="eyebrow">K-TESTBED 2026 · NHI PhotoNano</div>
   <h1>상동호수공원 디지털트윈</h1>
-  <p>OpenStreetMap 실측 지형 + 현장 사진 기반 실사 재현. 측정 3지점과 Side-stream 모듈 배치안을 표시합니다.</p>
+  <p>OpenStreetMap 실측 지형 + 현장 사진 기반 실사 재현. 측정 5지점과 PhotoNano 2기(호안 설치) 배치안을 표시합니다.</p>
 </div>
 
 <div id="layers" class="panel" aria-label="레이어">
@@ -138,7 +138,8 @@ button:focus-visible,.tg input:focus-visible,input[type=range]:focus-visible{out
 <nav id="views" class="panel" aria-label="시점">
   <button data-v="bird" aria-pressed="true">전경</button>
   <button data-v="top" aria-pressed="false">평면</button>
-  <button data-v="tb" aria-pressed="false">테스트베드</button>
+  <button data-v="tb" aria-pressed="false">1호기</button>
+  <button data-v="tb2" aria-pressed="false">2호기</button>
   <button data-v="water" aria-pressed="false">수면 시점</button>
   <button data-v="walk" aria-pressed="false">산책로</button>
 </nav>
@@ -1631,7 +1632,11 @@ function tmat(tex,rep,col,opt){const t=tex.clone();t.needsUpdate=true;t.repeat.s
 const F=OSM.filter(f=>f[0]!=='L').map(f=>({c:f[0],name:f[1],h:f[2],fl:f[3],pts:pairs(f[4])}));
 const lakeF=F.find(f=>f.c==='water'&&f.name==='상동호수');const LAKE=lakeF.pts;
 const sangdong=F.find(f=>f.c==='park'&&f.name==='상동호수공원');
-const RET=[-36,104],INT=[-72,-45],CTR=[-35,30],MOD=[-122,-56];
+/* PhotoNano 2기: 호안에 밀착 설치, 각 호기 취수·환수 근접 배치 (호기 간 약 170 m 이격) */
+const UNITS=[
+ {no:1,name:'1호기(서측)',mod:[-93.6,-38.7],ang:1.837,int:[-79,-46],ret:[-83,-29],iq:[-89,-44],rq:[-91.5,-32.5]},
+ {no:2,name:'2호기(동측)',mod:[74.9,-35.4],ang:-1.654,int:[62,-27],ret:[62,-44],iq:[71.3,-29.4],rq:[71.4,-41.1]}];
+const CTR=[-35,30];const RET=UNITS[0].ret,INT=UNITS[0].int,MOD=UNITS[0].mod;let allPipes=[];
 const FOUNT=[[10,42,'jet'],[34,20,'dome']];
 const PIER=[[-93,40],[-80,36],[-74,30],[-72,22]];
 const W={motorway:20,motorway_link:8,secondary:16,tertiary:11,tertiary_link:7,service:5,living_street:4,pedestrian:3.6,footway:2,path:1.6,cycleway:2.6,steps:2.2};
@@ -1689,12 +1694,12 @@ function buildGround(){
   water=new THREE.Water(wg,{textureWidth:LOW?256:1024,textureHeight:LOW?256:1024,waterNormals:TEX.wnorm,sunDirection:new THREE.Vector3(0,1,0),sunColor:0xffffff,waterColor:0x1f4d54,distortionScale:1.8,fog:true,alpha:1});
   water.rotation.x=-Math.PI/2;water.position.y=-0.5;water.material.uniforms.size.value=1.6;scene.add(water);
   /* DO heat overlay */
-  const hu={uTime:U.time,uRet:{value:new THREE.Vector2(RET[0],RET[1])}};
+  const hu={uTime:U.time,uRet:{value:new THREE.Vector2(UNITS[0].ret[0],UNITS[0].ret[1])},uRet2:{value:new THREE.Vector2(UNITS[1].ret[0],UNITS[1].ret[1])}};
   const hm=new THREE.ShaderMaterial({uniforms:hu,transparent:true,depthWrite:false,
     vertexShader:`#include <common>\n#include <logdepthbuf_pars_vertex>\nvarying vec3 vW;void main(){vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;\n#include <logdepthbuf_vertex>\n}`,
-    fragmentShader:`#include <common>\n#include <logdepthbuf_pars_fragment>\nuniform float uTime;uniform vec2 uRet;varying vec3 vW;
+    fragmentShader:`#include <common>\n#include <logdepthbuf_pars_fragment>\nuniform float uTime;uniform vec2 uRet,uRet2;varying vec3 vW;
     vec3 heat(float t){vec3 a=vec3(.17,.29,.54),b=vec3(.18,.62,.70),c=vec3(.44,.86,.55),d=vec3(.96,.89,.36);return t<.33?mix(a,b,t/.33):t<.66?mix(b,c,(t-.33)/.33):mix(c,d,(t-.66)/.34);}
-    void main(){\n#include <logdepthbuf_fragment>\nfloat d=distance(vW.xz,uRet);float t=clamp(1.-d/150.+.05*sin(d*.15-uTime*1.5),0.,1.);gl_FragColor=vec4(pow(heat(t),vec3(2.2)),.62);}`});
+    void main(){\n#include <logdepthbuf_fragment>\nfloat d=min(distance(vW.xz,uRet),distance(vW.xz,uRet2));float t=clamp(1.-d/110.+.05*sin(d*.15-uTime*1.5),0.,1.);gl_FragColor=vec4(pow(heat(t),vec3(2.2)),.62);}`});
   const hg=new THREE.ShapeGeometry(shapeOf(LAKE),2);hg.rotateX(-Math.PI/2);heatMesh=new THREE.Mesh(hg,hm);heatMesh.position.y=-0.4;heatMesh.visible=false;scene.add(heatMesh);
 }
 
@@ -1822,7 +1827,7 @@ function buildVegetation(){
   const G=groups.veg;
   const lineSegs=[];F.forEach(f=>{if(W[f.c]&&!((f.fl&8)&&(f.fl&4))){for(let i=0;i<f.pts.length-1;i++)lineSegs.push([f.pts[i],f.pts[i+1],W[f.c]/2+1.4])}});
   const excl=F.filter(f=>((f.fl&8)&&['pitch','parking','playground','building','water'].includes(f.c))||((f.fl&4)&&f.c==='pedestrian')).map(f=>f.pts);
-  const blockers=[[MOD,10],[[1,132],16],[window.__supia||[115,-174],34]];
+  const blockers=[...UNITS.map(u=>[u.mod,7]),[[1,132],16],[window.__supia||[115,-174],34]];
   function ok(p,clear){if(inPoly(p,LAKE)||edgeDist(p,LAKE)<(clear||5))return false;for(const e of excl)if(inPoly(p,e))return false;
     for(const b of blockers)if(Math.hypot(p[0]-b[0][0],p[1]-b[0][1])<b[1])return false;
     for(const s of lineSegs){if(Math.abs(p[0]-s[0][0])>70&&Math.abs(p[0]-s[1][0])>70)continue;if(segDist(p,s[0],s[1])<s[2])return false}return true}
@@ -1868,7 +1873,7 @@ function buildVegetation(){
   /* reeds & silver grass around the lake edge (photos 3, 6) */
   function bladeGeo(){const P=[],N=[],UVs=[];for(let k=0;k<2;k++){const a=k*Math.PI/2,cx=Math.cos(a)*.5,cz=Math.sin(a)*.5;
       P.push(-cx,0,-cz,cx,0,cz,cx,1,cz,-cx,0,-cz,cx,1,cz,-cx,1,-cz);UVs.push(0,0,1,0,1,1,0,0,1,1,0,1);for(let i=0;i<6;i++)N.push(0,1,0)}return geo(P,UVs,N)}
-  const reedPos=[];const L=polyLen(LAKE);const avoid=[...bridgePts,INT,RET,[-96,-48],[-105,-30],[-104,38],[-96,62],[-72,86],[-50,97]];
+  const reedPos=[];const L=polyLen(LAKE);const avoid=[...bridgePts,...UNITS.flatMap(u=>[u.int,u.ret,u.iq,u.rq,u.mod])];
   for(let s=0;s<L;s+=0.55){let acc=0;for(let i=0;i<LAKE.length-1;i++){const a=LAKE[i],b=LAKE[i+1];const l=Math.hypot(b[0]-a[0],b[1]-a[1]);if(acc+l>=s){const t=(s-acc)/l;const p=[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
       let nx=-(b[1]-a[1])/l,nz=(b[0]-a[0])/l;if(inPoly([p[0]+nx*2,p[1]+nz*2],LAKE)){nx=-nx;nz=-nz}if(avoid.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<5))break;
       const gap=n3(s*.06,1.3,2.1);if(gap<.32)break;for(let k=0;k<2;k++){const off=R(-2.6,3.2);reedPos.push([p[0]+nx*off+R(-.4,.4),p[1]+nz*off+R(-.4,.4),off])}break}acc+=l}}
@@ -1940,9 +1945,11 @@ function updateCars(dt){carSets.forEach(cs=>{cs.lanes.forEach(l=>{l.cars.forEach
 
 /* ================= testbed ================= */
 const SENS=[
- {id:'in',name:'취수부',code:'S-01',p:INT,col:0x4ea8ff,base:{do:6.2,orp:142,ph:7.6,t:16.8,ntu:11.8}},
- {id:'ctr',name:'연못 중앙부',code:'S-02',p:CTR,col:0x5fd39a,base:{do:7.3,orp:168,ph:7.7,t:16.9,ntu:10.4}},
- {id:'out',name:'환수부',code:'S-03',p:RET,col:0xff9a3d,base:{do:9.1,orp:214,ph:7.8,t:17.0,ntu:8.9}}];
+ {id:'in1',cls:'in',name:'1호기 취수부',code:'S-01',p:UNITS[0].int,col:0x4ea8ff,base:{do:6.2,orp:142,ph:7.6,t:16.8,ntu:11.8}},
+ {id:'out1',cls:'out',name:'1호기 환수부',code:'S-02',p:UNITS[0].ret,col:0xff9a3d,base:{do:9.0,orp:212,ph:7.8,t:17.0,ntu:9.0}},
+ {id:'ctr',cls:'ctr',name:'연못 중앙부',code:'S-03',p:CTR,col:0x5fd39a,base:{do:7.3,orp:168,ph:7.7,t:16.9,ntu:10.4}},
+ {id:'in2',cls:'in',name:'2호기 취수부',code:'S-04',p:UNITS[1].int,col:0x4ea8ff,base:{do:6.4,orp:146,ph:7.6,t:16.9,ntu:11.4}},
+ {id:'out2',cls:'out',name:'2호기 환수부',code:'S-05',p:UNITS[1].ret,col:0xff9a3d,base:{do:9.2,orp:216,ph:7.8,t:17.0,ntu:8.7}}];
 const buoys=[];let intakePipe,returnPipe;
 function buildTestbed(){const G=groups.tb;
   SENS.forEach(s=>{const g=new THREE.Group();
@@ -1953,19 +1960,22 @@ function buildTestbed(){const G=groups.tb;
     const lamp=new THREE.Mesh(new THREE.SphereGeometry(.18,12,8),new THREE.MeshBasicMaterial({color:C(s.col)}));lamp.position.y=3.1;
     const ring=new THREE.Mesh(new THREE.RingGeometry(1.8,2.1,40),new THREE.MeshBasicMaterial({color:C(s.col),transparent:true,opacity:.55,side:THREE.DoubleSide,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.y=-.4;
     g.add(body,band,mast,panel,lamp,ring);body.castShadow=true;g.position.set(s.p[0],-0.5,s.p[1]);g.userData={sensor:s,ring};G.add(g);buoys.push(g);s.obj=g});
-  const g=new THREE.Group();
-  const pad=new THREE.Mesh(new THREE.BoxGeometry(9,.3,6),new THREE.MeshLambertMaterial({color:C(0xa8a59c)}));pad.position.y=.15;
-  const box=new THREE.Mesh(new THREE.BoxGeometry(6,2.6,3.2),new THREE.MeshLambertMaterial({color:C(0x2f6f7a)}));box.position.y=1.6;
-  const roof=new THREE.Mesh(new THREE.BoxGeometry(6.2,.18,3.4),new THREE.MeshLambertMaterial({color:C(0xe9e6dd)}));roof.position.y=2.98;
-  const logo=new THREE.Mesh(new THREE.BoxGeometry(.06,.9,2.4),new THREE.MeshBasicMaterial({color:C(0xf2c14e)}));logo.position.set(3.03,1.9,0);
-  const uv=new THREE.Mesh(new THREE.CylinderGeometry(.32,.32,3.4,12),new THREE.MeshLambertMaterial({color:C(0x8e7dff),emissive:C(0x5b3dff),emissiveIntensity:.6}));uv.rotation.z=Math.PI/2;uv.position.set(0,3.4,1.1);
-  const tank=new THREE.Mesh(new THREE.CylinderGeometry(.45,.45,1.8,12),new THREE.MeshLambertMaterial({color:C(0xd8dde0)}));tank.position.set(-3.6,1.05,1.6);
-  [pad,box,roof,tank].forEach(m=>{m.castShadow=true;m.receiveShadow=true});g.add(pad,box,roof,logo,uv,tank);g.position.set(MOD[0],0,MOD[1]);g.rotation.y=.5;G.add(g);
   function pipe(points,color){const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(p[0],p[2],p[1])));
-    const tube=new THREE.Mesh(new THREE.TubeGeometry(curve,180,.3,8,false),new THREE.MeshLambertMaterial({color:C(color)}));tube.castShadow=true;G.add(tube);
-    const dots=[];const dg=new THREE.SphereGeometry(.38,8,6),dm=new THREE.MeshBasicMaterial({color:0xffffff});for(let i=0;i<16;i++){const d=new THREE.Mesh(dg,dm);d.userData.t=i/16;G.add(d);dots.push(d)}return {curve,dots}}
-  intakePipe=pipe([[INT[0],INT[1],-0.75],[-86,-42,-.35],[-98,-46,.35],[-110,-52,.45],[MOD[0]+3,MOD[1]+2,.55]],0x4ea8ff);
-  returnPipe=pipe([[MOD[0]+2,MOD[1]+3,.55],[-113,-20,.45],[-113,10,.45],[-110,40,.45],[-98,62,.45],[-74,86,.45],[-50,97,.35],[RET[0],RET[1],-0.75]],0xff9a3d);
+    const tube=new THREE.Mesh(new THREE.TubeGeometry(curve,80,.28,8,false),new THREE.MeshLambertMaterial({color:C(color)}));tube.castShadow=true;G.add(tube);
+    const dots=[];const dg=new THREE.SphereGeometry(.34,8,6),dm=new THREE.MeshBasicMaterial({color:0xffffff});for(let i=0;i<8;i++){const d=new THREE.Mesh(dg,dm);d.userData.t=i/8;G.add(d);dots.push(d)}return {curve,dots}}
+  UNITS.forEach(u=>{const g=new THREE.Group();
+    const pad=new THREE.Mesh(new THREE.BoxGeometry(8,.3,4.6),new THREE.MeshLambertMaterial({color:C(0xa8a59c)}));pad.position.y=.15;
+    const box=new THREE.Mesh(new THREE.BoxGeometry(5.4,2.6,2.8),new THREE.MeshLambertMaterial({color:C(0x2f6f7a)}));box.position.y=1.6;
+    const roof=new THREE.Mesh(new THREE.BoxGeometry(5.6,.18,3.0),new THREE.MeshLambertMaterial({color:C(0xe9e6dd)}));roof.position.y=2.98;
+    const logo=new THREE.Mesh(new THREE.BoxGeometry(.06,.9,2.1),new THREE.MeshBasicMaterial({color:C(0xf2c14e)}));logo.position.set(2.73,1.9,0);
+    const uvl=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,3.0,12),new THREE.MeshLambertMaterial({color:C(0x8e7dff),emissive:C(0x5b3dff),emissiveIntensity:.6}));uvl.rotation.z=Math.PI/2;uvl.position.set(0,3.35,.9);
+    const tank=new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,1.8,12),new THREE.MeshLambertMaterial({color:C(0xd8dde0)}));tank.position.set(-3.3,1.05,1.3);
+    [pad,box,roof,tank].forEach(m=>{m.castShadow=true;m.receiveShadow=true});g.add(pad,box,roof,logo,uvl,tank);g.position.set(u.mod[0],0,u.mod[1]);g.rotation.y=-u.ang;G.add(g);
+    const lerp=(a,b,k)=>[a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k];const mi=lerp(u.mod,u.iq,.45),mr=lerp(u.mod,u.rq,.45);
+    u.pIn=pipe([[u.int[0],u.int[1],-0.75],[(u.int[0]+u.iq[0])/2,(u.int[1]+u.iq[1])/2,-.4],[u.iq[0],u.iq[1],.15],[mi[0],mi[1],.5]],0x4ea8ff);
+    u.pOut=pipe([[mr[0],mr[1],.5],[u.rq[0],u.rq[1],.15],[(u.ret[0]+u.rq[0])/2,(u.ret[1]+u.rq[1])/2,-.4],[u.ret[0],u.ret[1],-0.75]],0xff9a3d);
+    allPipes.push(u.pIn,u.pOut)});
+  intakePipe=UNITS[0].pIn;returnPipe=UNITS[0].pOut;
 }
 
 /* ================= labels ================= */
@@ -1977,8 +1987,8 @@ function buildLabels(){
   addLabel('웅진플레이도시',-62,52,440);addLabel('삼산체육관역',-236,8,-298);addLabel('상동호수공원 매점',22,8,150);
   addLabel('청운공원',-180,10,160);addLabel('조마루로',60,4,252);addLabel('길주로',40,4,-290);addLabel('수변로',-168,4,-150);
   addLabel('수도권제1순환고속도로',232,20,-60);addLabel('분수',FOUNT[0][0],14,FOUNT[0][1]);addLabel('보행 데크',-24,4,72);addLabel('기념 첨탑 광장',1,25,132);
-  SENS.forEach(s=>{const l=addLabel(`${s.code} ${s.name}`,s.p[0],4.4,s.p[1],'sensor '+s.id,'tb');s.lbl=l;l.el.addEventListener('click',()=>select(s))});
-  addLabel('NHI PhotoNano 모듈',MOD[0],6,MOD[1],'module','tb');
+  SENS.forEach(s=>{const l=addLabel(`${s.code} ${s.name}`,s.p[0],4.4,s.p[1],'sensor '+s.cls,'tb');s.lbl=l;l.el.addEventListener('click',()=>select(s))});
+  UNITS.forEach(u=>addLabel(`PhotoNano ${u.name}`,u.mod[0],6,u.mod[1],'module','tb'));
 }
 
 /* ================= time of day ================= */
@@ -2005,10 +2015,11 @@ function setTime(h){const t=(h-6)/14;const el=Math.max(-.15,Math.sin(Math.PI*cla
 let selected=null;const live={};SENS.forEach(s=>live[s.id]={...s.base});
 function drift(){SENS.forEach(s=>{const v=live[s.id],b=s.base;const j=(k,a)=>v[k]=+(b[k]+(Math.random()-.5)*a).toFixed(k==='orp'?0:k==='do'||k==='ph'?2:1);j('do',.25);j('orp',8);j('ph',.06);j('t',.2);j('ntu',.5)});render()}
 function render(){const el=$('#info');
-  if(!selected){el.innerHTML=`<h2>테스트베드 배치안</h2><div class="sub">Side-stream 순환처리 · 측정 3지점</div>
-   <div class="kv"><span>호수 면적(OSM)</span><b>약 2.2 ha</b><span>취수–환수 이격</span><b>${Math.round(Math.hypot(RET[0]-INT[0],RET[1]-INT[1]))} m</b>
-   <span>취수 배관</span><b>${intakePipe?Math.round(intakePipe.curve.getLength()):'-'} m</b><span>환수 배관</span><b>${returnPipe?Math.round(returnPipe.curve.getLength()):'-'} m</b></div>
-   <div class="flow">취수 <i>S-01</i> → 펌프 → O₂ 공급 → UFB 발생부 → 와류 TiO₂/UVA 반응부 → 환수 <i>S-03</i><br>부표를 누르면 지점별 수질값을 볼 수 있습니다.</div>
+  if(!selected){el.innerHTML=`<h2>테스트베드 배치안</h2><div class="sub">Side-stream 순환처리 · PhotoNano 2기 · 측정 5지점</div>
+   <div class="kv"><span>호수 면적(OSM)</span><b>약 2.2 ha</b><span>설치 대수</span><b>2기 (서측·동측)</b>
+   <span>호기 간 이격</span><b>${Math.round(Math.hypot(UNITS[0].mod[0]-UNITS[1].mod[0],UNITS[0].mod[1]-UNITS[1].mod[1]))} m</b>
+   ${UNITS.map(u=>`<span>${u.name} 취수–환수</span><b>${Math.round(Math.hypot(u.int[0]-u.ret[0],u.int[1]-u.ret[1]))} m</b><span>${u.name} 배관</span><b>${u.pIn?Math.round(u.pIn.curve.getLength()+u.pOut.curve.getLength()):'-'} m</b>`).join('')}</div>
+   <div class="flow">각 호기: 취수 → 펌프 → O₂ 공급 → UFB 발생부 → 와류 TiO₂/UVA 반응부 → 환수<br>1호기 <i>S-01→S-02</i> · 2호기 <i>S-04→S-05</i> · 중앙 <i>S-03</i><br>부표를 누르면 지점별 수질값을 볼 수 있습니다.</div>
    <div style="margin-top:8px"><span class="pill">배치 위치는 제안안 · 현장 협의 후 확정</span></div>`;return}
   const v=live[selected.id];
   el.innerHTML=`<h2>${selected.code} · ${selected.name}</h2><div class="sub">수심 0.5 m 다항목 수질계 · 2초 갱신</div>
@@ -2021,7 +2032,7 @@ function select(s){selected=s;SENS.forEach(o=>o.lbl.el.classList.toggle('sel',o=
 /* ================= camera / views / photos ================= */
 let fly=null;
 function flyTo(pos,tgt,dur,fov){fly={p0:camera.position.clone(),t0:controls.target.clone(),p1:new THREE.Vector3(...pos),t1:new THREE.Vector3(...tgt),f0:camera.fov,f1:fov||45,s:performance.now(),d:dur||1600}}
-const VIEWS={bird:[[250,190,300],[-10,0,0]],top:[[-9,760,12],[-10,0,0]],tb:[[-160,34,-108],[-85,0,-22]],water:[[-24,1.3,96],[-10,2.5,-50],1600,62],walk:[[-40,1.7,-60],[0,1.6,-110],1600,62]};
+const VIEWS={bird:[[250,190,300],[-10,0,0]],top:[[-9,760,12],[-10,0,0]],tb:[[-138,26,-80],[-86,0,-37]],tb2:[[122,26,-82],[70,0,-36]],water:[[-24,1.3,96],[-10,2.5,-50],1600,62],walk:[[-40,1.7,-60],[0,1.6,-110],1600,62]};
 function setPressed(v){document.querySelectorAll('#views button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===v)))}
 document.querySelectorAll('#views button').forEach(b=>b.addEventListener('click',()=>{setPressed(b.dataset.v);closeCompare();flyTo(...VIEWS[b.dataset.v])}));
 const PHOTO_META=[
@@ -2070,7 +2081,7 @@ function loop(){requestAnimationFrame(loop);if(!ready)return;const dt=Math.min(c
   if(fly){const t=Math.min(1,(performance.now()-fly.s)/fly.d);const k=reduce?1:ease(t);camera.position.lerpVectors(fly.p0,fly.p1,k);controls.target.lerpVectors(fly.t0,fly.t1,k);camera.fov=fly.f0+(fly.f1-fly.f0)*k;camera.updateProjectionMatrix();if(t>=1||reduce)fly=null}
   controls.update();
   if(groups.cars.visible&&!reduce)updateCars(dt);
-  [intakePipe,returnPipe].forEach(pp=>pp&&pp.dots.forEach(d=>{d.userData.t=(d.userData.t+dt*(reduce?0:.05))%1;d.position.copy(pp.curve.getPointAt(d.userData.t))}));
+  allPipes.forEach(pp=>pp&&pp.dots.forEach(d=>{d.userData.t=(d.userData.t+dt*(reduce?0:.05))%1;d.position.copy(pp.curve.getPointAt(d.userData.t))}));
   buoys.forEach((b,i)=>{const s=1+.25*Math.sin(U.time.value*2+i);b.userData.ring.scale.set(s,s,s);b.position.y=-0.5+.05*Math.sin(U.time.value*1.4+i)});
   renderer.render(scene,camera);
   const w=innerWidth,h=innerHeight;
