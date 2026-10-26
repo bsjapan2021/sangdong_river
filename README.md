@@ -1,9 +1,12 @@
 # 상동호수공원 디지털트윈 · NHI PhotoNano K-테스트베드 2026
 
+**한국어** · [English](#english) · [日本語](#日本語)
+
 부천 상동호수공원을 OpenStreetMap 실측 지형과 현장 사진을 바탕으로 재현한 3D 디지털트윈입니다.
 NHI PhotoNano(UFB–TiO₂ 광촉매 융합 수질개선) 테스트베드의 측정 3지점과 Side-stream 모듈 배치안을 표시합니다.
 
 ## 실행
+- 화면 언어: 왼쪽 위 `한국어 | EN | 日本語` 버튼, 또는 주소에 `?lang=ko|en|ja` (선택은 브라우저에 기억)
 - 웹: https://park.nanohydroin.com (실사판 v2) · https://park.nanohydroin.com/v1 (단순 모델) · 보조 주소 https://sangdong.vercel.app
 - 로컬: `index.html` 더블클릭 (완전 오프라인). 저사양 PC는 주소 뒤에 `?q=low`
 
@@ -42,3 +45,28 @@ cp sangdong_dt_v2_offline.html index.html
 © 2026 주식회사 나노하이드로인 (NanoHydroIn Co., Ltd.). All rights reserved.
 본 저장소의 소스코드·3D 장면·연출·문서는 주식회사 나노하이드로인의 저작물이며, 사전 서면 동의 없는 복제·수정·배포·상업적 이용을 금지합니다(열람 및 K-테스트베드 심사 목적 시연은 허용). 자세한 내용은 [LICENSE](LICENSE)를 참조하십시오.
 제3자 구성요소(three.js — MIT, OpenStreetMap — ODbL, 웹 폰트 — OFL, 현장 참고 사진 — 각 원저작자)는 각 원 라이선스를 따릅니다: [NOTICE.md](NOTICE.md)
+
+
+---
+
+## English
+Photoreal 3D digital twin of Sangdong Lake Park (Bucheon, Korea), built from surveyed OpenStreetMap terrain and site photos, for the NHI PhotoNano (UFB–TiO₂ photocatalytic water-treatment) K-water K-Testbed 2026.
+
+- **Open**: https://park.nanohydroin.com (v2, photoreal) · `/v1` (simple model). Offline: double-click `index.html`. Low-spec PCs: add `?q=low`.
+- **Language**: `한국어 | EN | 日本語` buttons at top-left, or `?lang=en` / `?lang=ja`.
+- **Features**: reflective water, reeds, blue-railed boardwalks, fountains, spire plaza, species-specific trees, cut-out photo skyline, time-of-day lighting, traffic, site-photo overlay comparison, 2 shoreline PhotoNano units with 5 monitoring points (S-01–S-05).
+- **Purification mode** (`Normal | Purification`, key `P`): micro/nano-bubble plumes spread from both returns across the lake; algae and anaerobic sludge clear on the surface; underwater, photocatalytic ROS (·OH cyan, O₂⁻ violet) break down bacteria, viruses and fungi; the S-01–S-05 panel tracks DO rise and turbidity drop against Table 5 criteria.
+- All water-quality values and purification effects are **conceptual simulations**, not field measurements.
+
+© 2026 NanoHydroIn Co., Ltd. All rights reserved — see [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md).
+
+## 日本語
+OpenStreetMapの実測地形と現地写真に基づき、上洞湖水公園（韓国・富川市）をフォトリアルに再現した3Dデジタルツインです。NHI PhotoNano（UFB–TiO₂光触媒水質改善）K-water K-テストベッド2026向けに制作しました。
+
+- **閲覧**：https://park.nanohydroin.com （v2 フォトリアル版）・`/v1`（シンプル版）。オフライン：`index.html` をダブルクリック。低スペックPCは `?q=low` を付加。
+- **言語**：左上の `한국어 | EN | 日本語` ボタン、または `?lang=ja`。
+- **主な機能**：反射する水面、ヨシ、青い手すりの遊歩デッキ、噴水、尖塔広場、樹種別の樹木、写真切り抜きのスカイライン、時間帯の光、車両の流れ、現地写真との重ね比較、護岸設置のPhotoNano 2基と測定5地点（S-01〜S-05）。
+- **浄化演出**（`通常状態 | 浄化演出`、Pキー）：2か所の還水部からマイクロ・ナノバブルが湖全域へ広がり、水面のアオコ・嫌気性スラッジが消え、水中では光触媒ROS（·OH 青白、O₂⁻ 紫）が細菌・ウイルス・カビを分解。S-01〜S-05パネルはDO上昇・濁度低下を表5基準と比較して表示します。
+- 水質数値と浄化演出はすべて**概念シミュレーション**であり、実測値ではありません。
+
+© 2026 株式会社ナノハイドロイン（NanoHydroIn Co., Ltd.）All rights reserved — [LICENSE](LICENSE)・[NOTICE.md](NOTICE.md) を参照。

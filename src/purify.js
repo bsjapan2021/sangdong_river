@@ -153,12 +153,12 @@ function buildPurify(){
   PUR.hud={bar:document.getElementById('purBar'),pct:document.getElementById('purPct'),msg:document.getElementById('purMsg')};
   PUR.maxR=Math.max(...lakeSample(800,0,0).map(s=>Math.min(Math.hypot(s[0]-r1[0],s[2]-r1[1]),Math.hypot(s[0]-r2[0],s[2]-r2[1]))))+12;
 }
-function updatePurify(dt){if(!PUR.u.uR)return;const u=PUR.u;const T=U.time.value;u.uScale.value=innerHeight/(2*Math.tan(camera.fov*Math.PI/360));
+function updatePurify(dt){if(!PUR.u.uR)return;const u=PUR.u;const Tm=U.time.value;u.uScale.value=innerHeight/(2*Math.tan(camera.fov*Math.PI/360));
   controls.maxPolarAngle=controls.target.y<-0.5?Math.PI*0.78:Math.PI*0.497;
-  const c=(T-(PUR.t0||0)+PUR.cycle*100)%PUR.cycle;let R,rg=0;
+  const c=(Tm-(PUR.t0||0)+PUR.cycle*100)%PUR.cycle;let R,rg=0;
   if(c<PUR.grow){const x=c/PUR.grow;R=PUR.maxR*(1-Math.pow(1-x,1.55))}else{R=PUR.maxR+8;const r0=PUR.grow+PUR.hold;rg=c<r0?0:clamp((c-r0)/(PUR.cycle-r0),0,1)}
   rg=rg*rg*(3-2*rg);PUR.R=R;PUR.regrow=rg;u.uR.value=PUR.on?R:0;u.uRegrow.value=PUR.on?rg:0;u.uPoll.value=1;
-  (PUR.boils||[]).forEach((b,i)=>{const s=1+.18*Math.sin(T*6+i*2);b.scale.set(s,s,s);b.material.opacity=.45+.15*Math.sin(T*9+i)});
+  (PUR.boils||[]).forEach((b,i)=>{const s=1+.18*Math.sin(Tm*6+i*2);b.scale.set(s,s,s);b.material.opacity=.45+.15*Math.sin(Tm*9+i)});
   /* underwater switch */
   const under=camera.position.y<-0.5;if(under!==PUR.under){PUR.under=under;u.uUnder.value=under?1:0;PUR.ceil.visible=under;if(PUR.skyMesh)PUR.skyMesh.visible=!under;if(water)water.visible=!under;
     if(under){scene.fog=new THREE.FogExp2(C(0x1d4e4a),0.055);scene.background=C(0x1d4e4a)}else{scene.fog=PUR.aboveFog;scene.background=null}}

@@ -36,18 +36,21 @@ body{background:var(--bg);color:var(--ink);font-family:var(--ui);overflow:hidden
 .panel{position:fixed;background:var(--glass);border:1px solid var(--glass-line);border-radius:10px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 #head{top:calc(12px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));padding:12px 14px;max-width:min(330px,calc(100vw - 24px))}
 #head .eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--water)}
+#langs{display:flex;gap:3px;margin-bottom:7px}
+#langs button{font:600 10.5px var(--ui);color:var(--ink-2);background:rgba(255,255,255,.04);border:1px solid var(--glass-line);border-radius:4px;padding:2px 6px;cursor:pointer}
+#langs button[aria-pressed="true"]{color:#06222a;background:#8fe6ff;border-color:#8fe6ff}
 #head h1{margin:4px 0 2px;font-size:18px;font-weight:600}
 #head p{margin:0;font-size:12px;color:var(--ink-2);line-height:1.5}
 #layers{top:calc(116px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));padding:10px 12px;width:196px}
 .sec{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:2px 0 6px}
 .tg{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:3px 0;cursor:pointer;user-select:none}
 .tg input{accent-color:var(--water);width:15px;height:15px;margin:0}
-#views{bottom:calc(22px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);display:flex;gap:4px;padding:5px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px)}
+#views{bottom:calc(22px + env(safe-area-inset-bottom,0px));left:0;right:0;margin:0 auto;width:fit-content;display:flex;gap:4px;padding:5px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px)}
 #views button{font:500 12px var(--ui);color:var(--ink);background:transparent;border:1px solid transparent;border-radius:6px;padding:7px 9px;cursor:pointer;white-space:nowrap}
 #views button:hover{background:rgba(170,215,220,.08)}
 #views button[aria-pressed="true"]{background:rgba(70,185,203,.18);border-color:rgba(70,185,203,.45)}
 button:focus-visible,.tg input:focus-visible,input[type=range]:focus-visible{outline:2px solid var(--water);outline-offset:2px}
-#right{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(66px + env(safe-area-inset-bottom,0px));width:286px;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+#right{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));width:286px;display:flex;flex-direction:column;gap:10px;pointer-events:none}
 #right .panel{position:static;pointer-events:auto}
 #info{padding:12px 14px}
 #info h2{margin:0 0 2px;font-size:15px;font-weight:600}
@@ -112,65 +115,66 @@ button:focus-visible,.tg input:focus-visible,input[type=range]:focus-visible{out
 <div id="stage"></div>
 <div id="compare" hidden></div>
 <div id="labels"></div>
-<div id="loading"><div><div id="ldtxt">실사 텍스처와 지형을 생성하는 중…</div><div class="bar"><i id="ldbar"></i></div></div></div>
+<div id="loading"><div><div id="ldtxt" data-i18n="loading">실사 텍스처와 지형을 생성하는 중…</div><div class="bar"><i id="ldbar"></i></div></div></div>
 
 <div id="head" class="panel">
   <div class="eyebrow">K-TESTBED 2026 · NHI PhotoNano</div>
-  <h1>상동호수공원 디지털트윈</h1>
-  <p>OpenStreetMap 실측 지형 + 현장 사진 기반 실사 재현. 측정 5지점과 PhotoNano 2기(호안 설치) 배치안을 표시합니다.</p>
+  <div id="langs" role="group" aria-label="Language"><button data-lang="ko" aria-pressed="true">한국어</button><button data-lang="en" aria-pressed="false">EN</button><button data-lang="ja" aria-pressed="false">日本語</button></div>
+  <h1 data-i18n="title">상동호수공원 디지털트윈</h1>
+  <p data-i18n="headP">OpenStreetMap 실측 지형 + 현장 사진 기반 실사 재현. 측정 5지점과 PhotoNano 2기(호안 설치) 배치안을 표시합니다.</p>
 </div>
 
-<div id="layers" class="panel" aria-label="레이어">
-  <div class="sec">레이어</div>
-  <label class="tg"><input type="checkbox" id="lyBuild" checked>건물·스카이라인</label>
-  <label class="tg"><input type="checkbox" id="lyTree" checked>수목·갈대</label>
-  <label class="tg"><input type="checkbox" id="lyLabel" checked>명칭</label>
-  <label class="tg"><input type="checkbox" id="lyTB" checked>테스트베드 시설</label>
-  <label class="tg"><input type="checkbox" id="lyFount" checked>분수 가동</label>
-  <label class="tg"><input type="checkbox" id="lyCar" checked>차량 흐름</label>
-  <label class="tg"><input type="checkbox" id="lyHeat">DO 분포 (시뮬레이션)</label>
-  <label class="tg"><input type="checkbox" id="lyRot">자동 회전</label>
+<div id="layers" class="panel" aria-label="레이어" data-i18n-aria="layers">
+  <div class="sec" data-i18n="layers">레이어</div>
+  <label class="tg"><input type="checkbox" id="lyBuild" checked><span data-i18n="lyBuild">건물·스카이라인</span></label>
+  <label class="tg"><input type="checkbox" id="lyTree" checked><span data-i18n="lyTree">수목·갈대</span></label>
+  <label class="tg"><input type="checkbox" id="lyLabel" checked><span data-i18n="lyLabel">명칭</span></label>
+  <label class="tg"><input type="checkbox" id="lyTB" checked><span data-i18n="lyTB">테스트베드 시설</span></label>
+  <label class="tg"><input type="checkbox" id="lyFount" checked><span data-i18n="lyFount">분수 가동</span></label>
+  <label class="tg"><input type="checkbox" id="lyCar" checked><span data-i18n="lyCar">차량 흐름</span></label>
+  <label class="tg"><input type="checkbox" id="lyHeat"><span data-i18n="lyHeat">DO 분포 (시뮬레이션)</span></label>
+  <label class="tg"><input type="checkbox" id="lyRot"><span data-i18n="lyRot">자동 회전</span></label>
 </div>
 
 <div id="right">
   <aside id="info" class="panel" aria-live="polite"></aside>
-  <section id="photos" class="panel" aria-label="현장 사진 비교">
-    <div class="sec">현장 사진 비교</div>
+  <section id="photos" class="panel" aria-label="현장 사진 비교" data-i18n-aria="photos">
+    <div class="sec" data-i18n="photos">현장 사진 비교</div>
     <div id="thumbs"></div>
-    <div class="hint">사진을 누르면 비슷한 시점으로 이동해 3D 위에 겹쳐 봅니다.</div>
+    <div class="hint" data-i18n="photosHint">사진을 누르면 비슷한 시점으로 이동해 3D 위에 겹쳐 봅니다.</div>
   </section>
   <div id="tbar" class="panel">
-    <label for="tod">시간대 <b id="todv">14:00</b></label>
+    <label for="tod"><span data-i18n="tod">시간대</span> <b id="todv">14:00</b></label>
     <input type="range" id="tod" min="5.5" max="20.5" step="0.25" value="14">
-    <div id="legend"><span><i style="background:var(--intake)"></i>취수 라인</span><span><i style="background:var(--return)"></i>환수 라인</span></div>
-    <div id="heatbar" hidden><div class="g"></div><div class="t"><span>6.0</span><span>DO mg/L (시뮬레이션)</span><span>10.0</span></div></div>
+    <div id="legend"><span><i style="background:var(--intake)"></i><span data-i18n="intakeLine">취수 라인</span></span><span><i style="background:var(--return)"></i><span data-i18n="returnLine">환수 라인</span></span></div>
+    <div id="heatbar" hidden><div class="g"></div><div class="t"><span>6.0</span><span data-i18n="heatLbl">DO mg/L (시뮬레이션)</span><span>10.0</span></div></div>
   </div>
 </div>
 
 <div id="cmpbar" class="panel" hidden>
-  <b id="cmpt">사진</b>
-  <label for="cmpo">겹침</label><input type="range" id="cmpo" min="0" max="100" value="50">
-  <button id="cmpx">비교 닫기</button>
+  <b id="cmpt" data-i18n="photo">사진</b>
+  <label for="cmpo" data-i18n="overlay">겹침</label><input type="range" id="cmpo" min="0" max="100" value="50">
+  <button id="cmpx" data-i18n="closeCmp">비교 닫기</button>
 </div>
 
-<nav id="views" class="panel" aria-label="시점">
-  <button data-v="bird" aria-pressed="true">전경</button>
-  <button data-v="top" aria-pressed="false">평면</button>
-  <button data-v="tb" aria-pressed="false">1호기</button>
-  <button data-v="tb2" aria-pressed="false">2호기</button>
-  <button data-v="water" aria-pressed="false">수면 시점</button>
-  <button data-v="walk" aria-pressed="false">산책로</button>
-  <button data-v="pur" aria-pressed="false">정화 전경</button>
-  <button data-v="under" aria-pressed="false">수중 시점</button>
+<nav id="views" class="panel" aria-label="시점" data-i18n-aria="views">
+  <button data-v="bird" aria-pressed="true" data-i18n="v_bird">전경</button>
+  <button data-v="top" aria-pressed="false" data-i18n="v_top">평면</button>
+  <button data-v="tb" aria-pressed="false" data-i18n="v_tb">1호기</button>
+  <button data-v="tb2" aria-pressed="false" data-i18n="v_tb2">2호기</button>
+  <button data-v="water" aria-pressed="false" data-i18n="v_water">수면 시점</button>
+  <button data-v="walk" aria-pressed="false" data-i18n="v_walk">산책로</button>
+  <button data-v="pur" aria-pressed="false" data-i18n="v_pur">정화 전경</button>
+  <button data-v="under" aria-pressed="false" data-i18n="v_under">수중 시점</button>
 </nav>
 <div id="purHud" class="panel" aria-live="off">
-  <div class="modes" role="radiogroup" aria-label="표시 모드"><button id="mNormal" role="radio" aria-checked="false">일반 상태</button><button id="mPur" role="radio" aria-checked="true">정화 연출</button><kbd title="키보드 P로 전환">P</kbd></div>
-  <div id="purBody"><div class="sec">UFB 마이크로·나노버블 정화 연출</div>
-  <div class="ph"><b id="purPct">0%</b><span id="purMsg">준비 중</span></div><div class="pbar"><i id="purBar"></i></div>
-  <div class="pnote"><span style="color:#bdefff">● ·OH</span> <span style="color:#c99bff">● O₂⁻</span> 광촉매 활성산소 · 개념 시각화(반복)</div></div>
-  <div id="normBody" hidden><div class="ph"><b style="color:#d8cf8a">정지</b><span>PhotoNano 미가동 · 현재 호수 상태(녹조·혐기성 오염 잔존 가정)</span></div><div class="pnote">측정 5지점은 운전 전 기준값으로 표시됩니다</div></div>
+  <div class="modes" role="radiogroup" aria-label="표시 모드" data-i18n-aria="modeGroup"><button id="mNormal" role="radio" aria-checked="false" data-i18n="mNormal">일반 상태</button><button id="mPur" role="radio" aria-checked="true" data-i18n="mPur">정화 연출</button><kbd title="키보드 P로 전환" data-i18n-title="kbdP">P</kbd></div>
+  <div id="purBody"><div class="sec" data-i18n="purTitle">UFB 마이크로·나노버블 정화 연출</div>
+  <div class="ph"><b id="purPct">0%</b><span id="purMsg" data-i18n="purReady">준비 중</span></div><div class="pbar"><i id="purBar"></i></div>
+  <div class="pnote"><span style="color:#bdefff">● ·OH</span> <span style="color:#c99bff">● O₂⁻</span> <span data-i18n="rosNote">광촉매 활성산소 · 개념 시각화(반복)</span></div></div>
+  <div id="normBody" hidden><div class="ph"><b style="color:#d8cf8a" data-i18n="stop">정지</b><span data-i18n="normMsg">PhotoNano 미가동 · 현재 호수 상태(녹조·혐기성 오염 잔존 가정)</span></div><div class="pnote" data-i18n="normNote">측정 5지점은 운전 전 기준값으로 표시됩니다</div></div>
 </div>
-<div id="credit">© 2026 주식회사 나노하이드로인 (NanoHydroIn Co., Ltd.) · All rights reserved · 지도 © OpenStreetMap contributors (ODbL) · three.js (MIT) · 사진: 각 원저작자</div>
+<div id="credit" data-i18n="credit">© 2026 주식회사 나노하이드로인 (NanoHydroIn Co., Ltd.) · All rights reserved · 지도 © OpenStreetMap contributors (ODbL) · three.js (MIT) · 사진: 각 원저작자</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -184,6 +188,126 @@ const PHOTOS = __PHOTOS__;
 (function(){
 'use strict';
 const $=s=>document.querySelector(s);
+/* ================= i18n: 한국어 / English / 日本語 ================= */
+const I18N={
+ title:{ko:'상동호수공원 디지털트윈',en:'Sangdong Lake Park Digital Twin',ja:'上洞湖水公園 デジタルツイン'},
+ headP:{ko:'OpenStreetMap 실측 지형 + 현장 사진 기반 실사 재현. 측정 5지점과 PhotoNano 2기(호안 설치) 배치안을 표시합니다.',en:'Photoreal reconstruction from surveyed OpenStreetMap terrain and site photos, showing 5 monitoring points and the layout of two shoreline PhotoNano units.',ja:'OpenStreetMapの実測地形と現地写真に基づくフォトリアル再現。測定5地点とPhotoNano 2基（護岸設置）の配置案を表示します。'},
+ loading:{ko:'실사 텍스처와 지형을 생성하는 중…',en:'Generating photoreal textures and terrain…',ja:'フォトリアルなテクスチャと地形を生成中…'},
+ ld1:{ko:'실사 텍스처 생성 중…',en:'Generating textures…',ja:'テクスチャ生成中…'},
+ ld2:{ko:'하늘·구름 생성 중…',en:'Building sky and clouds…',ja:'空と雲を生成中…'},
+ ld3:{ko:'지형·호수 생성 중…',en:'Building terrain and lake…',ja:'地形と湖を生成中…'},
+ ld4:{ko:'도로·데크 생성 중…',en:'Building roads and decks…',ja:'道路とデッキを生成中…'},
+ ld5:{ko:'건물·스카이라인 배치 중…',en:'Placing buildings and skyline…',ja:'建物とスカイラインを配置中…'},
+ ld6:{ko:'수목·갈대 식재 중…',en:'Planting trees and reeds…',ja:'樹木とヨシを植栽中…'},
+ ld7:{ko:'분수·차량·테스트베드 배치 중…',en:'Placing fountains, traffic and testbed…',ja:'噴水・車両・テストベッドを配置中…'},
+ ld8:{ko:'마무리…',en:'Finishing…',ja:'仕上げ中…'},
+ layers:{ko:'레이어',en:'Layers',ja:'レイヤー'},
+ lyBuild:{ko:'건물·스카이라인',en:'Buildings & skyline',ja:'建物・スカイライン'},
+ lyTree:{ko:'수목·갈대',en:'Trees & reeds',ja:'樹木・ヨシ'},
+ lyLabel:{ko:'명칭',en:'Place names',ja:'名称'},
+ lyTB:{ko:'테스트베드 시설',en:'Testbed facilities',ja:'テストベッド設備'},
+ lyFount:{ko:'분수 가동',en:'Fountains on',ja:'噴水運転'},
+ lyCar:{ko:'차량 흐름',en:'Traffic',ja:'車両の流れ'},
+ lyHeat:{ko:'DO 분포 (시뮬레이션)',en:'DO distribution (simulated)',ja:'DO分布（シミュレーション）'},
+ lyRot:{ko:'자동 회전',en:'Auto-rotate',ja:'自動回転'},
+ photos:{ko:'현장 사진 비교',en:'Site photo comparison',ja:'現地写真の比較'},
+ photosHint:{ko:'사진을 누르면 비슷한 시점으로 이동해 3D 위에 겹쳐 봅니다.',en:'Tap a photo to fly to a matching viewpoint and overlay it on the 3D view.',ja:'写真を押すと近い視点へ移動し、3Dに重ねて表示します。'},
+ tod:{ko:'시간대',en:'Time of day',ja:'時間帯'},
+ intakeLine:{ko:'취수 라인',en:'Intake line',ja:'取水ライン'},
+ returnLine:{ko:'환수 라인',en:'Return line',ja:'還水ライン'},
+ heatLbl:{ko:'DO mg/L (시뮬레이션)',en:'DO mg/L (simulated)',ja:'DO mg/L（シミュレーション）'},
+ photo:{ko:'사진',en:'Photo',ja:'写真'},
+ overlay:{ko:'겹침',en:'Overlay',ja:'重ね'},
+ closeCmp:{ko:'비교 닫기',en:'Close comparison',ja:'比較を閉じる'},
+ views:{ko:'시점',en:'Views',ja:'視点'},
+ v_bird:{ko:'전경',en:'Overview',ja:'全景'},
+ v_top:{ko:'평면',en:'Plan',ja:'平面'},
+ v_tb:{ko:'1호기',en:'Unit 1',ja:'1号機'},
+ v_tb2:{ko:'2호기',en:'Unit 2',ja:'2号機'},
+ v_water:{ko:'수면 시점',en:'Water level',ja:'水面視点'},
+ v_walk:{ko:'산책로',en:'Promenade',ja:'散策路'},
+ v_pur:{ko:'정화 전경',en:'Purification view',ja:'浄化全景'},
+ v_under:{ko:'수중 시점',en:'Underwater',ja:'水中視点'},
+ modeGroup:{ko:'표시 모드',en:'Display mode',ja:'表示モード'},
+ mNormal:{ko:'일반 상태',en:'Normal',ja:'通常状態'},
+ mPur:{ko:'정화 연출',en:'Purification',ja:'浄化演出'},
+ kbdP:{ko:'키보드 P로 전환',en:'Press P to switch',ja:'Pキーで切替'},
+ purTitle:{ko:'UFB 마이크로·나노버블 정화 연출',en:'UFB micro/nano-bubble purification',ja:'UFBマイクロ・ナノバブル浄化演出'},
+ purReady:{ko:'준비 중',en:'Preparing',ja:'準備中'},
+ rosNote:{ko:'광촉매 활성산소 · 개념 시각화(반복)',en:'Photocatalytic ROS · conceptual visualization (loop)',ja:'光触媒活性酸素・概念ビジュアル（反復）'},
+ stop:{ko:'정지',en:'Off',ja:'停止'},
+ normMsg:{ko:'PhotoNano 미가동 · 현재 호수 상태(녹조·혐기성 오염 잔존 가정)',en:'PhotoNano off · current lake condition (algae and anaerobic pollution assumed)',ja:'PhotoNano停止・現在の湖の状態（アオコ・嫌気性汚染が残存と仮定）'},
+ normNote:{ko:'측정 5지점은 운전 전 기준값으로 표시됩니다',en:'The 5 monitoring points show pre-operation baselines',ja:'測定5地点は運転前の基準値で表示します'},
+ credit:{ko:'© 2026 주식회사 나노하이드로인 (NanoHydroIn Co., Ltd.) · All rights reserved · 지도 © OpenStreetMap contributors (ODbL) · three.js (MIT) · 사진: 각 원저작자',
+   en:'© 2026 NanoHydroIn Co., Ltd. (주식회사 나노하이드로인) · All rights reserved · Map © OpenStreetMap contributors (ODbL) · three.js (MIT) · Photos: respective owners',
+   ja:'© 2026 株式会社ナノハイドロイン (NanoHydroIn Co., Ltd.) · All rights reserved · 地図 © OpenStreetMap contributors (ODbL) · three.js (MIT) · 写真：各原著作者'},
+ hudRegrow:{ko:'다음 정화 사이클 준비 (반복 연출)',en:'Preparing the next purification cycle (loop)',ja:'次の浄化サイクルを準備中（反復演出）'},
+ hudRun:{ko:'UFB 확산 · TiO₂/UVA 광촉매 ROS(·OH, O₂⁻)가 녹조·세균·곰팡이 산화 분해 중',en:'UFB spreading · TiO₂/UVA photocatalytic ROS (·OH, O₂⁻) oxidizing algae, bacteria and fungi',ja:'UFB拡散中・TiO₂/UVA光触媒ROS（·OH, O₂⁻）がアオコ・細菌・カビを酸化分解中'},
+ hudDone:{ko:'호수 전역 정화 완료 · 용존산소 회복',en:'Whole lake purified · dissolved oxygen restored',ja:'湖全域の浄化完了・溶存酸素が回復'},
+ u1:{ko:'1호기(서측)',en:'Unit 1 (west)',ja:'1号機（西側）'},
+ u2:{ko:'2호기(동측)',en:'Unit 2 (east)',ja:'2号機（東側）'},
+ s_in1:{ko:'1호기 취수부',en:'Unit 1 intake',ja:'1号機 取水部'},
+ s_out1:{ko:'1호기 환수부',en:'Unit 1 return',ja:'1号機 還水部'},
+ s_ctr:{ko:'연못 중앙부',en:'Lake center',ja:'池の中央部'},
+ s_in2:{ko:'2호기 취수부',en:'Unit 2 intake',ja:'2号機 取水部'},
+ s_out2:{ko:'2호기 환수부',en:'Unit 2 return',ja:'2号機 還水部'},
+ ss_in1:{ko:'1호기 취수',en:'U1 intake',ja:'1号機 取水'},
+ ss_out1:{ko:'1호기 환수',en:'U1 return',ja:'1号機 還水'},
+ ss_ctr:{ko:'중앙',en:'Center',ja:'中央'},
+ ss_in2:{ko:'2호기 취수',en:'U2 intake',ja:'2号機 取水'},
+ ss_out2:{ko:'2호기 환수',en:'U2 return',ja:'2号機 還水'},
+ st0:{ko:'정화 전',en:'Untreated',ja:'浄化前'},st1:{ko:'정화 중',en:'Treating',ja:'浄化中'},st2:{ko:'정화 완료',en:'Purified',ja:'浄化完了'},
+ sts0:{ko:'전',en:'Pre',ja:'前'},sts1:{ko:'중',en:'In',ja:'中'},sts2:{ko:'완료',en:'Done',ja:'完了'},
+ monTitle:{ko:'수질 모니터링 · 5지점',en:'Water quality · 5 points',ja:'水質モニタリング・5地点'},
+ monSub:{ko:'정화 전선 통과에 따라 실시간 변화 (DO mg/L · 탁도 NTU · 운전 전 대비)',en:'Updates live as the purification front passes (DO mg/L · turbidity NTU · vs. pre-operation)',ja:'浄化前線の通過に応じてリアルタイム変化（DO mg/L・濁度 NTU・運転前比）'},
+ thPoint:{ko:'지점',en:'Point',ja:'地点'},turb:{ko:'탁도',en:'Turbidity',ja:'濁度'},
+ monFlow:{ko:'표 5 판정 기준: DO <i>+30~50%</i> · 탁도 <i>−20% 이상</i> → 달성 시 초록 표시<br>PhotoNano 2기 · 호기 간 {d} m · 각 호기 취수–환수 {s} m<br>부표를 누르면 지점별 상세값을 봅니다.',
+   en:'Table 5 criteria: DO <i>+30–50%</i> · turbidity <i>−20% or more</i> → green when met<br>2 PhotoNano units · {d} m apart · intake–return {s} m each<br>Tap a buoy for point details.',
+   ja:'表5 判定基準：DO <i>+30〜50%</i>・濁度 <i>−20%以上</i> → 達成時は緑で表示<br>PhotoNano 2基・号機間 {d} m・各号機の取水–還水 {s} m<br>ブイを押すと地点別の詳細を表示します。'},
+ simPill:{ko:'시뮬레이션 데이터 · 실측 연동 전',en:'Simulated data · not yet linked to field sensors',ja:'シミュレーションデータ・実測未連携'},
+ detSub:{ko:'수심 0.5 m 다항목 수질계 · 0.5초 갱신',en:'Multi-parameter sonde at 0.5 m · 0.5 s refresh',ja:'水深0.5 m 多項目水質計・0.5秒更新'},
+ wt:{ko:'수온',en:'Water temp.',ja:'水温'},coord:{ko:'좌표(공원 기준)',en:'Coordinates (park origin)',ja:'座標（公園基準）'},
+ detFlow:{ko:'표 5 판정: DO 운전 전 대비 30~50% 증가 {a} · 탁도 20% 이상 저감 {b}<br>ORP 상승은 ·OH 등 산화성 활성종 증가와 함께 나타나는 참고 지표입니다.',
+   en:'Table 5: DO +30–50% vs. pre-operation {a} · turbidity −20% or more {b}<br>Rising ORP is a reference indicator that accompanies more oxidizing species such as ·OH.',
+   ja:'表5 判定：DO 運転前比30〜50%増加 {a}・濁度20%以上低減 {b}<br>ORPの上昇は·OHなど酸化性活性種の増加に伴う参考指標です。'},
+ p1:{ko:'수변 전경 · 웅진 돔 방향',en:'Lakeside view toward the Woongjin dome',ja:'水辺の全景・ウンジンドーム方向'},
+ p2:{ko:'항공 · 분수와 아파트',en:'Aerial · fountains and apartments',ja:'空撮・噴水とマンション'},
+ p3:{ko:'호안 갈대 · 수면 반사',en:'Shoreline reeds · reflections',ja:'護岸のヨシ・水面の反射'},
+ p4:{ko:'노을 항공',en:'Aerial at sunset',ja:'夕焼けの空撮'},
+ p5:{ko:'보행 데크 위',en:'On the boardwalk',ja:'遊歩デッキの上'},
+ p6:{ko:'파란 난간 데크',en:'Blue-railed deck',ja:'青い手すりのデッキ'},
+ p7:{ko:'분수',en:'Fountain',ja:'噴水'},
+ p8:{ko:'드론 · 남측 광장',en:'Drone · south plaza',ja:'ドローン・南側広場'},
+ pl_lake:{ko:'상동호수',en:'Sangdong Lake',ja:'上洞湖'},
+ pl_park:{ko:'상동호수공원',en:'Sangdong Lake Park',ja:'上洞湖水公園'},
+ pl_supia:{ko:'부천호수식물원 수피아',en:'Supia Lake Botanic Garden',ja:'富川湖水植物園スピア'},
+ pl_wj:{ko:'웅진플레이도시',en:'Woongjin Playdoci',ja:'ウンジン・プレイドシ'},
+ pl_samsan:{ko:'삼산체육관역',en:'Samsan Gymnasium Stn.',ja:'三山体育館駅'},
+ pl_kiosk:{ko:'상동호수공원 매점',en:'Park kiosk',ja:'公園売店'},
+ pl_cheongun:{ko:'청운공원',en:'Cheongun Park',ja:'青雲公園'},
+ pl_jomaru:{ko:'조마루로',en:'Jomaru-ro',ja:'チョマル路'},
+ pl_gilju:{ko:'길주로',en:'Gilju-ro',ja:'キルジュ路'},
+ pl_subyeon:{ko:'수변로',en:'Subyeon-ro',ja:'スビョン路'},
+ pl_ring:{ko:'수도권제1순환고속도로',en:'Seoul Ring Expressway',ja:'首都圏第1循環高速道路'},
+ pl_fount:{ko:'분수',en:'Fountain',ja:'噴水'},
+ pl_deck:{ko:'보행 데크',en:'Boardwalk',ja:'遊歩デッキ'},
+ pl_spire:{ko:'기념 첨탑 광장',en:'Spire plaza',ja:'記念尖塔広場'},
+ photoPanel:{ko:'현장 사진 비교',en:'Site photo comparison',ja:'現地写真の比較'},
+};
+const LANGS=['ko','en','ja'];
+let LANG=(()=>{try{const q=new URLSearchParams(location.search).get('lang');if(LANGS.includes(q))return q}catch(e){}
+  try{const s=localStorage.getItem('sd_lang');if(LANGS.includes(s))return s}catch(e){}
+  const n=(navigator.language||'ko').toLowerCase();return n.startsWith('ja')?'ja':n.startsWith('ko')?'ko':'en'})();
+function T(k,vars){const e=I18N[k];let s=e?(e[LANG]||e.ko):k;if(vars)for(const v in vars)s=s.split('{'+v+'}').join(vars[v]);return s}
+function applyI18n(){document.documentElement.lang=LANG;document.title=T('title');
+  document.querySelectorAll('[data-i18n]').forEach(el=>el.textContent=T(el.dataset.i18n));
+  document.querySelectorAll('[data-i18n-aria]').forEach(el=>el.setAttribute('aria-label',T(el.dataset.i18nAria)));
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>el.title=T(el.dataset.i18nTitle));
+  document.querySelectorAll('#langs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===LANG)));layoutPanels()}
+function layoutPanels(){const h=$('#head'),l=$('#layers');if(h&&l&&getComputedStyle(l).display!=='none')l.style.top=Math.round(h.getBoundingClientRect().bottom+8)+'px'}
+addEventListener('resize',layoutPanels);
+applyI18n();
+
 const ld=(p,t)=>{$('#ldbar').style.width=Math.round(p*100)+'%';if(t)$('#ldtxt').textContent=t};
 const steps=[];const step=(p,t,fn)=>steps.push([p,t,fn]);
 function runSteps(i){if(i>=steps.length)return;const [p,t,fn]=steps[i];ld(p,t);setTimeout(()=>{fn();runSteps(i+1)},16)}
@@ -803,12 +927,12 @@ function buildPurify(){
   PUR.hud={bar:document.getElementById('purBar'),pct:document.getElementById('purPct'),msg:document.getElementById('purMsg')};
   PUR.maxR=Math.max(...lakeSample(800,0,0).map(s=>Math.min(Math.hypot(s[0]-r1[0],s[2]-r1[1]),Math.hypot(s[0]-r2[0],s[2]-r2[1]))))+12;
 }
-function updatePurify(dt){if(!PUR.u.uR)return;const u=PUR.u;const T=U.time.value;u.uScale.value=innerHeight/(2*Math.tan(camera.fov*Math.PI/360));
+function updatePurify(dt){if(!PUR.u.uR)return;const u=PUR.u;const Tm=U.time.value;u.uScale.value=innerHeight/(2*Math.tan(camera.fov*Math.PI/360));
   controls.maxPolarAngle=controls.target.y<-0.5?Math.PI*0.78:Math.PI*0.497;
-  const c=(T-(PUR.t0||0)+PUR.cycle*100)%PUR.cycle;let R,rg=0;
+  const c=(Tm-(PUR.t0||0)+PUR.cycle*100)%PUR.cycle;let R,rg=0;
   if(c<PUR.grow){const x=c/PUR.grow;R=PUR.maxR*(1-Math.pow(1-x,1.55))}else{R=PUR.maxR+8;const r0=PUR.grow+PUR.hold;rg=c<r0?0:clamp((c-r0)/(PUR.cycle-r0),0,1)}
   rg=rg*rg*(3-2*rg);PUR.R=R;PUR.regrow=rg;u.uR.value=PUR.on?R:0;u.uRegrow.value=PUR.on?rg:0;u.uPoll.value=1;
-  (PUR.boils||[]).forEach((b,i)=>{const s=1+.18*Math.sin(T*6+i*2);b.scale.set(s,s,s);b.material.opacity=.45+.15*Math.sin(T*9+i)});
+  (PUR.boils||[]).forEach((b,i)=>{const s=1+.18*Math.sin(Tm*6+i*2);b.scale.set(s,s,s);b.material.opacity=.45+.15*Math.sin(Tm*9+i)});
   /* underwater switch */
   const under=camera.position.y<-0.5;if(under!==PUR.under){PUR.under=under;u.uUnder.value=under?1:0;PUR.ceil.visible=under;if(PUR.skyMesh)PUR.skyMesh.visible=!under;if(water)water.visible=!under;
     if(under){scene.fog=new THREE.FogExp2(C(0x1d4e4a),0.055);scene.background=C(0x1d4e4a)}else{scene.fog=PUR.aboveFog;scene.background=null}}
@@ -816,19 +940,21 @@ function updatePurify(dt){if(!PUR.u.uR)return;const u=PUR.u;const T=U.time.value
   /* HUD */
   if(PUR.hud&&PUR.on){let k=0;const S=PUR.samples;for(let i=0;i<S.length;i+=7){const d=Math.min(Math.hypot(S[i][0]-UNITS[0].ret[0],S[i][2]-UNITS[0].ret[1]),Math.hypot(S[i][0]-UNITS[1].ret[0],S[i][2]-UNITS[1].ret[1]));if(d<R)k++}
     const pct=Math.round(k/Math.ceil(S.length/7)*100*(1-rg));PUR.hud.bar.style.width=pct+'%';PUR.hud.pct.textContent=pct+'%';
-    PUR.hud.msg.textContent=rg>0.02?'다음 정화 사이클 준비 (반복 연출)':pct<99?'UFB 확산 · TiO₂/UVA 광촉매 ROS(·OH, O₂⁻)가 녹조·세균·곰팡이 산화 분해 중':'호수 전역 정화 완료 · 용존산소 회복'}}
+    PUR.hud.msg.textContent=rg>0.02?T('hudRegrow'):pct<99?T('hudRun'):T('hudDone')}}
 
 /* ================= labels ================= */
 const labelsEl=$('#labels');const LBL=[];
-function addLabel(text,x,y,z,cls,group){const el=document.createElement('div');el.className='lbl '+(cls||'');el.textContent=text;labelsEl.appendChild(el);const o={el,v:new THREE.Vector3(x,y,z),group:group||'name'};LBL.push(o);return o}
+function addLabel(text,x,y,z,cls,group){const el=document.createElement('div');el.className='lbl '+(cls||'');labelsEl.appendChild(el);
+  const fn=typeof text==='function'?text:text.startsWith('@')?()=>T(text.slice(1)):()=>text;el.textContent=fn();const o={el,fn,v:new THREE.Vector3(x,y,z),group:group||'name'};LBL.push(o);return o}
+function relabel(){LBL.forEach(o=>o.el.textContent=o.fn())}
 function buildLabels(){
-  addLabel('상동호수',25,5,8,'big');addLabel('상동호수공원',110,10,-40,'big');
-  const sp=window.__supia||[115,-174];addLabel('부천호수식물원 수피아',sp[0],20,sp[1]);
-  addLabel('웅진플레이도시',-62,52,440);addLabel('삼산체육관역',-236,8,-298);addLabel('상동호수공원 매점',22,8,150);
-  addLabel('청운공원',-180,10,160);addLabel('조마루로',60,4,252);addLabel('길주로',40,4,-290);addLabel('수변로',-168,4,-150);
-  addLabel('수도권제1순환고속도로',232,20,-60);addLabel('분수',FOUNT[0][0],14,FOUNT[0][1]);addLabel('보행 데크',-24,4,72);addLabel('기념 첨탑 광장',1,25,132);
-  SENS.forEach(s=>{const l=addLabel(`${s.code} ${s.name}`,s.p[0],4.4,s.p[1],'sensor '+s.cls,'tb');s.lbl=l;l.el.addEventListener('click',()=>select(s))});
-  UNITS.forEach(u=>addLabel(`PhotoNano ${u.name}`,u.mod[0],6,u.mod[1],'module','tb'));
+  addLabel('@pl_lake',25,5,8,'big');addLabel('@pl_park',110,10,-40,'big');
+  const sp=window.__supia||[115,-174];addLabel('@pl_supia',sp[0],20,sp[1]);
+  addLabel('@pl_wj',-62,52,440);addLabel('@pl_samsan',-236,8,-298);addLabel('@pl_kiosk',22,8,150);
+  addLabel('@pl_cheongun',-180,10,160);addLabel('@pl_jomaru',60,4,252);addLabel('@pl_gilju',40,4,-290);addLabel('@pl_subyeon',-168,4,-150);
+  addLabel('@pl_ring',232,20,-60);addLabel('@pl_fount',FOUNT[0][0],14,FOUNT[0][1]);addLabel('@pl_deck',-24,4,72);addLabel('@pl_spire',1,25,132);
+  SENS.forEach(s=>{const l=addLabel(()=>`${s.code} ${T('s_'+s.id)}`,s.p[0],4.4,s.p[1],'sensor '+s.cls,'tb');s.lbl=l;l.el.addEventListener('click',()=>select(s))});
+  UNITS.forEach(u=>addLabel(()=>`PhotoNano ${T('u'+u.no)}`,u.mod[0],6,u.mod[1],'module','tb'));
 }
 
 /* ================= time of day ================= */
@@ -863,26 +989,26 @@ function drift(){SENS.forEach(s=>{const v=live[s.id];const c=sensorClean(s);v.c=
   for(const k in POL){const tgt=POL[k]+(CLN[k]-POL[k])*c+(s.cls==='out'?OUTB[k]*c:0);v[k]+=(tgt-v[k])*.3+(Math.random()-.5)*(k==='orp'?1.5:k==='ntu'?.08:k==='do'?.03:.008)}
   if(s.obj){_dirty.set(0x7a7f2a).convertSRGBToLinear();_cl.set(s.col).convertSRGBToLinear();s.obj.userData.ring.material.color.copy(_dirty).lerp(_cl,v.c)}});render()}
 const pctD=(v,b)=>((v-b)/b*100);
-function stateOf(c){return c<.05?['정화 전','#b8b36a','rgba(160,150,60,.18)']:c<.95?['정화 중','#9fe8ff','rgba(80,190,230,.16)']:['정화 완료','#7ff0b0','rgba(80,220,140,.16)']}
+function stateOf(c){const i=c<.05?0:c<.95?1:2;return [T('st'+i),['#b8b36a','#9fe8ff','#7ff0b0'][i],['rgba(160,150,60,.18)','rgba(80,190,230,.16)','rgba(80,220,140,.16)'][i],T('sts'+i)]}
 function bar(frac,col){return `<span style="display:block;height:5px;border-radius:3px;background:rgba(255,255,255,.08);margin-top:3px;overflow:hidden"><i style="display:block;height:100%;width:${Math.round(clamp(frac,0,1)*100)}%;background:${col}"></i></span>`}
 function render(){const el=$('#info');
   if(!selected){const rows=SENS.map(s=>{const v=live[s.id];const st=stateOf(v.c);const dd=pctD(v.do,POL.do),dn=pctD(v.ntu,POL.ntu);
-      return `<tr><td style="padding:3px 6px 3px 0;font-family:var(--mono);font-size:11px;color:var(--ink-2);white-space:nowrap">${s.code}</td><td style="font-size:11.5px;white-space:nowrap">${s.name.replace('부','').replace('연못 ','')}</td>
+      return `<tr><td style="padding:3px 6px 3px 0;font-family:var(--mono);font-size:11px;color:var(--ink-2);white-space:nowrap">${s.code}</td><td style="font-size:11.5px;white-space:nowrap">${T('ss_'+s.id)}</td>
         <td style="text-align:right;font-family:var(--mono);white-space:nowrap">${v.do.toFixed(1)}<span style="color:${dd>=30?'#7ff0b0':'var(--ink-3)'};font-size:10px"> ${dd>=0?'+':''}${dd.toFixed(0)}%</span></td>
         <td style="text-align:right;font-family:var(--mono);white-space:nowrap;padding-left:6px">${v.ntu.toFixed(1)}<span style="color:${dn<=-20?'#7ff0b0':'var(--ink-3)'};font-size:10px"> ${dn.toFixed(0)}%</span></td>
-        <td style="text-align:right;white-space:nowrap"><span style="font-size:10px;padding:1px 5px;border-radius:3px;color:${st[1]};background:${st[2]}">${st[0].replace('정화 ','')}</span></td></tr>`}).join('');
-    el.innerHTML=`<h2>수질 모니터링 · 5지점</h2><div class="sub">정화 전선 통과에 따라 실시간 변화 (DO mg/L · 탁도 NTU · 운전 전 대비)</div>
-     <table style="width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums"><thead><tr style="color:var(--ink-3);font-size:10.5px"><th style="text-align:left;font-weight:500">지점</th><th></th><th style="text-align:right;font-weight:500">DO</th><th style="text-align:right;font-weight:500">탁도</th><th></th></tr></thead><tbody>${rows}</tbody></table>
-     <div class="flow">표 5 판정 기준: DO <i>+30~50%</i> · 탁도 <i>−20% 이상</i> → 달성 시 초록 표시<br>PhotoNano 2기 · 호기 간 ${Math.round(Math.hypot(UNITS[0].mod[0]-UNITS[1].mod[0],UNITS[0].mod[1]-UNITS[1].mod[1]))} m · 각 호기 취수–환수 ${Math.round(Math.hypot(UNITS[0].int[0]-UNITS[0].ret[0],UNITS[0].int[1]-UNITS[0].ret[1]))} m<br>부표를 누르면 지점별 상세값을 봅니다.</div>
-     <div style="margin-top:8px"><span class="pill">시뮬레이션 데이터 · 실측 연동 전</span></div>`;return}
+        <td style="text-align:right;white-space:nowrap"><span style="font-size:10px;padding:1px 5px;border-radius:3px;color:${st[1]};background:${st[2]}">${st[3]}</span></td></tr>`}).join('');
+    el.innerHTML=`<h2>${T('monTitle')}</h2><div class="sub">${T('monSub')}</div>
+     <table style="width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums"><thead><tr style="color:var(--ink-3);font-size:10.5px"><th style="text-align:left;font-weight:500">${T('thPoint')}</th><th></th><th style="text-align:right;font-weight:500">DO</th><th style="text-align:right;font-weight:500">${T('turb')}</th><th></th></tr></thead><tbody>${rows}</tbody></table>
+     <div class="flow">${T('monFlow',{d:Math.round(Math.hypot(UNITS[0].mod[0]-UNITS[1].mod[0],UNITS[0].mod[1]-UNITS[1].mod[1])),s:Math.round(Math.hypot(UNITS[0].int[0]-UNITS[0].ret[0],UNITS[0].int[1]-UNITS[0].ret[1]))})}</div>
+     <div style="margin-top:8px"><span class="pill">${T('simPill')}</span></div>`;return}
   const v=live[selected.id];const st=stateOf(v.c);const dd=pctD(v.do,POL.do),dn=pctD(v.ntu,POL.ntu),dorp=v.orp-POL.orp;
-  el.innerHTML=`<h2>${selected.code} · ${selected.name}</h2><div class="sub">수심 0.5 m 다항목 수질계 · 0.5초 갱신 · <span style="color:${st[1]}">${st[0]}</span></div>
+  el.innerHTML=`<h2>${selected.code} · ${T('s_'+selected.id)}</h2><div class="sub">${T('detSub')} · <span style="color:${st[1]}">${st[0]}</span></div>
    <div class="kv"><span>DO</span><b>${v.do.toFixed(2)} mg/L <span style="color:${dd>=30?'#7ff0b0':'var(--ink-2)'};font-weight:500">${dd>=0?'+':''}${dd.toFixed(0)}%</span></b></div>${bar((v.do-4)/6,'linear-gradient(90deg,#3b8fd8,#7fe3ff)')}
-   <div class="kv" style="margin-top:6px"><span>탁도</span><b>${v.ntu.toFixed(1)} NTU <span style="color:${dn<=-20?'#7ff0b0':'var(--ink-2)'};font-weight:500">${dn.toFixed(0)}%</span></b></div>${bar(v.ntu/18,'linear-gradient(90deg,#c9b45a,#8a7a2a)')}
+   <div class="kv" style="margin-top:6px"><span>${T('turb')}</span><b>${v.ntu.toFixed(1)} NTU <span style="color:${dn<=-20?'#7ff0b0':'var(--ink-2)'};font-weight:500">${dn.toFixed(0)}%</span></b></div>${bar(v.ntu/18,'linear-gradient(90deg,#c9b45a,#8a7a2a)')}
    <div class="kv" style="margin-top:6px"><span>ORP</span><b>${v.orp.toFixed(0)} mV <span style="color:var(--ink-2);font-weight:500">${dorp>=0?'+':''}${dorp.toFixed(0)}</span></b>
-   <span>pH</span><b>${v.ph.toFixed(2)}</b><span>수온</span><b>${v.t.toFixed(1)} °C</b><span>좌표(공원 기준)</span><b>${selected.p[0]}, ${selected.p[1]} m</b></div>
-   <div style="margin-top:10px"><span class="pill">시뮬레이션 데이터 · 실측 연동 전</span></div>
-   <div class="flow">표 5 판정: DO 운전 전 대비 30~50% 증가 ${dd>=30?'✔':'…'} · 탁도 20% 이상 저감 ${dn<=-20?'✔':'…'}<br>ORP 상승은 ·OH 등 산화성 활성종 증가와 함께 나타나는 참고 지표입니다.</div>`}
+   <span>pH</span><b>${v.ph.toFixed(2)}</b><span>${T('wt')}</span><b>${v.t.toFixed(1)} °C</b><span>${T('coord')}</span><b>${selected.p[0]}, ${selected.p[1]} m</b></div>
+   <div style="margin-top:10px"><span class="pill">${T('simPill')}</span></div>
+   <div class="flow">${T('detFlow',{a:dd>=30?'✔':'…',b:dn<=-20?'✔':'…'})}</div>`}
 function select(s){selected=s;SENS.forEach(o=>o.lbl.el.classList.toggle('sel',o===s));render();flyTo([s.p[0]+24,14,s.p[1]+30],[s.p[0],0,s.p[1]]);setPressed(null)}
 
 /* ================= camera / views / photos ================= */
@@ -892,21 +1018,21 @@ const VIEWS={bird:[[250,190,300],[-10,0,0]],top:[[-9,760,12],[-10,0,0]],tb:[[-13
 function setPressed(v){document.querySelectorAll('#views button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===v)))}
 document.querySelectorAll('#views button').forEach(b=>b.addEventListener('click',()=>{setPressed(b.dataset.v);closeCompare();flyTo(...VIEWS[b.dataset.v])}));
 const PHOTO_META=[
- {t:'수변 전경 · 웅진 돔 방향',pos:[150,28,-60],tgt:[-150,0,120],fov:55,h:16.5},
- {t:'항공 · 분수와 아파트',pos:[-230,110,230],tgt:[40,0,-40],fov:55,h:15},
- {t:'호안 갈대 · 수면 반사',pos:[-36,1.7,119],tgt:[-20,4,-80],fov:72,h:13},
- {t:'노을 항공',pos:[330,170,120],tgt:[-100,0,0],fov:55,h:18.6},
- {t:'보행 데크 위',pos:[-40,2.6,70],tgt:[-6,2,78],fov:70,h:12},
- {t:'파란 난간 데크',pos:[-60,2.0,4],tgt:[-86,1.5,38],fov:60,h:12.5},
- {t:'분수',pos:[22,2.4,-62],tgt:[10,4,42],fov:45,h:14},
- {t:'드론 · 남측 광장',pos:[-60,300,520],tgt:[-20,0,-40],fov:55,h:13}];
+ {t:'p1',pos:[150,28,-60],tgt:[-150,0,120],fov:55,h:16.5},
+ {t:'p2',pos:[-230,110,230],tgt:[40,0,-40],fov:55,h:15},
+ {t:'p3',pos:[-36,1.7,119],tgt:[-20,4,-80],fov:72,h:13},
+ {t:'p4',pos:[330,170,120],tgt:[-100,0,0],fov:55,h:18.6},
+ {t:'p5',pos:[-40,2.6,70],tgt:[-6,2,78],fov:70,h:12},
+ {t:'p6',pos:[-60,2.0,4],tgt:[-86,1.5,38],fov:60,h:12.5},
+ {t:'p7',pos:[22,2.4,-62],tgt:[10,4,42],fov:45,h:14},
+ {t:'p8',pos:[-60,300,520],tgt:[-20,0,-40],fov:55,h:13}];
 const cmp=$('#compare');let cmpIdx=-1;
 function openCompare(i){const m=PHOTO_META[i];cmpIdx=i;flyTo(m.pos,m.tgt,1800,m.fov);setTime(m.h);
-  cmp.style.backgroundImage=`url(${PHOTOS[i]})`;cmp.hidden=false;$('#cmpbar').hidden=false;$('#cmpt').textContent=`사진 ${i+1} · ${m.t}`;cmp.style.opacity=$('#cmpo').value/100;
+  cmp.style.backgroundImage=`url(${PHOTOS[i]})`;cmp.hidden=false;$('#cmpbar').hidden=false;$('#cmpt').textContent=`${T('photo')} ${i+1} · ${T(m.t)}`;cmp.style.opacity=$('#cmpo').value/100;
   document.querySelectorAll('#thumbs button').forEach((b,k)=>b.setAttribute('aria-pressed',String(k===i)));setPressed(null)}
 function closeCompare(){cmp.hidden=true;$('#cmpbar').hidden=true;cmpIdx=-1;document.querySelectorAll('#thumbs button').forEach(b=>b.setAttribute('aria-pressed','false'))}
 $('#cmpo').addEventListener('input',e=>cmp.style.opacity=e.target.value/100);$('#cmpx').addEventListener('click',closeCompare);
-PHOTOS.forEach((src,i)=>{const b=document.createElement('button');b.setAttribute('aria-pressed','false');b.setAttribute('aria-label',`사진 ${i+1}: ${PHOTO_META[i].t}`);b.title=PHOTO_META[i].t;
+PHOTOS.forEach((src,i)=>{const b=document.createElement('button');b.setAttribute('aria-pressed','false');b.dataset.pi=i;b.setAttribute('aria-label',`${T('photo')} ${i+1}: ${T(PHOTO_META[i].t)}`);b.title=T(PHOTO_META[i].t);
   b.innerHTML=`<img alt="" src="${src}"><span>${i+1}</span>`;b.addEventListener('click',()=>cmpIdx===i?closeCompare():openCompare(i));$('#thumbs').appendChild(b)});
 
 /* ================= picking ================= */
@@ -934,6 +1060,10 @@ $('#mPur').addEventListener('click',()=>setMode(true));$('#mNormal').addEventLis
 addEventListener('keydown',e=>{if((e.key==='p'||e.key==='P'||e.key==='ㅔ')&&!e.metaKey&&!e.ctrlKey&&e.target.tagName!=='INPUT')setMode(!PUR.on)});
 bind('#lyRot',v=>{controls.autoRotate=v;controls.autoRotateSpeed=.5});
 $('#tod').addEventListener('input',e=>setTime(+e.target.value));
+function setLang(l){if(!LANGS.includes(l))return;LANG=l;try{localStorage.setItem('sd_lang',l)}catch(e){}applyI18n();relabel();render();
+  document.querySelectorAll('#thumbs button').forEach(b=>{const i=+b.dataset.pi;b.title=T(PHOTO_META[i].t);b.setAttribute('aria-label',`${T('photo')} ${i+1}: ${T(PHOTO_META[i].t)}`)});
+  if(cmpIdx>=0)$('#cmpt').textContent=`${T('photo')} ${cmpIdx+1} · ${T(PHOTO_META[cmpIdx].t)}`}
+document.querySelectorAll('#langs button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
 
 /* ================= loop ================= */
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -954,14 +1084,14 @@ function loop(){requestAnimationFrame(loop);if(!ready)return;const dt=Math.min(c
     l.el.style.display='block';l.el.style.left=((tmp.x+1)/2*w)+'px';l.el.style.top=((1-tmp.y)/2*h)+'px'})}
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 
-step(.05,'실사 텍스처 생성 중…',buildTextures);
-step(.25,'하늘·구름 생성 중…',buildSky);
-step(.32,'지형·호수 생성 중…',buildGround);
-step(.45,'도로·데크 생성 중…',buildRoads);
-step(.55,'건물·스카이라인 배치 중…',buildBuildings);
-step(.68,'수목·갈대 식재 중…',buildVegetation);
-step(.86,'분수·차량·테스트베드 배치 중…',()=>{buildFountains();buildCars();buildTestbed();buildPurify();buildLabels()});
-step(.97,'마무리…',()=>{setTime(14);render();setInterval(drift,500);ready=true;loop();setTimeout(()=>$('#loading').classList.add('done'),200)});
+step(.05,T('ld1'),buildTextures);
+step(.25,T('ld2'),buildSky);
+step(.32,T('ld3'),buildGround);
+step(.45,T('ld4'),buildRoads);
+step(.55,T('ld5'),buildBuildings);
+step(.68,T('ld6'),buildVegetation);
+step(.86,T('ld7'),()=>{buildFountains();buildCars();buildTestbed();buildPurify();buildLabels()});
+step(.97,T('ld8'),()=>{setTime(14);render();setInterval(drift,500);ready=true;loop();setTimeout(()=>$('#loading').classList.add('done'),200)});
 runSteps(0);
 window.__dt={scene,camera,controls,openCompare,setTime,flyTo,U,PUR};
 })();

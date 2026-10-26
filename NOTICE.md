@@ -1,5 +1,7 @@
 # 제3자 구성요소 고지 (Third-Party Notices)
 
+Third-party components are governed by their original licenses (EN) · 第三者コンポーネントには各原ライセンスが適用されます（JA）。
+
 본 프로젝트의 저작권은 © 2026 주식회사 나노하이드로인에 있으며(LICENSE 참조), 아래 구성요소에는 각 원 라이선스가 적용됩니다.
 
 | 구성요소 | 사용 위치 | 저작권자 | 라이선스 |

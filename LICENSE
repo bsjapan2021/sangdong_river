@@ -1,6 +1,13 @@
-Copyright (c) 2026 주식회사 나노하이드로인 (NanoHydroIn Co., Ltd.)
+Copyright (c) 2026 주식회사 나노하이드로인 (NanoHydroIn Co., Ltd. / 株式会社ナノハイドロイン)
 All rights reserved.
 
+본 라이선스는 한국어·English·日本語로 제공됩니다. 해석상 차이가 있을 경우 한국어본이 우선합니다.
+This license is provided in Korean, English and Japanese. In case of any discrepancy, the Korean version prevails.
+本ライセンスは韓国語・英語・日本語で提供されます。解釈に相違がある場合は韓国語版が優先します。
+
+==============================================================================
+[한국어]
+==============================================================================
 상동호수공원 디지털트윈 (NHI PhotoNano K-테스트베드 2026)
 Sangdong Lake Park Digital Twin
 
@@ -25,3 +32,65 @@ Sangdong Lake Park Digital Twin
    본 저작물은 "있는 그대로" 제공되며, 명시적·묵시적 보증을 하지 않습니다.
 
 문의: 주식회사 나노하이드로인 · https://nanohydroin.com
+
+==============================================================================
+[English]
+==============================================================================
+Sangdong Lake Park Digital Twin (NHI PhotoNano K-Testbed 2026)
+
+1. Ownership
+   The source code, 3D modeling and scene composition, shaders, user-interface design,
+   purification (UFB and photocatalysis) visualizations and simulation logic, and all
+   documentation in this repository (the "Work") are the copyright and intellectual
+   property of NanoHydroIn Co., Ltd. "NanoHydroIn", "나노하이드로인" and "NHI PhotoNano"
+   are trade and product names of NanoHydroIn Co., Ltd.
+
+2. Permitted use
+   The Work may only be viewed through the public repository and website.
+   Without prior written consent of NanoHydroIn Co., Ltd., copying, modifying,
+   distributing, republishing, creating derivative works from, using commercially,
+   or reverse-engineering all or any part of the Work is prohibited.
+   Viewing and on-screen demonstration for K-water K-Testbed review and evaluation
+   are permitted.
+
+3. Third-party components
+   The Work includes third-party components governed by their own licenses, which
+   apply to those components instead of this license. See NOTICE.md for details.
+
+4. Disclaimer
+   Water-quality values and purification effects shown on screen are conceptual
+   visualizations (simulations), not field measurements or numerical-analysis results.
+   The Work is provided "as is" without warranty of any kind, express or implied.
+
+Contact: NanoHydroIn Co., Ltd. · https://nanohydroin.com
+
+==============================================================================
+[日本語]
+==============================================================================
+上洞湖水公園 デジタルツイン（NHI PhotoNano K-テストベッド 2026）
+
+1. 権利の帰属
+   本リポジトリに含まれるソースコード、3Dモデリング・シーン構成、シェーダー、
+   ユーザーインターフェースデザイン、浄化（UFB・光触媒）演出およびシミュレーション
+   ロジック、文書一式（以下「本著作物」）の著作権および知的財産権は、株式会社
+   ナノハイドロイン（NanoHydroIn Co., Ltd.）に帰属します。「NanoHydroIn」「나노하이드로인」
+   「NHI PhotoNano」は同社の商号・製品名です。
+
+2. 許可範囲
+   本著作物は公開リポジトリおよびウェブサイトを通じた閲覧のみ許可されます。
+   株式会社ナノハイドロインの事前の書面による同意なく、本著作物の全部または一部を
+   複製、改変、配布、再掲載、二次的著作物の作成、商業利用、リバースエンジニアリング
+   することを禁止します。韓国水資源公社（K-water）K-テストベッドの審査・評価を目的と
+   した閲覧および画面デモは許可されます。
+
+3. 第三者コンポーネント
+   本著作物には各自のライセンスに従う第三者コンポーネントが含まれており、当該
+   コンポーネントには本ライセンスではなく元のライセンスが適用されます。詳細は
+   NOTICE.md を参照してください。
+
+4. 免責
+   画面上の水質数値および浄化演出は概念ビジュアル（シミュレーション）であり、
+   実測値や数値解析の結果ではありません。本著作物は「現状のまま」提供され、
+   明示または黙示を問わずいかなる保証も行いません。
+
+お問い合わせ：株式会社ナノハイドロイン · https://nanohydroin.com
