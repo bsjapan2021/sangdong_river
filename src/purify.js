@@ -87,7 +87,7 @@ function buildPurify(){
       fragmentShader:pFS+`uniform sampler2D uAtlas;varying float vA;void main(){`+pFE+`vec4 c=texture2D(uAtlas,vec2(gl_PointCoord.x*.25,gl_PointCoord.y));gl_FragColor=vec4(vec3(.85,.98,1.)*c.a,c.a*vA);}`});
     const pts=new THREE.Points(g,m);pts.position.set(nz.p[0],-1.95,nz.p[1]);pts.frustumCulled=false;G.add(pts);
     /* diffuser nozzle head */
-    const head=new THREE.Mesh(new THREE.CylinderGeometry(.35,.45,1.2,16),new THREE.MeshLambertMaterial({color:C(0x8a9399)}));head.rotation.z=Math.PI/2;head.rotation.y=-base;head.position.set(nz.p[0],-1.95,nz.p[1]);G.add(head)}
+    const head=new THREE.Mesh(new THREE.CylinderGeometry(.35,.45,1.2,16),new THREE.MeshLambertMaterial({color:C(0x8a9399)}));head.rotation.z=Math.PI/2;head.rotation.y=-base;head.position.set(nz.p[0],-1.95,nz.p[1]);head.userData.env=1;G.add(head)}
   PUR.nozzles.forEach(nz=>underJet(nz,2400));
 
   /* ---- 4. nano-bubble haze filling the purified volume ---- */
@@ -136,7 +136,7 @@ function buildPurify(){
        float d=dRet(p);float dirty=max(smoothstep(uR-10.,uR+3.,d),uRegrow);
        vec3 clean=mix(vec3(.18,.42,.46),vec3(.75,.92,.95),win*.8+r*.25);vec3 murky=mix(vec3(.12,.2,.1),vec3(.35,.42,.18),r);
        vec3 col=mix(clean,murky,dirty*.75);float fd=1.-exp(-distance(cameraPosition,vW)*.05);col=mix(col,vec3(.08,.22,.21),fd*.85);gl_FragColor=vec4(col,.96);}`});
-   const ceil=new THREE.Mesh(g,m);ceil.position.y=-0.51;ceil.visible=false;G.add(ceil);PUR.ceil=ceil}
+   const ceil=new THREE.Mesh(g,m);ceil.position.y=-0.51;ceil.visible=false;ceil.userData.env=1;G.add(ceil);PUR.ceil=ceil}
   {const g=new THREE.ShapeGeometry(shapeOf(LAKE),2);g.rotateX(-Math.PI/2);
    const m=new THREE.ShaderMaterial({uniforms:U2,
      vertexShader:pVS+`varying vec3 vW;void main(){vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;`+pVE+`}`,
@@ -147,15 +147,15 @@ function buildPurify(){
        vec3 col=mix(sand,sludge,dirty*.85)*(.55+.45*uUnder)+vec3(.35,.55,.5)*c*.22*(1.-dirty*.7)*uUnder;
        float fd=1.-exp(-distance(cameraPosition,vW)*.05);col=mix(col,mix(vec3(.07,.2,.19),vec3(.09,.16,.07),dirty*.6),fd*uUnder);
        gl_FragColor=vec4(col,1.);}`});
-   const bed=new THREE.Mesh(g,m);bed.position.y=-3.15;G.add(bed)}
+   const bed=new THREE.Mesh(g,m);bed.position.y=-3.15;bed.userData.env=1;G.add(bed)}
   {const Pw=[];for(let i=0;i<LAKE.length-1;i++){const a=LAKE[i],b=LAKE[i+1];Pw.push(a[0],-0.9,a[1],b[0],-0.9,b[1],a[0],-3.3,a[1],b[0],-0.9,b[1],b[0],-3.3,b[1],a[0],-3.3,a[1])}
-   const w=new THREE.Mesh(geo(Pw),new THREE.MeshLambertMaterial({color:C(0x3c4a3c),side:THREE.DoubleSide}));G.add(w)}
+   const w=new THREE.Mesh(geo(Pw),new THREE.MeshLambertMaterial({color:C(0x3c4a3c),side:THREE.DoubleSide}));w.userData.env=1;G.add(w)}
   PUR.hud={bar:document.getElementById('purBar'),pct:document.getElementById('purPct'),msg:document.getElementById('purMsg')};
   PUR.maxR=Math.max(...lakeSample(800,0,0).map(s=>Math.min(Math.hypot(s[0]-r1[0],s[2]-r1[1]),Math.hypot(s[0]-r2[0],s[2]-r2[1]))))+12;
 }
 function updatePurify(dt){if(!PUR.u.uR)return;const u=PUR.u;const T=U.time.value;u.uScale.value=innerHeight/(2*Math.tan(camera.fov*Math.PI/360));
   controls.maxPolarAngle=controls.target.y<-0.5?Math.PI*0.78:Math.PI*0.497;
-  const c=T%PUR.cycle;let R,rg=0;
+  const c=(T-(PUR.t0||0)+PUR.cycle*100)%PUR.cycle;let R,rg=0;
   if(c<PUR.grow){const x=c/PUR.grow;R=PUR.maxR*(1-Math.pow(1-x,1.55))}else{R=PUR.maxR+8;const r0=PUR.grow+PUR.hold;rg=c<r0?0:clamp((c-r0)/(PUR.cycle-r0),0,1)}
   rg=rg*rg*(3-2*rg);PUR.R=R;PUR.regrow=rg;u.uR.value=PUR.on?R:0;u.uRegrow.value=PUR.on?rg:0;u.uPoll.value=1;
   (PUR.boils||[]).forEach((b,i)=>{const s=1+.18*Math.sin(T*6+i*2);b.scale.set(s,s,s);b.material.opacity=.45+.15*Math.sin(T*9+i)});

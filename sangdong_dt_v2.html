@@ -79,6 +79,11 @@ button:focus-visible,.tg input:focus-visible,input[type=range]:focus-visible{out
 #purHud .ph b{font-family:var(--mono);font-size:20px;color:#bff3ff;font-weight:600;min-width:3.2em;font-variant-numeric:tabular-nums}
 #purHud .pbar{height:5px;border-radius:3px;background:rgba(120,140,60,.45);margin-top:6px;overflow:hidden}
 #purHud .pbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#7fe3ff,#e8fbff);transition:width .3s}
+#purHud .modes{display:flex;gap:4px;align-items:center;margin-bottom:8px}
+#purHud .modes button{flex:1;font:600 12.5px var(--ui);color:var(--ink-2);background:rgba(255,255,255,.04);border:1px solid var(--glass-line);border-radius:6px;padding:6px 8px;cursor:pointer}
+#purHud .modes button[aria-checked="true"]{color:#06222a;background:#8fe6ff;border-color:#8fe6ff}
+#purHud .modes button#mNormal[aria-checked="true"]{color:#1f1d0c;background:#d8cf8a;border-color:#d8cf8a}
+#purHud .modes kbd{font:500 10px var(--mono);color:var(--ink-3);border:1px solid var(--glass-line);border-radius:3px;padding:1px 4px}
 #purHud .pnote{font-size:10.5px;color:var(--ink-3);margin-top:4px}
 @media (max-width:900px){#purHud{top:auto;bottom:calc(64px + env(safe-area-inset-bottom,0px))}}
 #credit{position:fixed;bottom:calc(3px + env(safe-area-inset-bottom,0px));left:max(12px,env(safe-area-inset-left,0px));font-size:10px;color:rgba(255,255,255,.55);text-shadow:0 1px 2px #000}
@@ -117,7 +122,6 @@ button:focus-visible,.tg input:focus-visible,input[type=range]:focus-visible{out
   <label class="tg"><input type="checkbox" id="lyFount" checked>분수 가동</label>
   <label class="tg"><input type="checkbox" id="lyCar" checked>차량 흐름</label>
   <label class="tg"><input type="checkbox" id="lyHeat">DO 분포 (시뮬레이션)</label>
-  <label class="tg"><input type="checkbox" id="lyPur" checked>정화 애니메이션</label>
   <label class="tg"><input type="checkbox" id="lyRot">자동 회전</label>
 </div>
 
@@ -152,9 +156,13 @@ button:focus-visible,.tg input:focus-visible,input[type=range]:focus-visible{out
   <button data-v="pur" aria-pressed="false">정화 전경</button>
   <button data-v="under" aria-pressed="false">수중 시점</button>
 </nav>
-<div id="purHud" class="panel" aria-live="off"><div class="sec">UFB 마이크로·나노버블 정화 연출</div>
+<div id="purHud" class="panel" aria-live="off">
+  <div class="modes" role="radiogroup" aria-label="표시 모드"><button id="mNormal" role="radio" aria-checked="false">일반 상태</button><button id="mPur" role="radio" aria-checked="true">정화 연출</button><kbd title="키보드 P로 전환">P</kbd></div>
+  <div id="purBody"><div class="sec">UFB 마이크로·나노버블 정화 연출</div>
   <div class="ph"><b id="purPct">0%</b><span id="purMsg">준비 중</span></div><div class="pbar"><i id="purBar"></i></div>
   <div class="pnote"><span style="color:#bdefff">● ·OH</span> <span style="color:#c99bff">● O₂⁻</span> 광촉매 활성산소 · 개념 시각화(반복)</div></div>
+  <div id="normBody" hidden><div class="ph"><b style="color:#d8cf8a">정지</b><span>PhotoNano 미가동 · 현재 호수 상태(녹조·혐기성 오염 잔존 가정)</span></div><div class="pnote">측정 5지점은 운전 전 기준값으로 표시됩니다</div></div>
+</div>
 <div id="credit">지도 © OpenStreetMap contributors · 사진: 현장 참고 자료</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -722,7 +730,7 @@ function buildPurify(){
       fragmentShader:pFS+`uniform sampler2D uAtlas;varying float vA;void main(){`+pFE+`vec4 c=texture2D(uAtlas,vec2(gl_PointCoord.x*.25,gl_PointCoord.y));gl_FragColor=vec4(vec3(.85,.98,1.)*c.a,c.a*vA);}`});
     const pts=new THREE.Points(g,m);pts.position.set(nz.p[0],-1.95,nz.p[1]);pts.frustumCulled=false;G.add(pts);
     /* diffuser nozzle head */
-    const head=new THREE.Mesh(new THREE.CylinderGeometry(.35,.45,1.2,16),new THREE.MeshLambertMaterial({color:C(0x8a9399)}));head.rotation.z=Math.PI/2;head.rotation.y=-base;head.position.set(nz.p[0],-1.95,nz.p[1]);G.add(head)}
+    const head=new THREE.Mesh(new THREE.CylinderGeometry(.35,.45,1.2,16),new THREE.MeshLambertMaterial({color:C(0x8a9399)}));head.rotation.z=Math.PI/2;head.rotation.y=-base;head.position.set(nz.p[0],-1.95,nz.p[1]);head.userData.env=1;G.add(head)}
   PUR.nozzles.forEach(nz=>underJet(nz,2400));
 
   /* ---- 4. nano-bubble haze filling the purified volume ---- */
@@ -771,7 +779,7 @@ function buildPurify(){
        float d=dRet(p);float dirty=max(smoothstep(uR-10.,uR+3.,d),uRegrow);
        vec3 clean=mix(vec3(.18,.42,.46),vec3(.75,.92,.95),win*.8+r*.25);vec3 murky=mix(vec3(.12,.2,.1),vec3(.35,.42,.18),r);
        vec3 col=mix(clean,murky,dirty*.75);float fd=1.-exp(-distance(cameraPosition,vW)*.05);col=mix(col,vec3(.08,.22,.21),fd*.85);gl_FragColor=vec4(col,.96);}`});
-   const ceil=new THREE.Mesh(g,m);ceil.position.y=-0.51;ceil.visible=false;G.add(ceil);PUR.ceil=ceil}
+   const ceil=new THREE.Mesh(g,m);ceil.position.y=-0.51;ceil.visible=false;ceil.userData.env=1;G.add(ceil);PUR.ceil=ceil}
   {const g=new THREE.ShapeGeometry(shapeOf(LAKE),2);g.rotateX(-Math.PI/2);
    const m=new THREE.ShaderMaterial({uniforms:U2,
      vertexShader:pVS+`varying vec3 vW;void main(){vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;`+pVE+`}`,
@@ -782,15 +790,15 @@ function buildPurify(){
        vec3 col=mix(sand,sludge,dirty*.85)*(.55+.45*uUnder)+vec3(.35,.55,.5)*c*.22*(1.-dirty*.7)*uUnder;
        float fd=1.-exp(-distance(cameraPosition,vW)*.05);col=mix(col,mix(vec3(.07,.2,.19),vec3(.09,.16,.07),dirty*.6),fd*uUnder);
        gl_FragColor=vec4(col,1.);}`});
-   const bed=new THREE.Mesh(g,m);bed.position.y=-3.15;G.add(bed)}
+   const bed=new THREE.Mesh(g,m);bed.position.y=-3.15;bed.userData.env=1;G.add(bed)}
   {const Pw=[];for(let i=0;i<LAKE.length-1;i++){const a=LAKE[i],b=LAKE[i+1];Pw.push(a[0],-0.9,a[1],b[0],-0.9,b[1],a[0],-3.3,a[1],b[0],-0.9,b[1],b[0],-3.3,b[1],a[0],-3.3,a[1])}
-   const w=new THREE.Mesh(geo(Pw),new THREE.MeshLambertMaterial({color:C(0x3c4a3c),side:THREE.DoubleSide}));G.add(w)}
+   const w=new THREE.Mesh(geo(Pw),new THREE.MeshLambertMaterial({color:C(0x3c4a3c),side:THREE.DoubleSide}));w.userData.env=1;G.add(w)}
   PUR.hud={bar:document.getElementById('purBar'),pct:document.getElementById('purPct'),msg:document.getElementById('purMsg')};
   PUR.maxR=Math.max(...lakeSample(800,0,0).map(s=>Math.min(Math.hypot(s[0]-r1[0],s[2]-r1[1]),Math.hypot(s[0]-r2[0],s[2]-r2[1]))))+12;
 }
 function updatePurify(dt){if(!PUR.u.uR)return;const u=PUR.u;const T=U.time.value;u.uScale.value=innerHeight/(2*Math.tan(camera.fov*Math.PI/360));
   controls.maxPolarAngle=controls.target.y<-0.5?Math.PI*0.78:Math.PI*0.497;
-  const c=T%PUR.cycle;let R,rg=0;
+  const c=(T-(PUR.t0||0)+PUR.cycle*100)%PUR.cycle;let R,rg=0;
   if(c<PUR.grow){const x=c/PUR.grow;R=PUR.maxR*(1-Math.pow(1-x,1.55))}else{R=PUR.maxR+8;const r0=PUR.grow+PUR.hold;rg=c<r0?0:clamp((c-r0)/(PUR.cycle-r0),0,1)}
   rg=rg*rg*(3-2*rg);PUR.R=R;PUR.regrow=rg;u.uR.value=PUR.on?R:0;u.uRegrow.value=PUR.on?rg:0;u.uPoll.value=1;
   (PUR.boils||[]).forEach((b,i)=>{const s=1+.18*Math.sin(T*6+i*2);b.scale.set(s,s,s);b.material.opacity=.45+.15*Math.sin(T*9+i)});
@@ -841,7 +849,7 @@ let selected=null;const live={};
 /* 정화 전선 연동 수질 모델 (시뮬레이션): 오염 상태 POL → 정화 상태 CLN, 환수부는 처리수 유입분 가산 */
 const POL={do:5.6,orp:95,ph:7.45,t:16.9,ntu:14.6},CLN={do:8.2,orp:232,ph:7.75,t:17.0,ntu:9.6},OUTB={do:.6,orp:15,ph:.02,t:.1,ntu:-.6};
 SENS.forEach(s=>live[s.id]={...POL,c:0});
-function sensorClean(s){if(!PUR.on)return s.cls==='out'?1:0;const d=Math.min(...UNITS.map(u=>Math.hypot(s.p[0]-u.ret[0],s.p[1]-u.ret[1])));
+function sensorClean(s){if(!PUR.on)return 0;const d=Math.min(...UNITS.map(u=>Math.hypot(s.p[0]-u.ret[0],s.p[1]-u.ret[1])));
   let c=clamp((PUR.R-d)/18,0,1);c=c*c*(3-2*c);return c*(1-PUR.regrow)}
 const _dirty=new THREE.Color(),_cl=new THREE.Color();
 function drift(){SENS.forEach(s=>{const v=live[s.id];const c=sensorClean(s);v.c=c;
@@ -910,7 +918,13 @@ bind('#lyTB',v=>{groups.tb.visible=v;LBL.forEach(l=>{if(l.group==='tb')l.hidden=
 bind('#lyFount',v=>fountains.forEach(f=>{f.pts.visible=v;f.foam.visible=v}));
 bind('#lyCar',v=>groups.cars.visible=v);
 bind('#lyHeat',v=>{heatMesh.visible=v;$('#heatbar').hidden=!v});
-bind('#lyPur',v=>{PUR.on=v;PUR.group.visible=v;$('#purHud').hidden=!v});
+/* 일반 상태 ↔ 정화 연출 토글 */
+function setMode(on){PUR.on=on;PUR.t0=U.time.value;PUR.R=0;PUR.regrow=0;
+  if(PUR.group)PUR.group.children.forEach(o=>{if(!o.userData.env)o.visible=on});
+  $('#purBody').hidden=!on;$('#normBody').hidden=on;$('#mPur').setAttribute('aria-checked',String(on));$('#mNormal').setAttribute('aria-checked',String(!on));
+  SENS.forEach(s=>{const v=live[s.id];if(!on)Object.assign(v,POL,{c:0})});render()}
+$('#mPur').addEventListener('click',()=>setMode(true));$('#mNormal').addEventListener('click',()=>setMode(false));
+addEventListener('keydown',e=>{if((e.key==='p'||e.key==='P'||e.key==='ㅔ')&&!e.metaKey&&!e.ctrlKey&&e.target.tagName!=='INPUT')setMode(!PUR.on)});
 bind('#lyRot',v=>{controls.autoRotate=v;controls.autoRotateSpeed=.5});
 $('#tod').addEventListener('input',e=>setTime(+e.target.value));
 
