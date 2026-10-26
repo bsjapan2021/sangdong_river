@@ -47,10 +47,10 @@ function buildPurify(){
       float ring=exp(-pow((d-uR)/3.2,2.))*step(.5,uR)*(1.-uRegrow);
       float foam=ring*(.55+.45*smoothstep(.35,.75,fb(p*.5+t*.4)));
       float inner=(1.-dirty)*smoothstep(uR,uR-30.,d)*(1.-uRegrow);
-      float glint=pow(vn(p*3.+t*2.),18.)*inner*1.6;
+      float glint=pow(vn(p*3.+t*2.),18.)*inner*1.6;float rosb=exp(-pow((uR-d-8.)/7.,2.))*step(1.,uR)*(1.-uRegrow);float rs=pow(vn(p*5.+t*6.),14.)*rosb*2.2;
       vec3 col=mix(algae,vec3(.85,.98,1.),clamp(foam*1.3,0.,1.));
-      col+=vec3(.75,.95,1.)*glint;
-      float a=cover*dirty*.92+foam*.85+glint*.8+inner*.06;
+      col+=vec3(.75,.95,1.)*glint+vec3(.72,.5,1.)*rs;
+      float a=cover*dirty*.92+foam*.85+glint*.8+rs*.7+inner*.06;
       col=mix(col,vec3(.55,.9,.95),inner*.25*(1.-dirty));
       if(uUnder>.5)a*=.55;
       gl_FragColor=vec4(col,clamp(a,0.,.95));}`});
@@ -105,12 +105,27 @@ function buildPurify(){
    S.forEach((s,i)=>{P.set(s,i*3);A[i*2]=1+((rnd()*3)|0);A[i*2+1]=rnd()});g.setAttribute('position',new THREE.BufferAttribute(P,3));g.setAttribute('k',new THREE.BufferAttribute(A,2));
    const m=new THREE.ShaderMaterial({uniforms:U2,transparent:true,depthWrite:false,
      vertexShader:pVS+U2decl+dfun+`attribute vec2 k;varying float vA,vI,vF;void main(){vec3 p=position;p.x+=.6*sin(uTime*.4+k.y*30.);p.y+=.25*sin(uTime*.6+k.y*17.);p.z+=.6*cos(uTime*.35+k.y*23.);
-       float d=dRet(p.xz)+(k.y-.5)*8.;float alive=max(smoothstep(uR-5.,uR+1.,d),uRegrow);vF=exp(-pow((d-uR+2.)/2.5,2.))*(1.-uRegrow);
+       float d=dRet(p.xz)+(k.y-.5)*8.;float alive=max(smoothstep(uR-5.,uR+1.,d),uRegrow);vF=exp(-pow((d-uR+2.)/2.5,2.))*(1.-uRegrow);p+=vec3(sin(uTime*25.+k.y*90.),.3*sin(uTime*31.+k.y*40.),cos(uTime*23.+k.y*70.))*vF*.3;
        vA=alive*uPoll;vI=k.x;float sz=(.5+.5*k.y)*(.2+.8*alive)*(1.+vF*1.2);
        vec4 mv=modelViewMatrix*vec4(p,1.);gl_PointSize=min(sz*uScale/-mv.z,64.);vA*=mix(1.,exp(-length(mv.xyz)*.022),uUnder);vF*=mix(1.,exp(-length(mv.xyz)*.022),uUnder);gl_Position=projectionMatrix*mv;`+pVE+`}`,
      fragmentShader:pFS+`uniform sampler2D uAtlas;uniform float uUnder;varying float vA,vI,vF;void main(){`+pFE+`vec4 c=texture2D(uAtlas,vec2((gl_PointCoord.x+vI)*.25,gl_PointCoord.y));
-       vec3 col=mix(c.rgb,vec3(1.),vF);float a=c.a*max(vA,vF)*(.25+.75*uUnder);if(a<.03)discard;gl_FragColor=vec4(col,a);}`});
+       vec3 col=mix(c.rgb,mix(vec3(.82,.55,1.),vec3(.8,1.,1.),fract(vI*.37+uUnder*.0)),vF);float a=c.a*max(vA,vF)*(.25+.75*uUnder);if(a<.03)discard;gl_FragColor=vec4(col,a);}`});
    const pts=new THREE.Points(g,m);pts.frustumCulled=false;G.add(pts);PUR.microbes=pts}
+
+
+  /* ---- 5b. photocatalytic ROS (·OH / O₂⁻): light specks concentrated behind the front and around the outlets ---- */
+  {const S=lakeSample(9000,-3.0,-0.6);const g=new THREE.BufferGeometry();const P=new Float32Array(S.length*3),A=new Float32Array(S.length*2);
+   S.forEach((s,i)=>{P.set(s,i*3);A[i*2]=rnd()<.55?0:1;A[i*2+1]=rnd()});g.setAttribute('position',new THREE.BufferAttribute(P,3));g.setAttribute('k',new THREE.BufferAttribute(A,2));
+   const m=new THREE.ShaderMaterial({uniforms:U2,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+     vertexShader:pVS+U2decl+dfun+`attribute vec2 k;varying float vA,vT;void main(){vec3 p=position;float ph=k.y*6.283;
+       p+=vec3(sin(uTime*2.3+ph*3.),.5*cos(uTime*1.9+ph*5.),cos(uTime*2.1+ph*7.))*.7;
+       float d=dRet(p.xz);float band=exp(-pow((uR-d-9.)/8.,2.))*step(1.,uR);float near=exp(-d/16.)*.85;
+       float w=max(band,near)*(1.-uRegrow*.8);float fl=pow(.5+.5*sin(uTime*(9.+k.y*14.)+ph*11.),3.);
+       vec4 mv=modelViewMatrix*vec4(p,1.);vA=min(1.,w*1.4)*(.35+.65*fl)*mix(.3,exp(-length(mv.xyz)*.018),uUnder);vT=k.x;
+       gl_PointSize=clamp((.2+.22*k.y)*(1.+fl)*uScale/-mv.z,2.5,22.);gl_Position=projectionMatrix*mv;`+pVE+`}`,
+     fragmentShader:pFS+`varying float vA,vT;void main(){`+pFE+`float r=length(gl_PointCoord-.5);float a=smoothstep(.5,.0,r);float core=smoothstep(.18,.0,r);
+       vec3 col=mix(vec3(.72,.95,1.),vec3(.78,.5,1.),vT);col=mix(col,vec3(1.),core*.7);if(a*vA<.01)discard;gl_FragColor=vec4(col*a,a*vA);}`});
+   const pts=new THREE.Points(g,m);pts.frustumCulled=false;G.add(pts);PUR.ros=pts}
 
   /* ---- 6. underwater environment: surface ceiling, caustic bed, basin wall ---- */
   {const g=new THREE.ShapeGeometry(shapeOf(LAKE),2);g.rotateX(-Math.PI/2);
@@ -151,4 +166,4 @@ function updatePurify(dt){if(!PUR.u.uR)return;const u=PUR.u;const T=U.time.value
   /* HUD */
   if(PUR.hud&&PUR.on){let k=0;const S=PUR.samples;for(let i=0;i<S.length;i+=7){const d=Math.min(Math.hypot(S[i][0]-UNITS[0].ret[0],S[i][2]-UNITS[0].ret[1]),Math.hypot(S[i][0]-UNITS[1].ret[0],S[i][2]-UNITS[1].ret[1]));if(d<R)k++}
     const pct=Math.round(k/Math.ceil(S.length/7)*100*(1-rg));PUR.hud.bar.style.width=pct+'%';PUR.hud.pct.textContent=pct+'%';
-    PUR.hud.msg.textContent=rg>0.02?'다음 정화 사이클 준비 (반복 연출)':pct<99?'마이크로·나노버블 확산 중 · 녹조·혐기성 세균·곰팡이 분해':'호수 전역 정화 완료 · 용존산소 회복'}}
+    PUR.hud.msg.textContent=rg>0.02?'다음 정화 사이클 준비 (반복 연출)':pct<99?'UFB 확산 · TiO₂/UVA 광촉매 ROS(·OH, O₂⁻)가 녹조·세균·곰팡이 산화 분해 중':'호수 전역 정화 완료 · 용존산소 회복'}}
