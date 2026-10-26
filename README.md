@@ -38,4 +38,7 @@ cp sangdong_dt_v2_offline.html index.html
 | `data/sd_osm.json` | OSM 지형 (원점 37.5038N 126.7450E, m, x=동 z=남) |
 | `photos/` | 현장 참고 사진 원본 |
 
-지도 데이터 © OpenStreetMap contributors (ODbL) · ㈜나노하이드로인
+## 저작권 · 라이선스
+© 2026 주식회사 나노하이드로인 (NanoHydroIn Co., Ltd.). All rights reserved.
+본 저장소의 소스코드·3D 장면·연출·문서는 주식회사 나노하이드로인의 저작물이며, 사전 서면 동의 없는 복제·수정·배포·상업적 이용을 금지합니다(열람 및 K-테스트베드 심사 목적 시연은 허용). 자세한 내용은 [LICENSE](LICENSE)를 참조하십시오.
+제3자 구성요소(three.js — MIT, OpenStreetMap — ODbL, 웹 폰트 — OFL, 현장 참고 사진 — 각 원저작자)는 각 원 라이선스를 따릅니다: [NOTICE.md](NOTICE.md)

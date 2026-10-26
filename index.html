@@ -1,6 +1,13 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>상동호수공원 디지털트윈 v2 (오프라인)</title>
+<meta name="copyright" content="© 2026 주식회사 나노하이드로인 (NanoHydroIn Co., Ltd.) All rights reserved">
+<meta name="author" content="주식회사 나노하이드로인">
+<!--
+  상동호수공원 디지털트윈 · NHI PhotoNano K-테스트베드 2026
+  Copyright (c) 2026 주식회사 나노하이드로인 (NanoHydroIn Co., Ltd.). All rights reserved.
+  무단 복제·수정·배포·상업적 이용 금지. 제3자 구성요소(three.js MIT, OpenStreetMap ODbL)는 각 원 라이선스를 따릅니다.
+-->
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
 /* Layout: full-bleed photoreal scene; glass panels — left: title+layers, right: info / site photos / time, bottom: views */
@@ -35,7 +42,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--ui);overflow:hidden
 .sec{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:2px 0 6px}
 .tg{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:3px 0;cursor:pointer;user-select:none}
 .tg input{accent-color:var(--water);width:15px;height:15px;margin:0}
-#views{bottom:calc(12px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);display:flex;gap:4px;padding:5px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px)}
+#views{bottom:calc(22px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);display:flex;gap:4px;padding:5px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px)}
 #views button{font:500 12px var(--ui);color:var(--ink);background:transparent;border:1px solid transparent;border-radius:6px;padding:7px 9px;cursor:pointer;white-space:nowrap}
 #views button:hover{background:rgba(170,215,220,.08)}
 #views button[aria-pressed="true"]{background:rgba(70,185,203,.18);border-color:rgba(70,185,203,.45)}
@@ -86,7 +93,7 @@ button:focus-visible,.tg input:focus-visible,input[type=range]:focus-visible{out
 #purHud .modes kbd{font:500 10px var(--mono);color:var(--ink-3);border:1px solid var(--glass-line);border-radius:3px;padding:1px 4px}
 #purHud .pnote{font-size:10.5px;color:var(--ink-3);margin-top:4px}
 @media (max-width:900px){#purHud{top:auto;bottom:calc(64px + env(safe-area-inset-bottom,0px))}}
-#credit{position:fixed;bottom:calc(3px + env(safe-area-inset-bottom,0px));left:max(12px,env(safe-area-inset-left,0px));font-size:10px;color:rgba(255,255,255,.55);text-shadow:0 1px 2px #000}
+#credit{position:fixed;bottom:calc(3px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);text-align:center;white-space:nowrap;max-width:calc(100vw - 24px);overflow:hidden;text-overflow:ellipsis;font-size:10px;color:rgba(255,255,255,.55);text-shadow:0 1px 2px #000}
 #loading{position:fixed;inset:0;display:grid;place-items:center;font-family:var(--mono);font-size:12px;color:var(--ink-2);background:var(--bg);transition:opacity .8s;z-index:20}
 #loading.done{opacity:0;pointer-events:none}
 #loading .bar{width:220px;height:2px;background:rgba(255,255,255,.1);margin-top:10px;overflow:hidden}
@@ -164,7 +171,7 @@ button:focus-visible,.tg input:focus-visible,input[type=range]:focus-visible{out
   <div class="pnote"><span style="color:#bdefff">● ·OH</span> <span style="color:#c99bff">● O₂⁻</span> 광촉매 활성산소 · 개념 시각화(반복)</div></div>
   <div id="normBody" hidden><div class="ph"><b style="color:#d8cf8a">정지</b><span>PhotoNano 미가동 · 현재 호수 상태(녹조·혐기성 오염 잔존 가정)</span></div><div class="pnote">측정 5지점은 운전 전 기준값으로 표시됩니다</div></div>
 </div>
-<div id="credit">지도 © OpenStreetMap contributors · 사진: 현장 참고 자료</div>
+<div id="credit">© 2026 주식회사 나노하이드로인 (NanoHydroIn Co., Ltd.) · All rights reserved · 지도 © OpenStreetMap contributors (ODbL) · three.js (MIT) · 사진: 각 원저작자</div>
 
 <script>
 /**
