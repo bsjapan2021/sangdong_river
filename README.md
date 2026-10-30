@@ -28,6 +28,7 @@ NHI PhotoNano(UFB–TiO₂ 광촉매 융합 수질개선) 테스트베드의 측
 - **데크 기둥 사이 통과**: 데크 밑은 기둥 사이 게이트로만 수직 통과, 게이트 서행(50%)·마스트 여유고 검사·게이트별 3회 왕복 세정, 3컷 시네마틱 카메라(진입→데크 밑→빠져나오기)
 - **시간대·그림자·UVA**: 시간대는 한국 표준시와 실시간 동기화(● LIVE, 슬라이더로 수동 조절 가능). 태양 위치로 데크 그림자를 투영하고 실제 그늘 또는 야간에서만 UVA 365 nm 출력 100%(평시 60%), 야간 UVA 빛 강화
 - **효과음**: 물소리·모터음·버블(WebAudio 합성, 🔊 토글) — 브라우저 정책상 첫 클릭 후 재생
+- **실시간 날씨**(OpenWeather): 공원 위치(부천 상동) 현재 날씨·체감온도, 오늘(최고/최저·강수확률·습도·풍속·일출/일몰), 주간 8일 예보(One Call 3.0, 미구독 시 5일 예보로 자동 폴백), 10분마다 갱신. **비**가 오면 빗줄기·수면 빗방울 파문·빗소리, **뇌우**는 번개·천둥, **눈**은 눈송이, 흐림·안개는 하늘·햇빛·시정 감쇠. 패널의 선택 상자로 맑음/흐림/비/뇌우/눈/안개 수동 연출(발표용)
 - **게이트 운항 보고서**(📊): 게이트별 통과 횟수·UVA 가동시간·ROS 발생 지수(시뮬레이션 입자 수)·마지막 통과, 서버 저장(회원)·PDF 출력
 
 ## 회원 · 접속자 관리
@@ -43,6 +44,7 @@ NHI PhotoNano(UFB–TiO₂ 광촉매 융합 수질개선) 테스트베드의 측
 | `DATABASE_URL` / `DATABASE_POSTGRES_URL` | Neon Postgres (Vercel Storage 연결 시 자동 주입) |
 | `ADMIN_PASSWORD` | 최고관리자(`ADMIN_EMAIL`, 기본 kr.seunghunyeo@gmail.com) 최초 비밀번호 — 첫 요청 시 해시로만 저장 |
 | `MAIL_USER`, `MAIL_APP_PASSWORD` | Gmail 주소 + 앱 비밀번호 → 가입 인증·비밀번호 재설정·승인 알림 메일. 미설정 시 메일 없이 ‘관리자 승인’만으로 운영 |
+| `OPENWEATHER_API_KEY` | OpenWeather API 키 — 서버 프록시 `/api/weather`에서만 사용(브라우저에 노출되지 않음). 미설정 시 날씨 패널은 수동 연출만 동작 |
 | `AUTH_SECRET` (선택) | 토큰 서명 키. 미설정 시 DB에 자동 생성·보관 |
 
 ## 빌드
@@ -81,6 +83,7 @@ Photoreal 3D digital twin of Sangdong Lake Park (Bucheon, Korea), built from sur
 - **Features**: reflective water, reeds, blue-railed boardwalks, fountains, spire plaza, species-specific trees, cut-out photo skyline, time-of-day lighting, traffic, site-photo overlay comparison, 2 shoreline PhotoNano units with 5 monitoring points (S-01–S-05).
 - **Purification mode** (`Normal | Purification`, key `P`): micro/nano-bubble plumes spread from both returns across the lake; algae and anaerobic sludge clear on the surface; underwater, photocatalytic ROS (·OH cyan, O₂⁻ violet) break down bacteria, viruses and fungi; the S-01–S-05 panel tracks DO rise and turbidity drop against Table 5 criteria.
 - **Boat mission** (`Boat`, key `B`): the algae-removal catamaran (STL, 1.6 m) runs ① water-area mapping (satellite imagery + LiDAR boundary scan, no-go zones) → ② coverage-path optimization (lawnmower / cross-pass) → ③ autonomous run with GNSS RTK fixes and 360° LiDAR, avoiding floating obstacles and rejoining the route, spraying nano-bubbles + photocatalytic ROS.
+- **Live weather** (OpenWeather via server proxy `/api/weather`, env `OPENWEATHER_API_KEY`): current conditions, today and an 8-day forecast; rain falls on the lake with surface ripples and rain sound, thunderstorms flash, snow falls, overcast/fog dims the sky. Manual weather override for demos.
 - **Members & access**: splash → sign-in; sign-up with email verification and super-admin approval; password reset; super-admin-only access management (approve / block / unblock members, visitor IPs, IP blocking). Server env vars: `DATABASE_URL` (Neon), `ADMIN_PASSWORD`, `MAIL_USER` + `MAIL_APP_PASSWORD` (Gmail app password), optional `AUTH_SECRET`.
 - All water-quality values and purification effects are **conceptual simulations**, not field measurements.
 
@@ -94,6 +97,7 @@ OpenStreetMapの実測地形と現地写真に基づき、上洞湖水公園（�
 - **主な機能**：反射する水面、ヨシ、青い手すりの遊歩デッキ、噴水、尖塔広場、樹種別の樹木、写真切り抜きのスカイライン、時間帯の光、車両の流れ、現地写真との重ね比較、護岸設置のPhotoNano 2基と測定5地点（S-01〜S-05）。
 - **浄化演出**（`通常状態 | 浄化演出`、Pキー）：2か所の還水部からマイクロ・ナノバブルが湖全域へ広がり、水面のアオコ・嫌気性スラッジが消え、水中では光触媒ROS（·OH 青白、O₂⁻ 紫）が細菌・ウイルス・カビを分解。S-01〜S-05パネルはDO上昇・濁度低下を表5基準と比較して表示します。
 - **ボート運航**（`ボート運航`、Bキー）：アオコ除去双胴船（STL、1.6 m）が ①水域認識（衛星画像＋LiDAR境界スキャン、禁止区域登録）→ ②カバレッジ経路最適化 → ③GNSS RTK・LiDAR 360°による自律運航（浮遊障害物を回避し経路へ復帰）を行い、ナノバブルと光触媒ROSでアオコを除去。
+- **リアルタイム天気**（OpenWeather、サーバープロキシ `/api/weather`・環境変数 `OPENWEATHER_API_KEY`）：現在の天気・今日・8日間予報。雨なら湖面に雨と波紋・雨音、雷雨は稲妻、雪は降雪、曇り・霧は空と日射を減衰。発表用の手動天気切替付き。
 - **会員・アクセス管理**：スプラッシュ→ログイン。会員登録はメール認証と最高管理者の承認が必要。パスワード再設定、最高管理者専用のアクセス管理（会員の承認・遮断・解除、接続IP一覧、IP遮断）。
 - 水質数値と浄化演出はすべて**概念シミュレーション**であり、実測値ではありません。
 
