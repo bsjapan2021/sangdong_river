@@ -47,6 +47,7 @@ function buildBoat(){
       if(a*vA<.01)discard;gl_FragColor=vec4(col*a,a*vA);}`});
   const pts=new THREE.Points(g,m);pts.frustumCulled=false;pts.visible=false;scene.add(pts);
   BOAT.pp={P,A,SZ,K,V:new Float32Array(NP*3),L:new Float32Array(NP),AG:new Float32Array(NP),N:NP,head:0,geo:g,pts};
+  buildMission();
 }
 function bSpawn(x,y,z,vx,vy,vz,life,size,kind){const p=BOAT.pp;const i=p.head;p.head=(p.head+1)%p.N;p.P[i*3]=x;p.P[i*3+1]=y;p.P[i*3+2]=z;p.V[i*3]=vx;p.V[i*3+1]=vy;p.V[i*3+2]=vz;p.L[i]=life;p.AG[i]=0;p.SZ[i]=size;p.K[i]=kind}
 function cleanAt(x,z){if(!BOAT.stat)return 0;const i=Math.floor((x-BOAT.box[0])*BOAT.box[2]),j=Math.floor((z-BOAT.box[1])*BOAT.box[3]);if(i<0||j<0||i>=BOAT.S||j>=BOAT.S)return 0;return BOAT.stat[(j*BOAT.S+i)*4]/255}
@@ -64,20 +65,15 @@ function boatPick(){const a=[BOAT.pos.x,BOAT.pos.y];let best=null,bs=-1e9;
 function boatReset(){const c=BOAT.ctx;c.globalCompositeOperation='source-over';c.fillStyle='#000';c.fillRect(0,0,BOAT.S,BOAT.S);BOAT.tex.needsUpdate=true;BOAT.stat=c.getImageData(0,0,BOAT.S,BOAT.S).data;
   let st=[-20,10];if(!boatValid(st))for(const s of PUR.samples){if(boatValid([s[0],s[2]])){st=[s[0],s[2]];break}}BOAT.pos.set(st[0],st[1]);BOAT.hd=0;BOAT.v=0;BOAT.target=null;BOAT.pct=0;
   const p=BOAT.pp;p.L.fill(0);p.A.fill(0)}
-function boatSetOn(on){BOAT.on=on;if(!BOAT.grp)return;BOAT.grp.visible=on;BOAT.pp.pts.visible=on;BOAT.lbl.hidden=!on;PUR.u.uMaskOn.value=on?1:0;BOAT.follow=on;const fb=$('#bFollow');if(fb)fb.setAttribute('aria-pressed',String(on));if(on)boatReset()}
+function boatSetOn(on){BOAT.on=on;if(!BOAT.grp)return;BOAT.grp.visible=on;BOAT.pp.pts.visible=on;BOAT.lbl.hidden=!on;PUR.u.uMaskOn.value=on?1:0;BOAT.follow=false;const fb=$('#bFollow');if(fb)fb.setAttribute('aria-pressed','false');if(on){boatReset();missionStart()}else missionHide()}
 const _bt=new THREE.Vector3(),_bc=new THREE.Vector3();
 function updateBoat(dt){if(!BOAT.on||!BOAT.grp)return;const sp=BOAT.speed,sdt=dt*sp;BOAT.t+=dt;
-  BOAT.cd=(BOAT.cd||0)-dt;if((!BOAT.target||Math.hypot(BOAT.target[0]-BOAT.pos.x,BOAT.target[1]-BOAT.pos.y)<3)&&BOAT.cd<=0){boatPick();if(!BOAT.target)BOAT.cd=.4}
-  if(!BOAT.target){BOAT.hd+=.4*sdt;BOAT.v*=.9}
-  if(BOAT.target){const des=Math.atan2(BOAT.target[1]-BOAT.pos.y,BOAT.target[0]-BOAT.pos.x);let dh=des-BOAT.hd;dh=Math.atan2(Math.sin(dh),Math.cos(dh));
-    const turn=clamp(dh,-.55*sdt,.55*sdt);BOAT.hd+=turn;const vt=BOAT.base*(1-Math.min(Math.abs(dh)/1.3,.75));BOAT.v+=(vt-BOAT.v)*Math.min(1,sdt*.8);
-    const nx=BOAT.pos.x+Math.cos(BOAT.hd)*BOAT.v*sdt,nz=BOAT.pos.y+Math.sin(BOAT.hd)*BOAT.v*sdt;
-    if(boatValid([nx,nz])||!boatValid([BOAT.pos.x,BOAT.pos.y]))BOAT.pos.set(nx,nz);else{BOAT.target=null;BOAT.v*=.3}}
+  const run=missionStep(dt,sdt);
   const T0=BOAT.t,fx=Math.cos(BOAT.hd),fz=Math.sin(BOAT.hd),rx=-fz,rz=fx;
   const g=BOAT.grp;g.position.set(BOAT.pos.x,-0.5+.025*Math.sin(T0*2.1),BOAT.pos.y);g.rotation.set(0,-BOAT.hd,0);BOAT.body.rotation.set(.018*Math.sin(T0*1.7),0,.012*Math.sin(T0*1.3+1));
   BOAT.ring.material.opacity=.45+.3*Math.sin(T0*3);BOAT.lbl.v.set(BOAT.pos.x,3.4,BOAT.pos.y);PUR.u.uBoat.value.set(BOAT.pos.x+fx*.7,BOAT.pos.y+fz*.7,BOAT.hd);
   /* emission (scaled gently with playback speed) */
-  const em=Math.sqrt(sp);const bx=BOAT.pos.x+fx*.7,bz=BOAT.pos.y+fz*.7;
+  const em=run?Math.sqrt(sp):0;const bx=BOAT.pos.x+fx*.7,bz=BOAT.pos.y+fz*.7;
   for(let k=0;k<Math.round(4*em);k++){const sd=Math.random()<.5?-1:1,lat=R(.6,2.2)*sd,fwd=R(-.6,.3);bSpawn(bx+rx*.22*sd,-0.45,bz+rz*.22*sd,rx*lat+fx*fwd,0,rz*lat+fz*fwd,R(4,8),R(.08,.22),1)}
   for(let k=0;k<Math.round(3*em);k++){const a=Math.random()*6.283,s=R(.2,1.2);bSpawn(bx+R(-.2,.2),-0.85,bz+R(-.2,.2),Math.cos(a)*s,R(.05,.25),Math.sin(a)*s,R(4,7),R(.05,.16),0)}
   for(let k=0;k<Math.round(2*em);k++){const sd=Math.random()<.5?-1:1;const sx=BOAT.pos.x-fx*.8+rx*.3*sd,sz=BOAT.pos.y-fz*.8+rz*.3*sd;bSpawn(sx,-0.44,sz,-fx*.4+rx*R(-.25,.25)*sd,0,-fz*.4+rz*R(-.25,.25)*sd,R(3,5),R(.25,.5),2)}
@@ -90,12 +86,165 @@ function updateBoat(dt){if(!BOAT.on||!BOAT.grp)return;const sp=BOAT.speed,sdt=dt
   ['position','al','sz','kd'].forEach(a=>p.geo.attributes[a].needsUpdate=true);
   /* paint the clean mask (accumulates where the plume passes), slow regrowth */
   const c=BOAT.ctx,S=BOAT.S,px=(bx-BOAT.box[0])*BOAT.box[2],pz=(bz-BOAT.box[1])*BOAT.box[3],rp=BOAT.R*BOAT.box[2];
-  c.globalCompositeOperation='lighter';const gr=c.createRadialGradient(px,pz,0,px,pz,rp);const al=Math.min(1,sdt*.5);gr.addColorStop(0,`rgba(255,255,255,${al})`);gr.addColorStop(.6,`rgba(255,255,255,${al*.6})`);gr.addColorStop(1,'rgba(255,255,255,0)');
-  c.fillStyle=gr;c.beginPath();c.arc(px,pz,rp,0,7);c.fill();
+  if(run){c.globalCompositeOperation='lighter';const gr=c.createRadialGradient(px,pz,0,px,pz,rp);const al=Math.min(1,sdt*.5);gr.addColorStop(0,`rgba(255,255,255,${al})`);gr.addColorStop(.6,`rgba(255,255,255,${al*.6})`);gr.addColorStop(1,'rgba(255,255,255,0)');
+  c.fillStyle=gr;c.beginPath();c.arc(px,pz,rp,0,7);c.fill()}
   BOAT.tRegrow+=sdt;if(BOAT.tRegrow>20){BOAT.tRegrow=0;c.globalCompositeOperation='source-over';c.fillStyle='rgba(0,0,0,0.02)';c.fillRect(0,0,S,S)}
   if((++BOAT.frame)%3===0)BOAT.tex.needsUpdate=true;
   BOAT.tStat+=dt;if(BOAT.tStat>.8||!BOAT.stat){BOAT.tStat=0;BOAT.stat=c.getImageData(0,0,S,S).data;let k2=0;for(const ix of BOAT.lakePix)if(BOAT.stat[ix*4]>150)k2++;BOAT.pct=Math.round(k2/BOAT.lakePix.length*100);
-    const hb=$('#boatBar');if(hb){hb.style.width=BOAT.pct+'%';$('#boatPct').textContent=BOAT.pct+'%';$('#boatMsg').textContent=BOAT.pct>=90?T('boatDone'):T('boatRun',{v:(BOAT.v).toFixed(1)})}}
+    const hb=$('#boatBar');if(hb){hb.style.width=BOAT.pct+'%';$('#boatPct').textContent=BOAT.pct+'%';if(MS.ph===3)$('#boatMsg').textContent=MS.avoid?T('msAvoid',{d:MS.avoid.d.toFixed(1)}):BOAT.pct>=90?T('boatDone'):T('boatRun',{v:(BOAT.v).toFixed(1)})}}
   /* follow camera */
-  if(BOAT.follow&&!fly){const k=1-Math.exp(-dt*2.2);_bt.set(BOAT.pos.x,-0.3,BOAT.pos.y);_bc.set(BOAT.pos.x-fx*11+rx*5,5,BOAT.pos.y-fz*11+rz*5);controls.target.lerp(_bt,k);camera.position.lerp(_bc,k)}
+  updateSensorsViz(dt);
+  if(BOAT.follow&&!fly&&MS.ph===3){const k=1-Math.exp(-dt*2.2);_bt.set(BOAT.pos.x,-0.3,BOAT.pos.y);_bc.set(BOAT.pos.x-fx*11+rx*5,5,BOAT.pos.y-fz*11+rz*5);controls.target.lerp(_bt,k);camera.position.lerp(_bc,k)}
 }
+/* ===== 자율운항 미션: ① 수계 인식(위성영상+LiDAR) → ② 커버리지 경로 최적화 → ③ GNSS·LiDAR 자율운항/장애물 회피 ===== */
+const MS={ph:0,t:0,grid:null,path:[],pi:0,pass:0,avoid:null,obs:[],len:0,cov:0,area:0,nogo:[],near:99,nHit:0,encT:0,stuck:0,tCol:0,tTel:0,ang:0};
+const GEO={lat:37.5038,lon:126.7450};/* OSM 로컬좌표 원점(WGS84) — x=동, z=남 [m] */
+let LAKEC=[0,0];
+function msMat(c,o){return new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o,depthWrite:false,side:THREE.DoubleSide})}
+function buildMission(){
+  let cx=0,cz=0;LAKE.forEach(p=>{cx+=p[0];cz+=p[1]});LAKEC=[cx/LAKE.length,cz/LAKE.length];
+  let ar=0;for(let i=0,j=LAKE.length-1;i<LAKE.length;j=i++)ar+=(LAKE[j][0]+LAKE[i][0])*(LAKE[j][1]-LAKE[i][1]);MS.area=Math.abs(ar/2);
+  const xs=LAKE.map(p=>p[0]),zs=LAKE.map(p=>p[1]);const cs=3.5,x0=Math.min(...xs),z0=Math.min(...zs),nx=Math.ceil((Math.max(...xs)-x0)/cs)+1,nz=Math.ceil((Math.max(...zs)-z0)/cs)+1;
+  const v=new Uint8Array(nx*nz);for(let j=0;j<nz;j++)for(let i=0;i<nx;i++)v[j*nx+i]=boatValid([x0+i*cs,z0+j*cs])?1:0;MS.grid={cs,x0,z0,nx,nz,v};
+  const G=new THREE.Group();G.visible=false;scene.add(G);MS.G=G;
+  /* scan overlay */
+  {const g=new THREE.ShapeGeometry(shapeOf(LAKE),2);g.rotateX(-Math.PI/2);
+   const u={uScan:{value:0},uFade:{value:1},uZ0:{value:Math.min(...zs)-4},uZ1:{value:Math.max(...zs)+4}};MS.su=u;
+   const m=new THREE.ShaderMaterial({uniforms:u,transparent:true,depthWrite:false,side:THREE.DoubleSide,
+     vertexShader:pVS+`varying vec3 vW;void main(){vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;`+pVE+`}`,
+     fragmentShader:pFS+`uniform float uScan,uFade,uZ0,uZ1;varying vec3 vW;void main(){`+pFE+`float sz=mix(uZ0,uZ1,uScan);float done=step(vW.z,sz);
+       vec2 g=abs(fract(vW.xz/4.)-.5);float ln=smoothstep(.43,.5,max(g.x,g.y));float band=exp(-pow((vW.z-sz)/2.4,2.))*step(uScan,.999);
+       vec3 col=mix(vec3(.25,.85,1.),vec3(.92,1.,1.),band);float a=done*(.07+ln*.42)*uFade+band*.85;if(a<.004)discard;gl_FragColor=vec4(col,a);}`});
+   const mesh=new THREE.Mesh(g,m);mesh.position.y=-0.40;mesh.renderOrder=4;G.add(mesh)}
+  /* recognised shoreline */
+  {const P=[];LAKE.forEach(p=>P.push(p[0],-0.33,p[1]));const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));
+   const l=new THREE.Line(g,new THREE.LineBasicMaterial({color:0x7fe9ff,transparent:true,opacity:.95,depthWrite:false}));l.renderOrder=5;G.add(l);MS.shore=l;MS.shoreN=LAKE.length}
+  /* no-go zones (fountains, buoys, outlets, decks) */
+  const ring=(p,r)=>{const m=new THREE.Mesh(new THREE.RingGeometry(r-.3,r,48),msMat(0xff5a5a,.6));m.rotation.x=-Math.PI/2;m.position.set(p[0],-0.36,p[1]);m.userData.z=p[1];G.add(m);MS.nogo.push(m)};
+  FOUNT.forEach(f=>ring(f,8));SENS.forEach(s=>ring(s.p,4.5));UNITS.forEach(u=>{ring(u.ret,6);ring(u.int,6)});
+  deckSegs.forEach(s=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute([s[0][0],-0.3,s[0][1],s[1][0],-0.3,s[1][1]],3));
+    const l=new THREE.Line(g,new THREE.LineBasicMaterial({color:0xff6a5a,transparent:true,opacity:.9,depthWrite:false}));l.userData.z=Math.min(s[0][1],s[1][1]);l.userData.line=1;G.add(l);MS.nogo.push(l)});
+  /* planned path: ribbon 2.2 m wide (6 verts / segment) */
+  {const N=9000;const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(N*18),3));g.setAttribute('color',new THREE.BufferAttribute(new Float32Array(N*18),3));g.setDrawRange(0,0);
+   const l=new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,opacity:.85,depthWrite:false,side:THREE.DoubleSide}));l.renderOrder=6;l.frustumCulled=false;G.add(l);MS.pl=l;MS.plN=N}
+  /* LiDAR: rotating fan + range ring + hit cloud */
+  {const fan=new THREE.Mesh(new THREE.CircleGeometry(15,24,0,.42),new THREE.MeshBasicMaterial({color:0x7dff9e,transparent:true,opacity:.16,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+   fan.geometry.rotateX(-Math.PI/2);G.add(fan);MS.fan=fan;
+   const rr=new THREE.Mesh(new THREE.RingGeometry(14.85,15,96),msMat(0x7dff9e,.35));rr.rotation.x=-Math.PI/2;G.add(rr);MS.rr=rr;
+   const N=1400;const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(N*3),3));g.setAttribute('col',new THREE.BufferAttribute(new Float32Array(N*3),3));g.setAttribute('al',new THREE.BufferAttribute(new Float32Array(N),1));
+   const m=new THREE.ShaderMaterial({uniforms:PUR.u,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+     vertexShader:pVS+`uniform float uScale;attribute vec3 col;attribute float al;varying vec3 vC;varying float vA;void main(){vC=col;vA=al;vec4 mv=modelViewMatrix*vec4(position,1.);gl_PointSize=clamp(.42*uScale/-mv.z,2.,16.);gl_Position=projectionMatrix*mv;`+pVE+`}`,
+     fragmentShader:pFS+`varying vec3 vC;varying float vA;void main(){`+pFE+`float r=length(gl_PointCoord-.5);float a=smoothstep(.5,.1,r)*vA;if(a<.01)discard;gl_FragColor=vec4(vC*a,a);}`});
+   const pts=new THREE.Points(g,m);pts.frustumCulled=false;G.add(pts);MS.hp={g,N,head:0,L:new Float32Array(N)};MS.hpMat=m}
+  /* GNSS constellation + downlink */
+  {MS.sats=[];const bm=new THREE.MeshLambertMaterial({color:C(0xd9b44a)}),pm=new THREE.MeshLambertMaterial({color:C(0x2d5a8a)});
+   for(let k=0;k<6;k++){const a=k*1.047+.4,r=230+30*(k%2);const s=new THREE.Group();s.add(new THREE.Mesh(new THREE.BoxGeometry(5,5,7),bm));
+     const pn=new THREE.Mesh(new THREE.BoxGeometry(24,.4,6),pm);s.add(pn);s.position.set(LAKEC[0]+Math.cos(a)*r,150+(k*37)%70,LAKEC[1]+Math.sin(a)*r);G.add(s);MS.sats.push(s)}
+   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(36),3));
+   const l=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0x9fd8ff,transparent:true,opacity:.28,depthWrite:false}));l.frustumCulled=false;G.add(l);MS.gl=l;
+   const N=6*6;const g2=new THREE.BufferGeometry();g2.setAttribute('position',new THREE.BufferAttribute(new Float32Array(N*3),3));const C2=new Float32Array(N*3),A2=new Float32Array(N).fill(1);for(let i=0;i<N;i++)C2.set([.75,.92,1.],i*3);
+   g2.setAttribute('col',new THREE.BufferAttribute(C2,3));g2.setAttribute('al',new THREE.BufferAttribute(A2,1));const pk=new THREE.Points(g2,MS.hpMat);pk.frustumCulled=false;G.add(pk);MS.pk=pk}
+  /* floating obstacles (drift log, duck family, debris cluster) */
+  {const mk2=(r,build)=>{const o={grp:new THREE.Group(),p:[0,0],v:[0,0],r,fade:1};build(o.grp);G.add(o.grp);MS.obs.push(o);return o};
+   mk2(1.4,g=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(.22,.26,2.4,10),new THREE.MeshLambertMaterial({color:C(0x5a4632)}));m.rotation.z=Math.PI/2;m.position.y=.05;g.add(m)});
+   mk2(1.6,g=>{const bm=new THREE.MeshLambertMaterial({color:C(0x8a6b4a)}),hm=new THREE.MeshLambertMaterial({color:C(0x2f5a2a)});[[0,0,1],[-.7,.35,.6],[-.8,-.4,.6],[-1.4,0,.6]].forEach(d=>{
+     const b=new THREE.Mesh(new THREE.SphereGeometry(.2*d[2]+.05,10,8),bm);b.scale.set(1.5,.8,1);b.position.set(d[0],.08,d[1]);g.add(b);const h=new THREE.Mesh(new THREE.SphereGeometry(.09*d[2]+.03,8,6),hm);h.position.set(d[0]+.28*d[2],.25*d[2]+.05,d[1]);g.add(h)})});
+   mk2(1.5,g=>{const cols=[0xe8eef2,0x3f8fd8,0xd94a3a,0xf2d24a,0x7a8a3a];for(let i=0;i<9;i++){const m=new THREE.Mesh(new THREE.BoxGeometry(R(.15,.4),R(.08,.2),R(.15,.5)),new THREE.MeshLambertMaterial({color:C(cols[i%5])}));m.position.set(R(-.9,.9),.03,R(-.7,.7));m.rotation.y=R(0,3);g.add(m)}});
+   const or=new THREE.Mesh(new THREE.RingGeometry(1,1.12,40),msMat(0xff4d5e,.9));or.rotation.x=-Math.PI/2;or.visible=false;G.add(or);MS.oring=or;
+   MS.alertLbl=addLabel(()=>T('obsLbl'),0,2.6,0,'module','boat');MS.alertLbl.hidden=true}
+}
+function cellOf(p){const g=MS.grid;return [clamp(Math.round((p[0]-g.x0)/g.cs),0,g.nx-1),clamp(Math.round((p[1]-g.z0)/g.cs),0,g.nz-1)]}
+function cellW(i,j){const g=MS.grid;return [g.x0+i*g.cs,g.z0+j*g.cs]}
+function nearValid(c){const g=MS.grid;if(g.v[c[1]*g.nx+c[0]])return c;for(let r=1;r<20;r++)for(let dj=-r;dj<=r;dj++)for(let di=-r;di<=r;di++){const i=c[0]+di,j=c[1]+dj;if(i>=0&&j>=0&&i<g.nx&&j<g.nz&&g.v[j*g.nx+i])return [i,j]}return c}
+function astar(pa,pb){const g=MS.grid,nx=g.nx,N=nx*g.nz;const s=nearValid(cellOf(pa)),e=nearValid(cellOf(pb));const si=s[1]*nx+s[0],ei=e[1]*nx+e[0];
+  const gs=new Float32Array(N).fill(1e9),from=new Int32Array(N).fill(-1),cl=new Uint8Array(N);const h=[];const push=(i,f)=>{h.push([f,i]);let k=h.length-1;while(k>0){const p=(k-1)>>1;if(h[p][0]<=h[k][0])break;[h[p],h[k]]=[h[k],h[p]];k=p}};
+  const pop=()=>{const t=h[0],l=h.pop();if(h.length){h[0]=l;let k=0;for(;;){const a=2*k+1,b=a+1;let m=k;if(a<h.length&&h[a][0]<h[m][0])m=a;if(b<h.length&&h[b][0]<h[m][0])m=b;if(m===k)break;[h[m],h[k]]=[h[k],h[m]];k=m}}return t};
+  const ex=e[0],ez=e[1];gs[si]=0;push(si,0);
+  while(h.length){const [,c]=pop();if(c===ei)break;if(cl[c])continue;cl[c]=1;const ci=c%nx,cj=(c/nx)|0;
+    for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++){if(!di&&!dj)continue;const i=ci+di,j=cj+dj;if(i<0||j<0||i>=nx||j>=g.nz)continue;const n=j*nx+i;if(!g.v[n]||cl[n])continue;
+      const w=gs[c]+(di&&dj?1.4142:1);if(w<gs[n]){gs[n]=w;from[n]=c;push(n,w+Math.hypot(i-ex,j-ez))}}}
+  const out=[];let c=ei;if(from[c]<0&&c!==si)return [pa,pb];while(c>=0){out.push(cellW(c%nx,(c/nx)|0));if(c===si)break;c=from[c]}out.reverse();out[0]=pa;out.push(pb);
+  /* string pulling */
+  const sp=[out[0]];let i=0;while(i<out.length-1){let j=Math.min(out.length-1,i+40);while(j>i+1&&!boatPath(out[i],out[j]))j--;sp.push(out[j]);i=j}return sp}
+function densify(pts,out){for(let k=0;k<pts.length-1;k++){const a=pts[k],b=pts[k+1],L=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.max(1,Math.ceil(L/2));for(let t=0;t<n;t++)out.push([a[0]+(b[0]-a[0])*t/n,a[1]+(b[1]-a[1])*t/n])}}
+function computePath(pass){const g=MS.grid,vert=pass%2===1,segs=[];const NA=vert?g.nx:g.nz,NB=vert?g.nz:g.nx;
+  for(let L=2;L<NA;L+=4){let run=null;for(let k=0;k<=NB;k++){const i=vert?L:k,j=vert?k:L;const ok=k<NB&&g.v[j*g.nx+i];if(ok&&!run)run=[k,k];else if(ok)run[1]=k;
+      if(!ok&&run){if(run[1]-run[0]>=2)segs.push(vert?[cellW(L,run[0]),cellW(L,run[1])]:[cellW(run[0],L),cellW(run[1],L)]);run=null}}}
+  let cur=[BOAT.pos.x,BOAT.pos.y];const pts=[];const used=new Uint8Array(segs.length);
+  for(let n=0;n<segs.length;n++){let bi=-1,be=0,bd=1e9;segs.forEach((s,i)=>{if(used[i])return;for(let e=0;e<2;e++){const d=Math.hypot(s[e][0]-cur[0],s[e][1]-cur[1]);if(d<bd){bd=d;bi=i;be=e}}});
+    used[bi]=1;const s=segs[bi],a=s[be],b=s[1-be];const con=boatPath(cur,a)?[cur,a]:astar(cur,a);densify(con,pts);densify([a,b],pts);cur=b}
+  pts.push(cur);MS.path=pts;MS.pi=0;let len=0;for(let k=1;k<pts.length;k++)len+=Math.hypot(pts[k][0]-pts[k-1][0],pts[k][1]-pts[k-1][1]);MS.len=len;
+  const cov=new Uint8Array(g.nx*g.nz),rc=Math.floor(BOAT.R*.9/g.cs);pts.forEach((p,k)=>{if(k%2)return;const c=cellOf(p);for(let dj=-rc;dj<=rc;dj++)for(let di=-rc;di<=rc;di++){if(di*di+dj*dj>rc*rc)continue;const i=c[0]+di,j=c[1]+dj;if(i>=0&&j>=0&&i<g.nx&&j<g.nz)cov[j*g.nx+i]=1}});
+  let nv=0,nc=0;for(let i=0;i<cov.length;i++)if(g.v[i]){nv++;if(cov[i])nc++}MS.cov=Math.round(nc/Math.max(1,nv)*100);
+  const P=MS.pl.geometry.attributes.position.array,Cc=MS.pl.geometry.attributes.color.array,n=Math.min(pts.length-1,MS.plN),W=1.1;
+  for(let k=0;k<n;k++){const a=pts[k],b=pts[k+1];let dx=b[0]-a[0],dz=b[1]-a[1];const L=Math.hypot(dx,dz)||1;const ox=-dz/L*W,oz=dx/L*W;
+    const V=[a[0]+ox,a[1]+oz,a[0]-ox,a[1]-oz,b[0]+ox,b[1]+oz,a[0]-ox,a[1]-oz,b[0]-ox,b[1]-oz,b[0]+ox,b[1]+oz];
+    const w=k%6<3?1:.7;for(let v=0;v<6;v++){P[(k*6+v)*3]=V[v*2];P[(k*6+v)*3+1]=-0.36;P[(k*6+v)*3+2]=V[v*2+1];Cc[(k*6+v)*3]=.35*w;Cc[(k*6+v)*3+1]=.95*w;Cc[(k*6+v)*3+2]=1*w}}
+  MS.plSeg=n;MS.pl.geometry.attributes.position.needsUpdate=true;MS.pl.geometry.attributes.color.needsUpdate=true;MS.pl.geometry.setDrawRange(0,0);MS.pl.visible=true}
+function msSteps(){document.querySelectorAll('#boatBody [data-ms]').forEach(e=>{const k=+e.dataset.ms;e.dataset.st=k<MS.ph?'done':k===MS.ph?'on':''})}
+function missionStart(){if(!MS.G)return;MS.G.visible=true;MS.ph=1;MS.t=0;MS.pass=0;MS.avoid=null;MS.encT=0;MS.su.uScan.value=0;MS.su.uFade.value=1;MS.shore.geometry.setDrawRange(0,0);
+  MS.nogo.forEach(o=>{o.visible=false;o.scale.set(1,1,1)});MS.pl.visible=false;MS.oring.visible=false;MS.alertLbl.hidden=true;
+  const a=[BOAT.pos.x,BOAT.pos.y];MS.obs.forEach((o,k)=>{for(let t=0;t<200;t++){const s=PUR.samples[(Math.random()*PUR.samples.length)|0];if(boatValid([s[0],s[2]])&&Math.hypot(s[0]-a[0],s[2]-a[1])>40){o.p=[s[0],s[2]];break}}const an=Math.random()*6.283;o.v=[Math.cos(an)*.18,Math.sin(an)*.18]});
+  flyTo([LAKEC[0]+30,250,LAKEC[1]+220],[LAKEC[0],0,LAKEC[1]],1800,48);msSteps()}
+function missionHide(){if(MS.G)MS.G.visible=false;if(MS.alertLbl)MS.alertLbl.hidden=true;MS.ph=0}
+function missionStep(dt,sdt){if(!MS.G)return false;MS.t+=dt;const tot=MS.path.length;
+  if(MS.ph===1){const s=Math.min(1,MS.t/7);MS.su.uScan.value=s;const sz=MS.su.uZ0.value+(MS.su.uZ1.value-MS.su.uZ0.value)*s;
+    MS.shore.geometry.setDrawRange(0,Math.floor(MS.shoreN*s));MS.nogo.forEach(o=>{if(!o.visible&&o.userData.z<sz){o.visible=true;o.userData.t0=MS.t}if(o.visible&&!o.userData.line){const k=Math.min(1,(MS.t-o.userData.t0)/.5);const sc=1+.6*Math.sin(k*Math.PI)*(1-k);o.scale.set(sc,sc,sc)}});
+    $('#boatMsg').textContent=s<1?T('ms1',{p:Math.round(s*100)}):T('ms1done',{a:Math.round(MS.area).toLocaleString(),n:MS.nogo.length});
+    BOAT.v*=.95;if(MS.t>8.5){MS.ph=2;MS.t=0;computePath(MS.pass);msSteps()}return false}
+  if(MS.ph===2){const k=Math.min(1,MS.t/4);MS.pl.geometry.setDrawRange(0,Math.floor(MS.plSeg*k)*6);MS.su.uFade.value=1-.7*k;
+    $('#boatMsg').textContent=T('ms2',{pat:T(MS.pass%2?'patV':'patH'),L:Math.round(MS.len).toLocaleString(),C:MS.cov});
+    BOAT.v*=.95;if(MS.t>5.5){MS.ph=3;MS.t=0;BOAT.follow=true;const fb=$('#bFollow');if(fb)fb.setAttribute('aria-pressed','true');msSteps()}return false}
+  if(MS.ph!==3)return false;
+  const PW=MS.path,pos=[BOAT.pos.x,BOAT.pos.y];while(MS.pi<tot-1&&Math.hypot(pos[0]-PW[MS.pi][0],pos[1]-PW[MS.pi][1])<4)MS.pi++;
+  if(MS.pi>=tot-1&&Math.hypot(pos[0]-PW[tot-1][0],pos[1]-PW[tot-1][1])<4){MS.pass++;MS.ph=2;MS.t=0;computePath(MS.pass);msSteps();return false}
+  let tg=PW[Math.min(MS.pi+1,tot-1)];const fx=Math.cos(BOAT.hd),fz=Math.sin(BOAT.hd);
+  /* LiDAR-based avoidance of floating obstacles */
+  if(!MS.avoid){for(const o of MS.obs){const dx=o.p[0]-pos[0],dz=o.p[1]-pos[1],d=Math.hypot(dx,dz)-o.r;if(d>10||o.fade<1)continue;const ang=Math.atan2(dx*fz-dz*fx,dx*fx+dz*fz);
+      if(Math.abs(ang)<.75){MS.avoid={o,side:ang>0?1:-1,d,flip:0};break}}}
+  let slow=1;if(MS.avoid){const A=MS.avoid,o=A.o,dx=o.p[0]-pos[0],dz=o.p[1]-pos[1],dd=Math.hypot(dx,dz);A.d=Math.max(0,dd-o.r);const ux=dx/dd,uz=dz/dd;
+    let px=-uz*A.side,pz=ux*A.side;/* side: steer to the opposite side of the obstacle bearing */
+    let c=[o.p[0]-px*(o.r+4.5)+ux*2,o.p[1]-pz*(o.r+4.5)+uz*2];if(!boatValid(c)&&A.flip<1){A.side*=-1;A.flip++;c=[o.p[0]+px*(o.r+4.5)+ux*2,o.p[1]+pz*(o.r+4.5)+uz*2]}
+    if(boatValid(c))tg=c;else slow=.15;
+    if((dx*fx+dz*fz)<-1&&dd>o.r+3||dd>17){MS.avoid=null;let bi=MS.pi,bd=1e9;for(let k=MS.pi;k<Math.min(tot,MS.pi+40);k++){const d=Math.hypot(PW[k][0]-pos[0],PW[k][1]-pos[1]);if(d<bd){bd=d;bi=k}}MS.pi=bi}
+    else slow*=.7}
+  const des=Math.atan2(tg[1]-pos[1],tg[0]-pos[0]);let dh=des-BOAT.hd;dh=Math.atan2(Math.sin(dh),Math.cos(dh));BOAT.hd+=clamp(dh,-.6*sdt,.6*sdt);
+  const vt=BOAT.base*slow*(1-Math.min(Math.abs(dh)/1.3,.8));BOAT.v+=(vt-BOAT.v)*Math.min(1,sdt*.8);
+  const nx=pos[0]+Math.cos(BOAT.hd)*BOAT.v*sdt,nz=pos[1]+Math.sin(BOAT.hd)*BOAT.v*sdt;let blocked=false;for(const o of MS.obs)if(Math.hypot(nx-o.p[0],nz-o.p[1])<o.r+1)blocked=true;
+  if(!blocked&&(boatValid([nx,nz])||!boatValid(pos))){BOAT.pos.set(nx,nz);MS.stuck=0}else{BOAT.v*=.3;MS.stuck+=sdt;if(MS.stuck>4){MS.pi=Math.min(tot-1,MS.pi+3);MS.stuck=0}}
+  /* bring a drifting obstacle onto the route now and then (to exercise avoidance) */
+  MS.encT+=sdt;if(MS.encT>50&&!MS.avoid&&MS.pi+16<tot){let far=null,fd=60;MS.obs.forEach(o=>{const d=Math.hypot(o.p[0]-pos[0],o.p[1]-pos[1]);if(d>fd){fd=d;far=o}});
+    const q=PW[MS.pi+15];if(far&&boatValid(q)){far.p=[q[0],q[1]];far.fade=0;MS.encT=0}}
+  MS.tCol+=dt;if(MS.tCol>.4){MS.tCol=0;const Cc=MS.pl.geometry.attributes.color.array;for(let k=0;k<Math.min(MS.pi,MS.plN)*6;k++){Cc[k*3]=.22;Cc[k*3+1]=.3;Cc[k*3+2]=.32}MS.pl.geometry.attributes.color.needsUpdate=true}
+  return true}
+/* 2D ray cast against shoreline, decks, fixed structures and floating obstacles */
+function segHit(ox,oz,dx,dz,a,b){const ex=b[0]-a[0],ez=b[1]-a[1],den=dx*ez-dz*ex;if(Math.abs(den)<1e-9)return 1e9;const t=((a[0]-ox)*ez-(a[1]-oz)*ex)/den,u=((a[0]-ox)*dz-(a[1]-oz)*dx)/den;return t>0&&u>=0&&u<=1?t:1e9}
+function cirHit(ox,oz,dx,dz,c,r){const fx=ox-c[0],fz=oz-c[1],b=fx*dx+fz*dz,cc=fx*fx+fz*fz-r*r,h=b*b-cc;if(h<0)return 1e9;const t=-b-Math.sqrt(h);return t>0?t:1e9}
+function lidarRay(ox,oz,a,maxR){const dx=Math.cos(a),dz=Math.sin(a);let t=maxR,ty=0;
+  for(let i=0;i<LAKE.length-1;i++){const h=segHit(ox,oz,dx,dz,LAKE[i],LAKE[i+1]);if(h<t){t=h;ty=1}}
+  for(const s of deckSegs){const h=segHit(ox,oz,dx,dz,s[0],s[1]);if(h<t){t=h;ty=2}}
+  for(const f of FOUNT){const h=cirHit(ox,oz,dx,dz,f,2.5);if(h<t){t=h;ty=2}}for(const s of SENS){const h=cirHit(ox,oz,dx,dz,s.p,.7);if(h<t){t=h;ty=2}}
+  for(const o of MS.obs){const h=cirHit(ox,oz,dx,dz,o.p,o.r*.8);if(h<t){t=h;ty=3}}return ty?[ox+dx*t,oz+dz*t,ty,t]:null}
+const LCOL=[null,[.35,.9,1.],[1.,.82,.35],[1.,.3,.36]];
+function updateSensorsViz(dt){if(!MS.G||!MS.G.visible)return;const bx=BOAT.pos.x,bz=BOAT.pos.y,Tm=U.time.value,sdt=dt*BOAT.speed;
+  /* floating obstacles drift */
+  MS.obs.forEach((o,k)=>{const nx=o.p[0]+o.v[0]*sdt,nz=o.p[1]+o.v[1]*sdt;if(boatValid([nx,nz])&&Math.hypot(nx-bx,nz-bz)>o.r+1.6)o.p=[nx,nz];else{const an=Math.random()*6.283;o.v=[Math.cos(an)*.18,Math.sin(an)*.18]}
+    o.fade=Math.min(1,o.fade+dt*.8);const s=o.fade;o.grp.scale.set(s,s,s);o.grp.position.set(o.p[0],-0.5+.03*Math.sin(Tm*1.6+k*2),o.p[1]);o.grp.rotation.y=-Math.atan2(o.v[1],o.v[0])});
+  /* LiDAR */
+  MS.ang+=dt*12.566;MS.fan.position.set(bx,-0.28,bz);MS.fan.rotation.y=-MS.ang;MS.rr.position.set(bx,-0.32,bz);
+  const hp=MS.hp,P=hp.g.attributes.position.array,Cc=hp.g.attributes.col.array,A=hp.g.attributes.al.array;let near=99,nh=0;
+  for(let k=0;k<28;k++){const a=MS.ang+k*(6.2832/28)+Math.random()*.2;const h=lidarRay(bx,bz,a,15);if(!h)continue;const i=hp.head;hp.head=(hp.head+1)%hp.N;
+    P[i*3]=h[0]+R(-.1,.1);P[i*3+1]=h[2]===3?-0.25+Math.random()*.35:-0.3+Math.random()*.5;P[i*3+2]=h[1]+R(-.1,.1);Cc.set(LCOL[h[2]],i*3);hp.L[i]=1.3;if(h[2]===3){near=Math.min(near,h[3]);nh++}}
+  for(let i=0;i<hp.N;i++){if(hp.L[i]>0){hp.L[i]-=dt;A[i]=Math.max(0,hp.L[i]/1.3)}else A[i]=0}
+  ['position','col','al'].forEach(k=>hp.g.attributes[k].needsUpdate=true);MS.near=near;
+  /* avoidance marker */
+  const av=MS.avoid;MS.oring.visible=!!av;MS.alertLbl.hidden=!av;if(av){const r=av.o.r+.6;MS.oring.scale.set(r,r,r);MS.oring.position.set(av.o.p[0],-0.3,av.o.p[1]);MS.oring.material.opacity=.55+.4*Math.sin(Tm*10);MS.alertLbl.v.set(av.o.p[0],2.6,av.o.p[1])}
+  /* GNSS downlink */
+  const mast=[bx,0.9,bz],GP=MS.gl.geometry.attributes.position.array,PP=MS.pk.geometry.attributes.position.array;
+  MS.sats.forEach((s,k)=>{s.rotation.y=Tm*.05+k;GP.set([s.position.x,s.position.y,s.position.z,mast[0],mast[1],mast[2]],k*6);
+    for(let j=0;j<6;j++){const t=(Tm*.45+j/6+k*.13)%1;PP.set([s.position.x+(mast[0]-s.position.x)*t,s.position.y+(mast[1]-s.position.y)*t,s.position.z+(mast[2]-s.position.z)*t],(k*6+j)*3)}});
+  MS.gl.geometry.attributes.position.needsUpdate=true;MS.pk.geometry.attributes.position.needsUpdate=true;MS.gl.material.opacity=.2+.12*Math.sin(Tm*4);
+  /* telemetry */
+  MS.tTel+=dt;if(MS.tTel>.25){MS.tTel=0;const lat=GEO.lat-bz/111320,lon=GEO.lon+bx/(111320*Math.cos(GEO.lat*Math.PI/180));
+    const e1=$('#bGnss'),e2=$('#bLidar');if(e1)e1.textContent=T('gnssLn',{n:9+((Tm/7|0)%3),lat:(lat+R(-1,1)*1e-7).toFixed(6),lon:(lon+R(-1,1)*1e-7).toFixed(6),h:(0.7+0.1*Math.sin(Tm*.3)).toFixed(1)});
+    if(e2)e2.textContent=T('lidarLn',{n:nh,d:near<99?near.toFixed(1)+' m':'—'})}}

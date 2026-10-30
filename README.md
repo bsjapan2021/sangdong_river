@@ -23,6 +23,22 @@ NHI PhotoNano(UFB–TiO₂ 광촉매 융합 수질개선) 테스트베드의 측
 
 - **표시 모드 토글**: 상단 `일반 상태 | 정화 연출` 버튼(또는 키보드 P). 일반 상태는 PhotoNano 미가동·운전 전 기준값, 정화 연출은 처음부터 다시 재생
 
+- **보트 운행(녹조제거 쌍동선)**: 상단 `보트 운행` 버튼(또는 키보드 B). STL 실측 모델(1.6 m)이 ① **수계 인식**(위성영상+LiDAR 경계 스캔, 수면적·운항 금지구역 등록) → ② **경로 최적화**(동서/남북 교차 왕복 커버리지 경로, 예상 커버리지 표시) → ③ **자율 운항**(GNSS RTK 위성 좌표 수신·LiDAR 360° 스캔, 부유 장애물 감지 시 회피 기동 후 경로 복귀) 순서로 미션을 수행하며 나노버블·광촉매 ROS로 녹조를 제거. 배속 ×1/×10/×30, 보트 추적 카메라, 미션 재시작
+
+## 회원 · 접속자 관리
+- 첫 화면은 **스플래시 → 로그인**. 회원가입(이름·이메일·연락처·소속·이용 목적, 개인정보 동의) → **이메일 인증**(메일 설정 시) → **최고관리자 승인** 후 이용
+- 비밀번호 찾기(메일 재설정 링크, 1시간·1회용), 로그인 후 비밀번호 변경, 연속 실패 시 10분 잠금
+- **접속자 관리(최고관리자 전용)**: 회원 승인·차단·차단 해지·메일 인증 처리·임시 비밀번호·삭제, 접속자(IP·지역·브라우저·회원·접속 중 여부) 조회, IP 차단·해제. 일반 회원에게는 버튼이 보이지 않고 서버 API도 최고관리자 토큰만 허용
+- 로컬 `index.html`(file://) 실행은 오프라인 열람용이라 로그인 없이 열립니다
+
+### 서버 설정 (Vercel 환경변수 — 값은 저장소에 커밋하지 않음)
+| 변수 | 내용 |
+|---|---|
+| `DATABASE_URL` / `DATABASE_POSTGRES_URL` | Neon Postgres (Vercel Storage 연결 시 자동 주입) |
+| `ADMIN_PASSWORD` | 최고관리자(`ADMIN_EMAIL`, 기본 kr.seunghunyeo@gmail.com) 최초 비밀번호 — 첫 요청 시 해시로만 저장 |
+| `MAIL_USER`, `MAIL_APP_PASSWORD` | Gmail 주소 + 앱 비밀번호 → 가입 인증·비밀번호 재설정·승인 알림 메일. 미설정 시 메일 없이 ‘관리자 승인’만으로 운영 |
+| `AUTH_SECRET` (선택) | 토큰 서명 키. 미설정 시 DB에 자동 생성·보관 |
+
 ## 빌드
 ```
 python3 src/tools/make_assets.py   # photos/ → 누끼 스카이라인·비교용 사진
@@ -40,6 +56,8 @@ cp sangdong_dt_v2_offline.html index.html
 | `src/vendor/` | three.js r128, OrbitControls, Water |
 | `data/sd_osm.json` | OSM 지형 (원점 37.5038N 126.7450E, m, x=동 z=남) |
 | `photos/` | 현장 참고 사진 원본 |
+| `api/`, `lib/` | Vercel 서버리스 API (회원 인증·관리자·접속 기록) |
+| `data/ssangdong_ship.stl`, `src/assets/boat_mesh.json` | 녹조제거 쌍동선 STL 원본·변환 메시 |
 
 ## 저작권 · 라이선스
 © 2026 주식회사 나노하이드로인 (NanoHydroIn Co., Ltd.). All rights reserved.
@@ -56,6 +74,8 @@ Photoreal 3D digital twin of Sangdong Lake Park (Bucheon, Korea), built from sur
 - **Language**: `한국어 | EN | 日本語` buttons at top-left, or `?lang=en` / `?lang=ja`.
 - **Features**: reflective water, reeds, blue-railed boardwalks, fountains, spire plaza, species-specific trees, cut-out photo skyline, time-of-day lighting, traffic, site-photo overlay comparison, 2 shoreline PhotoNano units with 5 monitoring points (S-01–S-05).
 - **Purification mode** (`Normal | Purification`, key `P`): micro/nano-bubble plumes spread from both returns across the lake; algae and anaerobic sludge clear on the surface; underwater, photocatalytic ROS (·OH cyan, O₂⁻ violet) break down bacteria, viruses and fungi; the S-01–S-05 panel tracks DO rise and turbidity drop against Table 5 criteria.
+- **Boat mission** (`Boat`, key `B`): the algae-removal catamaran (STL, 1.6 m) runs ① water-area mapping (satellite imagery + LiDAR boundary scan, no-go zones) → ② coverage-path optimization (lawnmower / cross-pass) → ③ autonomous run with GNSS RTK fixes and 360° LiDAR, avoiding floating obstacles and rejoining the route, spraying nano-bubbles + photocatalytic ROS.
+- **Members & access**: splash → sign-in; sign-up with email verification and super-admin approval; password reset; super-admin-only access management (approve / block / unblock members, visitor IPs, IP blocking). Server env vars: `DATABASE_URL` (Neon), `ADMIN_PASSWORD`, `MAIL_USER` + `MAIL_APP_PASSWORD` (Gmail app password), optional `AUTH_SECRET`.
 - All water-quality values and purification effects are **conceptual simulations**, not field measurements.
 
 © 2026 NanoHydroIn Co., Ltd. All rights reserved — see [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md).
@@ -67,6 +87,8 @@ OpenStreetMapの実測地形と現地写真に基づき、上洞湖水公園（�
 - **言語**：左上の `한국어 | EN | 日本語` ボタン、または `?lang=ja`。
 - **主な機能**：反射する水面、ヨシ、青い手すりの遊歩デッキ、噴水、尖塔広場、樹種別の樹木、写真切り抜きのスカイライン、時間帯の光、車両の流れ、現地写真との重ね比較、護岸設置のPhotoNano 2基と測定5地点（S-01〜S-05）。
 - **浄化演出**（`通常状態 | 浄化演出`、Pキー）：2か所の還水部からマイクロ・ナノバブルが湖全域へ広がり、水面のアオコ・嫌気性スラッジが消え、水中では光触媒ROS（·OH 青白、O₂⁻ 紫）が細菌・ウイルス・カビを分解。S-01〜S-05パネルはDO上昇・濁度低下を表5基準と比較して表示します。
+- **ボート運航**（`ボート運航`、Bキー）：アオコ除去双胴船（STL、1.6 m）が ①水域認識（衛星画像＋LiDAR境界スキャン、禁止区域登録）→ ②カバレッジ経路最適化 → ③GNSS RTK・LiDAR 360°による自律運航（浮遊障害物を回避し経路へ復帰）を行い、ナノバブルと光触媒ROSでアオコを除去。
+- **会員・アクセス管理**：スプラッシュ→ログイン。会員登録はメール認証と最高管理者の承認が必要。パスワード再設定、最高管理者専用のアクセス管理（会員の承認・遮断・解除、接続IP一覧、IP遮断）。
 - 水質数値と浄化演出はすべて**概念シミュレーション**であり、実測値ではありません。
 
 © 2026 株式会社ナノハイドロイン（NanoHydroIn Co., Ltd.）All rights reserved — [LICENSE](LICENSE)・[NOTICE.md](NOTICE.md) を参照。

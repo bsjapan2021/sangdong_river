@@ -1,0 +1,11 @@
+{
+  "name": "sangdong-river-dt",
+  "private": true,
+  "type": "module",
+  "description": "상동호수공원 디지털트윈 (NHI PhotoNano) — static 3D page + Vercel serverless auth/admin API",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "nodemailer": "^6.9.16",
+    "pg": "^8.13.1"
+  }
+}

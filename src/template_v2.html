@@ -99,6 +99,11 @@ button:focus-visible,.tg input:focus-visible,input[type=range]:focus-visible{out
 #purHud .brow button{font:500 11px var(--mono);color:var(--ink-2);background:rgba(255,255,255,.04);border:1px solid var(--glass-line);border-radius:5px;padding:3px 7px;cursor:pointer}
 #purHud .brow button[aria-pressed="true"]{color:#06222a;background:#9ff0b8;border-color:#9ff0b8}
 #purHud .brow #bFollow{margin-left:auto;font-family:var(--ui)}
+#purHud .msteps{display:flex;gap:4px;margin-top:8px}#purHud .msteps span{flex:1;text-align:center;font-size:10.5px;padding:3px 2px;border-radius:4px;color:var(--ink-3);border:1px solid var(--glass-line)}
+#purHud .msteps span[data-st="on"]{color:#06222a;background:#8fe6ff;border-color:#8fe6ff;font-weight:600}#purHud .msteps span[data-st="done"]{color:#9ff0b8;border-color:rgba(159,240,184,.5)}
+#purHud .tele{margin-top:6px;font:500 10.5px var(--mono);color:var(--ink-2);line-height:1.55}#purHud .tele i{font-style:normal}
+#purHud .lleg{font-family:var(--ui);color:var(--ink-3);display:flex;gap:3px;align-items:center;flex-wrap:wrap}#purHud .lleg span{margin-right:4px}
+#purHud #bRestart{margin-left:auto;font:500 10.5px var(--ui);color:var(--ink-2);background:rgba(255,255,255,.04);border:1px solid var(--glass-line);border-radius:5px;padding:2px 7px;cursor:pointer}
 #boatBar{background:linear-gradient(90deg,#9ff0b8,#e8fff0)!important}
 #purHud .pnote{font-size:10.5px;color:var(--ink-3);margin-top:4px}
 @media (max-width:900px){#purHud{top:auto;bottom:calc(64px + env(safe-area-inset-bottom,0px))}}
@@ -116,9 +121,149 @@ button:focus-visible,.tg input:focus-visible,input[type=range]:focus-visible{out
   #views button{padding:7px 9px;font-size:12px}
 }
 @media (prefers-reduced-motion:reduce){#loading{transition:none}}
+/* ---------- splash · auth · admin ---------- */
+#splash{position:fixed;inset:0;z-index:60;display:grid;place-items:center;overflow:hidden;color:var(--ink);
+  background:radial-gradient(120% 90% at 50% 110%,#0f4a52 0%,#07232a 45%,#030c10 100%);transition:opacity .9s ease}
+#splash.out{opacity:0;pointer-events:none}
+#splash .bub{position:absolute;bottom:-40px;border-radius:50%;border:1px solid rgba(160,240,255,.45);background:radial-gradient(circle at 32% 30%,rgba(255,255,255,.55),rgba(140,230,255,.08) 45%,rgba(140,230,255,0) 70%);animation:rise linear infinite}
+@keyframes rise{from{transform:translateY(0) translateX(0)}50%{transform:translateY(-55vh) translateX(14px)}to{transform:translateY(-115vh) translateX(-10px)}}
+#splash .ros{position:absolute;width:3px;height:3px;border-radius:50%;background:#c99bff;box-shadow:0 0 8px 2px rgba(201,155,255,.7);animation:twk 2.4s ease-in-out infinite}
+@keyframes twk{0%,100%{opacity:0}50%{opacity:1}}
+#splash .sp{position:relative;text-align:center;padding:0 20px;max-width:560px}
+#splash .eb{font:600 11px var(--mono);letter-spacing:.32em;color:#7fe3ff}
+#splash h1{font:700 clamp(26px,5vw,40px)/1.15 var(--ui);margin:14px 0 6px;letter-spacing:-.01em}
+#splash .sub{font-size:13px;color:var(--ink-2)}
+#splash .logo{width:74px;height:74px;margin:0 auto 4px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 35% 30%,#bff6ff,#3fb7cf 55%,#0d5160);box-shadow:0 0 40px rgba(110,220,240,.45),inset 0 -6px 14px rgba(0,0,0,.3);font:800 20px var(--ui);color:#04222a}
+#splash .pg{width:min(300px,70vw);height:3px;background:rgba(255,255,255,.1);margin:22px auto 8px;border-radius:2px;overflow:hidden}
+#splash .pg i{display:block;height:100%;width:4%;background:linear-gradient(90deg,#7fe3ff,#e8fbff);transition:width .25s}
+#splash .st{font:500 11px var(--mono);color:var(--ink-3);min-height:16px}
+#splash .cp{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;font-size:10.5px;color:rgba(255,255,255,.45)}
+#auth{position:fixed;inset:0;z-index:61;display:grid;place-items:center;padding:16px;overflow:auto}
+#auth[hidden]{display:none!important}
+#auth .card{width:min(400px,100%);background:rgba(8,22,27,.86);border:1px solid var(--glass-line);border-radius:14px;padding:20px 22px 18px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 20px 60px rgba(0,0,0,.45)}
+#auth .top{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+#auth .top b{font:700 15px var(--ui);flex:1}
+#auth .alangs{display:flex;gap:3px}#auth .alangs button{font:600 10px var(--ui);color:var(--ink-2);background:transparent;border:1px solid var(--glass-line);border-radius:4px;padding:2px 6px;cursor:pointer}
+#auth .alangs button[aria-pressed="true"]{color:#06222a;background:#8fe6ff;border-color:#8fe6ff}
+#auth .tabs{display:flex;gap:4px;margin-bottom:12px}
+#auth .tabs button{flex:1;font:600 12.5px var(--ui);color:var(--ink-2);background:rgba(255,255,255,.04);border:1px solid var(--glass-line);border-radius:7px;padding:7px;cursor:pointer}
+#auth .tabs button[aria-selected="true"]{color:#06222a;background:#8fe6ff;border-color:#8fe6ff}
+#auth label{display:block;font-size:11px;color:var(--ink-3);margin:8px 0 3px}
+#auth input,#auth textarea{width:100%;box-sizing:border-box;font:500 13.5px var(--ui);color:var(--ink);background:rgba(255,255,255,.05);border:1px solid var(--glass-line);border-radius:7px;padding:9px 10px;outline:none}
+#auth input:focus,#auth textarea:focus{border-color:#8fe6ff;box-shadow:0 0 0 3px rgba(143,230,255,.15)}
+#auth textarea{resize:vertical;min-height:52px}
+#auth .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#auth .go{width:100%;margin-top:14px;font:700 14px var(--ui);color:#04222a;background:#8fe6ff;border:0;border-radius:8px;padding:10px;cursor:pointer}
+#auth .go:disabled{opacity:.55;cursor:wait}
+#auth .lnk{background:none;border:0;color:#9fd8ff;font:500 12px var(--ui);cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
+#auth .links{display:flex;justify-content:space-between;gap:8px;margin-top:10px;flex-wrap:wrap}
+#auth .msg{font-size:12.5px;line-height:1.5;margin-top:10px;padding:8px 10px;border-radius:7px;display:none}
+#auth .msg.err{display:block;color:#ffb4b4;background:rgba(255,80,80,.1);border:1px solid rgba(255,120,120,.25)}
+#auth .msg.okm{display:block;color:#b9f5cf;background:rgba(80,220,140,.1);border:1px solid rgba(120,230,160,.25)}
+#auth .chk{display:flex;gap:7px;align-items:flex-start;font-size:11.5px;color:var(--ink-2);margin-top:10px}#auth .chk input{width:auto;margin-top:2px}
+#auth .cp{text-align:center;font-size:10px;color:var(--ink-3);margin-top:12px}
+#who{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px;padding-top:7px;border-top:1px solid var(--glass-line);font-size:11.5px;color:var(--ink-2)}
+#who[hidden]{display:none!important}#who b{color:var(--ink);font-weight:600}
+#who button{font:500 11px var(--ui);color:var(--ink-2);background:rgba(255,255,255,.04);border:1px solid var(--glass-line);border-radius:5px;padding:2px 7px;cursor:pointer}
+#who #wAdmin{color:#04222a;background:#ffd15a;border-color:#ffd15a;font-weight:700}
+#who .pend{display:inline-block;min-width:15px;padding:0 4px;margin-left:3px;border-radius:8px;background:#ff5a6a;color:#fff;font-size:10px;text-align:center}
+#adm{position:fixed;inset:0;z-index:55;display:grid;place-items:center;background:rgba(2,8,10,.55);padding:12px}
+#adm[hidden]{display:none!important}
+#adm .box{width:min(1100px,100%);height:min(86vh,900px);display:flex;flex-direction:column;background:rgba(8,20,24,.95);border:1px solid var(--glass-line);border-radius:12px;overflow:hidden}
+#adm .hd{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--glass-line)}
+#adm .hd b{font:700 15px var(--ui)}#adm .hd .sm{font-size:11px;color:var(--ink-3);flex:1}
+#adm .hd button{font:500 12px var(--ui);color:var(--ink-2);background:rgba(255,255,255,.05);border:1px solid var(--glass-line);border-radius:6px;padding:4px 10px;cursor:pointer}
+#adm .tabs{display:flex;gap:4px;padding:10px 16px 0}
+#adm .tabs button{font:600 12.5px var(--ui);color:var(--ink-2);background:transparent;border:1px solid var(--glass-line);border-bottom:0;border-radius:7px 7px 0 0;padding:7px 14px;cursor:pointer}
+#adm .tabs button[aria-selected="true"]{color:#06222a;background:#8fe6ff;border-color:#8fe6ff}
+#adm .bd{flex:1;overflow:auto;padding:0 16px 14px;border-top:1px solid var(--glass-line)}
+#adm .kpis{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 10px}
+#adm .kpi{background:rgba(255,255,255,.04);border:1px solid var(--glass-line);border-radius:8px;padding:6px 12px;font-size:11px;color:var(--ink-3)}#adm .kpi b{display:block;font:700 18px var(--mono);color:var(--ink)}
+#adm table{width:100%;border-collapse:collapse;font-size:12px}
+#adm th{position:sticky;top:0;background:#0b1d22;text-align:left;font-weight:600;color:var(--ink-3);font-size:11px;padding:7px 6px;border-bottom:1px solid var(--glass-line);white-space:nowrap}
+#adm td{padding:7px 6px;border-bottom:1px solid rgba(170,215,220,.08);vertical-align:top}
+#adm td .s{font-size:10.5px;color:var(--ink-3)}
+#adm .tag{display:inline-block;font-size:10.5px;padding:1px 6px;border-radius:4px;white-space:nowrap}
+#adm .t-pending{color:#ffd15a;background:rgba(255,209,90,.12)}#adm .t-active{color:#7ff0b0;background:rgba(80,220,140,.12)}#adm .t-blocked{color:#ff8a95;background:rgba(255,90,106,.14)}
+#adm .t-adm{color:#04222a;background:#ffd15a}#adm .t-nv{color:#ffb86b;background:rgba(255,160,80,.12)}
+#adm .acts{display:flex;gap:4px;flex-wrap:wrap}
+#adm .acts button{font:600 11px var(--ui);border-radius:5px;padding:3px 8px;cursor:pointer;border:1px solid var(--glass-line);background:rgba(255,255,255,.05);color:var(--ink-2);white-space:nowrap}
+#adm .acts .ok{color:#04222a;background:#7ff0b0;border-color:#7ff0b0}#adm .acts .no{color:#fff;background:#d9465a;border-color:#d9465a}#adm .acts .warn{color:#04222a;background:#ffd15a;border-color:#ffd15a}
+#adm .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#59656a;margin-right:5px}#adm .dot.on{background:#3fe08a;box-shadow:0 0 6px #3fe08a}
+#adm .note{font-size:11px;color:var(--ink-3);margin:10px 0 0}
+#adm .tp{font:600 13px var(--mono);color:#ffd15a;user-select:all}
+#blockedScr{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:#05090b;color:var(--ink);text-align:center;padding:20px}
+#blockedScr[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){#splash .bub,#splash .ros{animation:none;display:none}}
+
 </style>
 
 <div id="stage"></div>
+<div id="splash" role="status" aria-live="polite">
+  <div class="sp">
+    <div class="logo">NHI</div>
+    <div class="eb">NANOHYDROIN CO., LTD.</div>
+    <h1 data-i18n="spTitle">상동호수공원 디지털트윈</h1>
+    <div class="sub" data-i18n="spSub">NHI PhotoNano · UFB × TiO₂/UVA 광촉매 수질개선 · K-테스트베드 2026</div>
+    <div class="pg"><i id="spBar"></i></div>
+    <div class="st" id="spTxt"></div>
+  </div>
+  <div class="cp" data-i18n="credit">© 2026 주식회사 나노하이드로인 (NanoHydroIn Co., Ltd.) · All rights reserved</div>
+</div>
+<div id="auth" hidden>
+  <div class="card">
+    <div class="top"><b data-i18n="spTitle">상동호수공원 디지털트윈</b><div class="alangs"><button data-lang="ko">한국어</button><button data-lang="en">EN</button><button data-lang="ja">日本語</button></div></div>
+    <div class="tabs" role="tablist" id="aTabs"><button role="tab" data-v="login" data-i18n="auLogin">로그인</button><button role="tab" data-v="register" data-i18n="auRegister">회원가입</button></div>
+    <form id="fLogin" data-v="login">
+      <label data-i18n="auEmail">이메일</label><input name="email" type="email" autocomplete="username" required>
+      <label data-i18n="auPw">비밀번호</label><input name="password" type="password" autocomplete="current-password" required>
+      <button class="go" type="submit" data-i18n="auLogin">로그인</button>
+      <div class="links"><button type="button" class="lnk" data-go="forgot" data-i18n="auForgot">비밀번호를 잊으셨나요?</button><button type="button" class="lnk" id="aResend" hidden data-i18n="auResend">인증 메일 다시 보내기</button></div>
+    </form>
+    <form id="fRegister" data-v="register" hidden>
+      <div class="row2"><div><label data-i18n="auName">이름</label><input name="name" required maxlength="60" autocomplete="name"></div>
+        <div><label data-i18n="auPhone">연락처</label><input name="phone" required maxlength="40" autocomplete="tel"></div></div>
+      <label data-i18n="auEmail">이메일</label><input name="email" type="email" required autocomplete="email">
+      <div class="row2"><div><label data-i18n="auPw8">비밀번호(8자 이상)</label><input name="password" type="password" minlength="8" required autocomplete="new-password"></div>
+        <div><label data-i18n="auPw2">비밀번호 확인</label><input name="password2" type="password" minlength="8" required autocomplete="new-password"></div></div>
+      <label data-i18n="auOrg">소속(기관·회사)</label><input name="org" maxlength="80" autocomplete="organization">
+      <label data-i18n="auMemo">이용 목적</label><textarea name="memo" maxlength="300"></textarea>
+      <div class="chk"><input type="checkbox" name="agree" id="aAgree" required><label for="aAgree" style="margin:0" data-i18n="auAgree">개인정보(이름·이메일·연락처·소속·접속 IP) 수집·이용에 동의합니다. 가입 후 이메일 인증과 관리자 승인을 거쳐 이용할 수 있습니다.</label></div>
+      <button class="go" type="submit" data-i18n="auRegister">회원가입</button>
+    </form>
+    <form id="fForgot" data-v="forgot" hidden>
+      <p style="font-size:12.5px;color:var(--ink-2);margin:0 0 4px" data-i18n="auForgotP">가입한 이메일을 입력하면 비밀번호 재설정 링크를 보내드립니다.</p>
+      <label data-i18n="auEmail">이메일</label><input name="email" type="email" required>
+      <button class="go" type="submit" data-i18n="auSendLink">재설정 링크 보내기</button>
+      <div class="links"><button type="button" class="lnk" data-go="login" data-i18n="auBack">로그인으로 돌아가기</button></div>
+    </form>
+    <form id="fReset" data-v="reset" hidden>
+      <p style="font-size:12.5px;color:var(--ink-2);margin:0 0 4px" data-i18n="auResetP">새 비밀번호를 입력하세요.</p>
+      <label data-i18n="auPw8">비밀번호(8자 이상)</label><input name="password" type="password" minlength="8" required autocomplete="new-password">
+      <label data-i18n="auPw2">비밀번호 확인</label><input name="password2" type="password" minlength="8" required autocomplete="new-password">
+      <button class="go" type="submit" data-i18n="auSetPw">비밀번호 변경</button>
+    </form>
+    <form id="fChange" data-v="change" hidden>
+      <label data-i18n="auCurPw">현재 비밀번호</label><input name="current" type="password" required autocomplete="current-password">
+      <label data-i18n="auPw8">비밀번호(8자 이상)</label><input name="password" type="password" minlength="8" required autocomplete="new-password">
+      <label data-i18n="auPw2">비밀번호 확인</label><input name="password2" type="password" minlength="8" required autocomplete="new-password">
+      <button class="go" type="submit" data-i18n="auSetPw">비밀번호 변경</button>
+      <div class="links"><button type="button" class="lnk" id="aCancel" data-i18n="auClose">닫기</button></div>
+    </form>
+    <div class="msg" id="aMsg" role="alert"></div>
+    <div class="cp" data-i18n="credit">© 2026 주식회사 나노하이드로인 (NanoHydroIn Co., Ltd.) · All rights reserved</div>
+  </div>
+</div>
+<div id="adm" hidden role="dialog" aria-modal="true" aria-labelledby="admT">
+  <div class="box">
+    <div class="hd"><b id="admT" data-i18n="adTitle">접속자 관리</b><span class="sm" data-i18n="adOnly">최고관리자 전용 · 일반 회원에게는 보이지 않습니다</span><button id="admRef" data-i18n="adRefresh">새로고침</button><button id="admX" data-i18n="auClose">닫기</button></div>
+    <div class="tabs" role="tablist"><button data-t="members" aria-selected="true"></button><button data-t="visitors" aria-selected="false"></button><button data-t="blocked" aria-selected="false"></button></div>
+    <div class="bd" id="admBody"></div>
+  </div>
+</div>
+<div id="blockedScr" hidden><div><div style="font-size:44px">⛔</div><h2 data-i18n="blkTitle">접속이 차단되었습니다</h2><p style="color:var(--ink-2);font-size:13px" data-i18n="blkP">이 IP 또는 계정의 접속이 관리자에 의해 차단되었습니다. 문의: 주식회사 나노하이드로인</p></div></div>
+
 <div id="compare" hidden></div>
 <div id="labels"></div>
 <div id="loading"><div><div id="ldtxt" data-i18n="loading">실사 텍스처와 지형을 생성하는 중…</div><div class="bar"><i id="ldbar"></i></div></div></div>
@@ -182,7 +327,9 @@ button:focus-visible,.tg input:focus-visible,input[type=range]:focus-visible{out
   <div id="boatBody" hidden><div class="sec" data-i18n="boatTitle">녹조제거 쌍동선 · 자율운항</div>
   <div class="ph"><b id="boatPct">0%</b><span id="boatMsg" data-i18n="boatReady">출항 준비</span></div><div class="pbar"><i id="boatBar"></i></div>
   <div class="brow"><span data-i18n="boatSpeed">배속</span><button data-bs="1" aria-pressed="false">×1</button><button data-bs="10" aria-pressed="true">×10</button><button data-bs="30" aria-pressed="false">×30</button><button id="bFollow" aria-pressed="true" data-i18n="boatFollow">보트 추적</button></div>
-  <div class="pnote" data-i18n="boatNote">수면 구역만 운항 · 녹조 밀집 구역 우선 탐색 · 전방 UFB 노즐 + 태양광 TiO₂/UVA ROS · 개념 시각화(실제 속도 1.5 m/s)</div></div>
+  <div class="msteps"><span data-ms="1" data-i18n="msSt1">① 수계 인식</span><span data-ms="2" data-i18n="msSt2">② 경로 최적화</span><span data-ms="3" data-i18n="msSt3">③ 자율 운항</span></div>
+  <div class="tele"><div><i style="color:#9fd8ff">●</i> <span id="bGnss">GNSS</span></div><div><i style="color:#7dff9e">●</i> <span id="bLidar">LiDAR</span></div><div class="lleg"><i style="color:#5ae6ff">●</i><span data-i18n="lgShore">호안</span> <i style="color:#ffd15a">●</i><span data-i18n="lgStruct">구조물</span> <i style="color:#ff4d5e">●</i><span data-i18n="lgObs">부유 장애물</span> <i style="color:#ff5a5a">○</i><span data-i18n="lgNogo">금지구역</span><button id="bRestart" data-i18n="bRestart">미션 재시작</button></div></div>
+  <div class="pnote" data-i18n="boatNote">수면 구역만 운항 · 왕복 커버리지 경로 · 전방 UFB 노즐 + 태양광 TiO₂/UVA ROS · 좌표는 OSM 기준 · 개념 시각화(실제 속도 1.5 m/s)</div></div>
 </div>
 <div id="credit" data-i18n="credit">© 2026 주식회사 나노하이드로인 (NanoHydroIn Co., Ltd.) · All rights reserved · 지도 © OpenStreetMap contributors (ODbL) · three.js (MIT) · 사진: 각 원저작자</div>
 
@@ -241,6 +388,64 @@ const I18N={
  v_under:{ko:'수중 시점',en:'Underwater',ja:'水中視点'},
  modeGroup:{ko:'표시 모드',en:'Display mode',ja:'表示モード'},
  mNormal:{ko:'일반 상태',en:'Normal',ja:'通常状態'},
+ spTitle:{ko:'상동호수공원 디지털트윈',en:'Sangdong Lake Park Digital Twin',ja:'上洞湖水公園デジタルツイン'},
+ spSub:{ko:'NHI PhotoNano · UFB × TiO₂/UVA 광촉매 수질개선 · K-테스트베드 2026',en:'NHI PhotoNano · UFB × TiO₂/UVA photocatalytic water treatment · K-Testbed 2026',ja:'NHI PhotoNano・UFB×TiO₂/UVA光触媒水質改善・Kテストベッド2026'},
+ auLogin:{ko:'로그인',en:'Sign in',ja:'ログイン'},auRegister:{ko:'회원가입',en:'Sign up',ja:'会員登録'},auEmail:{ko:'이메일',en:'Email',ja:'メール'},auPw:{ko:'비밀번호',en:'Password',ja:'パスワード'},
+ auPw8:{ko:'비밀번호(8자 이상)',en:'Password (8+ chars)',ja:'パスワード（8文字以上）'},auPw2:{ko:'비밀번호 확인',en:'Confirm password',ja:'パスワード確認'},auCurPw:{ko:'현재 비밀번호',en:'Current password',ja:'現在のパスワード'},
+ auName:{ko:'이름',en:'Name',ja:'氏名'},auPhone:{ko:'연락처',en:'Phone',ja:'連絡先'},auOrg:{ko:'소속(기관·회사)',en:'Organization',ja:'所属（機関・会社）'},auMemo:{ko:'이용 목적',en:'Purpose of use',ja:'利用目的'},
+ auAgree:{ko:'개인정보(이름·이메일·연락처·소속·접속 IP) 수집·이용에 동의합니다. 가입 후 이메일 인증과 관리자 승인을 거쳐 이용할 수 있습니다.',en:'I agree to the collection and use of my personal data (name, email, phone, organization, access IP). After sign-up, email verification and administrator approval are required.',ja:'個人情報（氏名・メール・連絡先・所属・接続IP）の収集・利用に同意します。登録後、メール認証と管理者承認を経て利用できます。'},
+ auForgot:{ko:'비밀번호를 잊으셨나요?',en:'Forgot password?',ja:'パスワードをお忘れですか？'},auResend:{ko:'인증 메일 다시 보내기',en:'Resend verification email',ja:'認証メールを再送'},
+ auForgotP:{ko:'가입한 이메일을 입력하면 비밀번호 재설정 링크를 보내드립니다.',en:'Enter your email and we will send you a password reset link.',ja:'登録メールを入力すると、パスワード再設定リンクをお送りします。'},
+ auSendLink:{ko:'재설정 링크 보내기',en:'Send reset link',ja:'再設定リンクを送信'},auBack:{ko:'로그인으로 돌아가기',en:'Back to sign in',ja:'ログインに戻る'},
+ auResetP:{ko:'새 비밀번호를 입력하세요.',en:'Enter a new password.',ja:'新しいパスワードを入力してください。'},auSetPw:{ko:'비밀번호 변경',en:'Change password',ja:'パスワード変更'},auClose:{ko:'닫기',en:'Close',ja:'閉じる'},
+ auChangePw:{ko:'비밀번호 변경',en:'Change password',ja:'パスワード変更'},auLogout:{ko:'로그아웃',en:'Sign out',ja:'ログアウト'},
+ auRegMail:{ko:'가입 신청이 접수되었습니다. 메일함의 인증 링크를 눌러 이메일 인증을 완료해 주세요. 관리자 승인 후 로그인할 수 있습니다.',en:'Sign-up received. Please click the verification link in your inbox. You can sign in after administrator approval.',ja:'登録を受け付けました。メールの認証リンクをクリックしてください。管理者の承認後にログインできます。'},
+ auRegPending:{ko:'가입 신청이 접수되었습니다. 관리자 승인 후 로그인할 수 있습니다.',en:'Sign-up received. You can sign in after administrator approval.',ja:'登録を受け付けました。管理者の承認後にログインできます。'},
+ auResent:{ko:'인증 메일을 다시 보냈습니다. 메일함을 확인해 주세요.',en:'Verification email sent again. Please check your inbox.',ja:'認証メールを再送しました。メールをご確認ください。'},
+ auForgotSent:{ko:'가입된 이메일이면 재설정 링크를 보냈습니다(1시간 유효). 메일함을 확인해 주세요.',en:'If the email is registered, a reset link has been sent (valid 1 h).',ja:'登録済みのメールであれば再設定リンクを送信しました（1時間有効）。'},
+ auForgotNoMail:{ko:'현재 메일 발송이 설정되지 않았습니다. 관리자에게 임시 비밀번호 발급을 요청해 주세요.',en:'Email sending is not configured yet. Please ask the administrator for a temporary password.',ja:'現在メール送信が設定されていません。管理者に仮パスワードの発行を依頼してください。'},
+ auResetDone:{ko:'비밀번호가 변경되었습니다. 새 비밀번호로 로그인하세요.',en:'Password changed. Please sign in with your new password.',ja:'パスワードを変更しました。新しいパスワードでログインしてください。'},
+ auResetDonePending:{ko:'비밀번호가 변경되었습니다. 관리자 승인 후 로그인할 수 있습니다.',en:'Password changed. You can sign in after administrator approval.',ja:'パスワードを変更しました。管理者承認後にログインできます。'},
+ auVerified:{ko:'이메일 인증이 완료되었습니다. 로그인하세요.',en:'Email verified. Please sign in.',ja:'メール認証が完了しました。ログインしてください。'},
+ auVerifiedPending:{ko:'이메일 인증이 완료되었습니다. 관리자 승인 후 로그인할 수 있습니다.',en:'Email verified. You can sign in after administrator approval.',ja:'メール認証が完了しました。管理者承認後にログインできます。'},
+ auPwChanged:{ko:'비밀번호가 변경되었습니다.',en:'Password changed.',ja:'パスワードを変更しました。'},
+ er_X:{ko:'요청을 처리하지 못했습니다. 잠시 후 다시 시도하세요.',en:'Request failed. Please try again later.',ja:'処理できませんでした。しばらくしてから再度お試しください。'},
+ er_NETWORK:{ko:'서버에 연결할 수 없습니다. 네트워크를 확인하세요.',en:'Cannot reach the server. Check your network.',ja:'サーバーに接続できません。ネットワークをご確認ください。'},
+ er_PWMATCH:{ko:'비밀번호 확인이 일치하지 않습니다.',en:'Passwords do not match.',ja:'パスワードが一致しません。'},
+ er_BAD_CREDENTIALS:{ko:'이메일 또는 비밀번호가 올바르지 않습니다.',en:'Incorrect email or password.',ja:'メールまたはパスワードが正しくありません。'},
+ er_EMAIL_UNVERIFIED:{ko:'이메일 인증이 필요합니다. 메일함의 인증 링크를 확인하세요.',en:'Email verification required. Check your inbox for the link.',ja:'メール認証が必要です。認証リンクをご確認ください。'},
+ er_PENDING_APPROVAL:{ko:'관리자 승인 대기 중입니다. 승인 후 로그인할 수 있습니다.',en:'Awaiting administrator approval.',ja:'管理者の承認待ちです。'},
+ er_ACCOUNT_BLOCKED:{ko:'이용이 차단된 계정입니다. 관리자에게 문의하세요.',en:'This account is blocked. Contact the administrator.',ja:'このアカウントは利用停止中です。管理者にお問い合わせください。'},
+ er_IP_BLOCKED:{ko:'접속이 차단된 IP입니다. 관리자에게 문의하세요.',en:'Access from this IP is blocked.',ja:'このIPからの接続は遮断されています。'},
+ er_EMAIL_TAKEN:{ko:'이미 가입된 이메일입니다.',en:'This email is already registered.',ja:'既に登録されているメールです。'},
+ er_RATE_LIMIT:{ko:'요청이 많습니다. 잠시 후 다시 시도하세요.',en:'Too many requests. Please wait a moment.',ja:'リクエストが多すぎます。しばらくお待ちください。'},
+ er_LOGIN_LOCKED:{ko:'로그인 시도가 많아 10분간 잠겼습니다.',en:'Too many attempts — locked for 10 minutes.',ja:'試行回数が多いため10分間ロックされました。'},
+ er_INVALID_TOKEN:{ko:'링크가 유효하지 않거나 만료되었습니다.',en:'The link is invalid or has expired.',ja:'リンクが無効または期限切れです。'},
+ er_AUTH_DISABLED:{ko:'회원 기능이 아직 설정되지 않았습니다.',en:'Membership is not configured yet.',ja:'会員機能がまだ設定されていません。'},
+ er_FORBIDDEN:{ko:'최고관리자만 접근할 수 있습니다.',en:'Super-administrator only.',ja:'最高管理者のみアクセスできます。'},
+ er_SELF_BLOCK:{ko:'현재 사용 중인 내 IP는 차단할 수 없습니다.',en:'You cannot block your own current IP.',ja:'現在使用中の自分のIPは遮断できません。'},
+ er_CONFIRM:{ko:'확인용 이메일이 일치하지 않습니다.',en:'Confirmation email does not match.',ja:'確認用メールが一致しません。'},
+ adTitle:{ko:'접속자 관리',en:'Access management',ja:'アクセス管理'},adOnly:{ko:'최고관리자 전용 · 일반 회원에게는 보이지 않습니다',en:'Super-admin only · hidden from regular members',ja:'最高管理者専用・一般会員には表示されません'},
+ adRefresh:{ko:'새로고침',en:'Refresh',ja:'更新'},adMembers:{ko:'회원',en:'Members',ja:'会員'},adVisitors:{ko:'접속자',en:'Visitors',ja:'接続者'},adBlocked:{ko:'차단 IP',en:'Blocked IPs',ja:'遮断IP'},
+ adPendingN:{ko:'승인 대기 {n}',en:'{n} pending',ja:'承認待ち {n}'},adOnlineN:{ko:'접속 중 {n}',en:'{n} online',ja:'接続中 {n}'},adLoading:{ko:'불러오는 중…',en:'Loading…',ja:'読み込み中…'},
+ adTotal:{ko:'전체',en:'Total',ja:'全体'},adMail:{ko:'메일 발송',en:'Email',ja:'メール送信'},stPending:{ko:'승인 대기',en:'Pending',ja:'承認待ち'},stActive:{ko:'승인됨',en:'Active',ja:'承認済み'},stBlocked:{ko:'차단',en:'Blocked',ja:'遮断'},
+ adState:{ko:'상태',en:'Status',ja:'状態'},adJoined:{ko:'가입일',en:'Joined',ja:'登録日'},adLastLogin:{ko:'최근 로그인 · IP',en:'Last sign-in · IP',ja:'最終ログイン・IP'},adActions:{ko:'관리',en:'Actions',ja:'操作'},
+ adSuper:{ko:'최고관리자',en:'Super admin',ja:'最高管理者'},adUnverified:{ko:'메일 미인증',en:'Unverified',ja:'メール未認証'},
+ acApprove:{ko:'승인',en:'Approve',ja:'承認'},acBlock:{ko:'차단',en:'Block',ja:'遮断'},acUnblock:{ko:'차단 해지',en:'Unblock',ja:'遮断解除'},acVerify:{ko:'인증 처리',en:'Mark verified',ja:'認証済みにする'},
+ acTemp:{ko:'임시 비밀번호',en:'Temp password',ja:'仮パスワード'},acDelete:{ko:'삭제',en:'Delete',ja:'削除'},acIpBlock:{ko:'IP 차단',en:'Block IP',ja:'IP遮断'},acIpUnblock:{ko:'차단 해제',en:'Unblock',ja:'遮断解除'},
+ adTempIs:{ko:'임시 비밀번호(본인에게 전달 후 변경 안내):',en:'Temp password (share it and ask them to change it):',ja:'仮パスワード（本人に伝え変更を案内）:'},
+ adMemberNote:{ko:'신규 가입은 ‘승인 대기’로 시작합니다. 승인하면 로그인할 수 있고, 차단하면 즉시 이용이 중지되며 ‘차단 해지’로 복구합니다.',en:'New sign-ups start as Pending. Approve to allow sign-in; Block stops access immediately; Unblock restores it.',ja:'新規登録は「承認待ち」から始まります。承認でログイン可能、遮断で即時停止、遮断解除で復旧します。'},
+ adOnline:{ko:'현재 접속',en:'Online now',ja:'現在接続'},adRecent14:{ko:'최근 14일 IP',en:'IPs (14 days)',ja:'直近14日のIP'},adMemberIps:{ko:'회원 IP',en:'Member IPs',ja:'会員IP'},adMyIp:{ko:'내 IP',en:'My IP',ja:'自分のIP'},
+ adWhere:{ko:'지역',en:'Location',ja:'地域'},adMember:{ko:'회원',en:'Member',ja:'会員'},adDevice:{ko:'브라우저 · OS',en:'Browser · OS',ja:'ブラウザ・OS'},adFirst:{ko:'최초 접속',en:'First seen',ja:'初回接続'},adLast:{ko:'최근 접속',en:'Last seen',ja:'最終接続'},
+ adHits:{ko:'횟수',en:'Hits',ja:'回数'},adMe:{ko:'나',en:'me',ja:'自分'},adGuest:{ko:'비로그인',en:'guest',ja:'未ログイン'},adNow:{ko:'접속 중',en:'online',ja:'接続中'},
+ adSec:{ko:'{n}초 전',en:'{n}s ago',ja:'{n}秒前'},adMin:{ko:'{n}분 전',en:'{n} min ago',ja:'{n}分前'},adHour:{ko:'{n}시간 전',en:'{n} h ago',ja:'{n}時間前'},adDay:{ko:'{n}일 전',en:'{n} d ago',ja:'{n}日前'},
+ adVisitNote:{ko:'최근 2분 내 신호가 있으면 ‘접속 중’입니다. IP 차단은 공유 IP·VPN에 한계가 있으니 계정 차단과 함께 사용하세요.',en:'“Online” = heartbeat within 2 min. IP blocking is limited for shared IPs/VPNs — combine it with account blocking.',ja:'2分以内に信号があれば「接続中」です。IP遮断は共有IP・VPNに限界があるため、アカウント遮断と併用してください。'},
+ adReason:{ko:'차단 사유',en:'Reason',ja:'遮断理由'},adBlockedAt:{ko:'차단 일시',en:'Blocked at',ja:'遮断日時'},adBy:{ko:'처리자',en:'By',ja:'処理者'},adNone:{ko:'차단된 IP가 없습니다.',en:'No blocked IPs.',ja:'遮断中のIPはありません。'},
+ cfBlock:{ko:'{n}({e}) 회원을 차단할까요? 즉시 이용이 중지됩니다.',en:'Block {n} ({e})? Access stops immediately.',ja:'{n}（{e}）を遮断しますか？即時に利用停止されます。'},
+ cfTemp:{ko:'{n}({e}) 회원의 비밀번호를 임시 비밀번호로 바꿀까요?',en:'Replace the password of {n} ({e}) with a temporary one?',ja:'{n}（{e}）のパスワードを仮パスワードに変更しますか？'},
+ cfDelete:{ko:'삭제는 되돌릴 수 없습니다. 확인을 위해 이메일({e})을 입력하세요.',en:'Deletion cannot be undone. Type the email ({e}) to confirm.',ja:'削除は元に戻せません。確認のためメール（{e}）を入力してください。'},
+ cfIpBlock:{ko:'{ip} 를 차단합니다. 차단 사유(선택):',en:'Block {ip}. Reason (optional):',ja:'{ip} を遮断します。理由（任意）:'},
+ blkTitle:{ko:'접속이 차단되었습니다',en:'Access blocked',ja:'接続が遮断されました'},blkP:{ko:'이 IP 또는 계정의 접속이 관리자에 의해 차단되었습니다. 문의: 주식회사 나노하이드로인',en:'Access from this IP or account has been blocked by the administrator. Contact: NanoHydroIn Co., Ltd.',ja:'このIPまたはアカウントの接続は管理者により遮断されています。お問い合わせ：株式会社ナノハイドロイン'},
  mPur:{ko:'정화 연출',en:'Purification',ja:'浄化演出'},
  mBoat:{ko:'보트 운행',en:'Boat',ja:'ボート運航'},
  boatTitle:{ko:'녹조제거 쌍동선 · 자율운항',en:'Algae-removal catamaran · autonomous',ja:'アオコ除去双胴船・自律運航'},
@@ -249,7 +454,21 @@ const I18N={
  boatDone:{ko:'호수 전역 녹조 제거 · 순회 유지 운항',en:'Lake-wide algae removed · patrol continues',ja:'湖全域のアオコ除去・巡回運航を継続'},
  boatSpeed:{ko:'배속',en:'Speed',ja:'倍速'},
  boatFollow:{ko:'보트 추적',en:'Follow',ja:'追跡'},
- boatNote:{ko:'수면 구역만 운항 · 녹조 밀집 구역 우선 탐색 · 전방 UFB 노즐 + 태양광 TiO₂/UVA ROS · 개념 시각화(실제 속도 1.5 m/s)',en:'Water area only · targets dense algae first · bow UFB nozzles + solar TiO₂/UVA ROS · concept visualization (real speed 1.5 m/s)',ja:'水域のみ航行・アオコ密集域を優先探索・船首UFBノズル＋太陽光TiO₂/UVA ROS・概念ビジュアル（実速度1.5 m/s）'},
+ boatNote:{ko:'수면 구역만 운항 · 왕복 커버리지 경로 · 전방 UFB 노즐 + 태양광 TiO₂/UVA ROS · 좌표는 OSM 기준 · 개념 시각화(실제 속도 1.5 m/s)',en:'Water area only · lawnmower coverage route · bow UFB nozzles + solar TiO₂/UVA ROS · coordinates from OSM · concept visualization (real speed 1.5 m/s)',ja:'水域のみ航行・往復カバレッジ経路・船首UFBノズル＋太陽光TiO₂/UVA ROS・座標はOSM基準・概念ビジュアル（実速度1.5 m/s）'},
+ msSt1:{ko:'① 수계 인식',en:'① Water mapping',ja:'① 水域認識'},
+ msSt2:{ko:'② 경로 최적화',en:'② Path planning',ja:'② 経路最適化'},
+ msSt3:{ko:'③ 자율 운항',en:'③ Autonomous run',ja:'③ 自律運航'},
+ ms1:{ko:'수계 인식 중 · 위성영상 + LiDAR 경계 스캔 {p}%',en:'Mapping water area · satellite imagery + LiDAR boundary scan {p}%',ja:'水域認識中・衛星画像＋LiDAR境界スキャン {p}%'},
+ ms1done:{ko:'수계 인식 완료 · 수면적 {a} m² · 운항 금지구역 {n}곳 등록',en:'Water area mapped · {a} m² · {n} no-go zones registered',ja:'水域認識完了・水面積 {a} m²・航行禁止区域 {n}か所登録'},
+ ms2:{ko:'경로 최적화 · {pat} 커버리지 경로 {L} m · 예상 커버리지 {C}%',en:'Path optimized · {pat} coverage route {L} m · expected coverage {C}%',ja:'経路最適化・{pat}カバレッジ経路 {L} m・予想カバー率 {C}%'},
+ patH:{ko:'동서 왕복',en:'east–west lawnmower',ja:'東西往復'},
+ patV:{ko:'남북 왕복(교차)',en:'north–south cross-pass',ja:'南北往復（交差）'},
+ msAvoid:{ko:'⚠ LiDAR 부유 장애물 감지 {d} m → 회피 기동 후 경로 복귀',en:'⚠ LiDAR: floating obstacle {d} m → avoiding, then rejoining route',ja:'⚠ LiDAR浮遊障害物検知 {d} m → 回避後に経路復帰'},
+ gnssLn:{ko:'GNSS RTK-FIX · 위성 {n} · {lat}°N {lon}°E · HDOP {h}',en:'GNSS RTK-FIX · {n} sats · {lat}°N {lon}°E · HDOP {h}',ja:'GNSS RTK-FIX・衛星 {n}・{lat}°N {lon}°E・HDOP {h}'},
+ lidarLn:{ko:'LiDAR 360° · 15 m · 장애물 반사 {n} · 최근접 {d}',en:'LiDAR 360° · 15 m · obstacle returns {n} · nearest {d}',ja:'LiDAR 360°・15 m・障害物反射 {n}・最近接 {d}'},
+ lgShore:{ko:'호안',en:'Shore',ja:'護岸'},lgStruct:{ko:'구조물',en:'Structure',ja:'構造物'},lgObs:{ko:'부유 장애물',en:'Floating obstacle',ja:'浮遊障害物'},lgNogo:{ko:'금지구역',en:'No-go',ja:'禁止区域'},
+ bRestart:{ko:'미션 재시작',en:'Restart mission',ja:'ミッション再開'},
+ obsLbl:{ko:'⚠ LiDAR 장애물 · 회피',en:'⚠ LiDAR obstacle · avoiding',ja:'⚠ LiDAR障害物・回避'},
  boatLbl:{ko:'녹조제거 쌍동선',en:'Algae-removal catamaran',ja:'アオコ除去双胴船'},
  kbdP:{ko:'키보드 P로 전환',en:'Press P to switch',ja:'Pキーで切替'},
  purTitle:{ko:'UFB 마이크로·나노버블 정화 연출',en:'UFB micro/nano-bubble purification',ja:'UFBマイクロ・ナノバブル浄化演出'},
@@ -997,6 +1216,7 @@ function buildBoat(){
       if(a*vA<.01)discard;gl_FragColor=vec4(col*a,a*vA);}`});
   const pts=new THREE.Points(g,m);pts.frustumCulled=false;pts.visible=false;scene.add(pts);
   BOAT.pp={P,A,SZ,K,V:new Float32Array(NP*3),L:new Float32Array(NP),AG:new Float32Array(NP),N:NP,head:0,geo:g,pts};
+  buildMission();
 }
 function bSpawn(x,y,z,vx,vy,vz,life,size,kind){const p=BOAT.pp;const i=p.head;p.head=(p.head+1)%p.N;p.P[i*3]=x;p.P[i*3+1]=y;p.P[i*3+2]=z;p.V[i*3]=vx;p.V[i*3+1]=vy;p.V[i*3+2]=vz;p.L[i]=life;p.AG[i]=0;p.SZ[i]=size;p.K[i]=kind}
 function cleanAt(x,z){if(!BOAT.stat)return 0;const i=Math.floor((x-BOAT.box[0])*BOAT.box[2]),j=Math.floor((z-BOAT.box[1])*BOAT.box[3]);if(i<0||j<0||i>=BOAT.S||j>=BOAT.S)return 0;return BOAT.stat[(j*BOAT.S+i)*4]/255}
@@ -1014,20 +1234,15 @@ function boatPick(){const a=[BOAT.pos.x,BOAT.pos.y];let best=null,bs=-1e9;
 function boatReset(){const c=BOAT.ctx;c.globalCompositeOperation='source-over';c.fillStyle='#000';c.fillRect(0,0,BOAT.S,BOAT.S);BOAT.tex.needsUpdate=true;BOAT.stat=c.getImageData(0,0,BOAT.S,BOAT.S).data;
   let st=[-20,10];if(!boatValid(st))for(const s of PUR.samples){if(boatValid([s[0],s[2]])){st=[s[0],s[2]];break}}BOAT.pos.set(st[0],st[1]);BOAT.hd=0;BOAT.v=0;BOAT.target=null;BOAT.pct=0;
   const p=BOAT.pp;p.L.fill(0);p.A.fill(0)}
-function boatSetOn(on){BOAT.on=on;if(!BOAT.grp)return;BOAT.grp.visible=on;BOAT.pp.pts.visible=on;BOAT.lbl.hidden=!on;PUR.u.uMaskOn.value=on?1:0;BOAT.follow=on;const fb=$('#bFollow');if(fb)fb.setAttribute('aria-pressed',String(on));if(on)boatReset()}
+function boatSetOn(on){BOAT.on=on;if(!BOAT.grp)return;BOAT.grp.visible=on;BOAT.pp.pts.visible=on;BOAT.lbl.hidden=!on;PUR.u.uMaskOn.value=on?1:0;BOAT.follow=false;const fb=$('#bFollow');if(fb)fb.setAttribute('aria-pressed','false');if(on){boatReset();missionStart()}else missionHide()}
 const _bt=new THREE.Vector3(),_bc=new THREE.Vector3();
 function updateBoat(dt){if(!BOAT.on||!BOAT.grp)return;const sp=BOAT.speed,sdt=dt*sp;BOAT.t+=dt;
-  BOAT.cd=(BOAT.cd||0)-dt;if((!BOAT.target||Math.hypot(BOAT.target[0]-BOAT.pos.x,BOAT.target[1]-BOAT.pos.y)<3)&&BOAT.cd<=0){boatPick();if(!BOAT.target)BOAT.cd=.4}
-  if(!BOAT.target){BOAT.hd+=.4*sdt;BOAT.v*=.9}
-  if(BOAT.target){const des=Math.atan2(BOAT.target[1]-BOAT.pos.y,BOAT.target[0]-BOAT.pos.x);let dh=des-BOAT.hd;dh=Math.atan2(Math.sin(dh),Math.cos(dh));
-    const turn=clamp(dh,-.55*sdt,.55*sdt);BOAT.hd+=turn;const vt=BOAT.base*(1-Math.min(Math.abs(dh)/1.3,.75));BOAT.v+=(vt-BOAT.v)*Math.min(1,sdt*.8);
-    const nx=BOAT.pos.x+Math.cos(BOAT.hd)*BOAT.v*sdt,nz=BOAT.pos.y+Math.sin(BOAT.hd)*BOAT.v*sdt;
-    if(boatValid([nx,nz])||!boatValid([BOAT.pos.x,BOAT.pos.y]))BOAT.pos.set(nx,nz);else{BOAT.target=null;BOAT.v*=.3}}
+  const run=missionStep(dt,sdt);
   const T0=BOAT.t,fx=Math.cos(BOAT.hd),fz=Math.sin(BOAT.hd),rx=-fz,rz=fx;
   const g=BOAT.grp;g.position.set(BOAT.pos.x,-0.5+.025*Math.sin(T0*2.1),BOAT.pos.y);g.rotation.set(0,-BOAT.hd,0);BOAT.body.rotation.set(.018*Math.sin(T0*1.7),0,.012*Math.sin(T0*1.3+1));
   BOAT.ring.material.opacity=.45+.3*Math.sin(T0*3);BOAT.lbl.v.set(BOAT.pos.x,3.4,BOAT.pos.y);PUR.u.uBoat.value.set(BOAT.pos.x+fx*.7,BOAT.pos.y+fz*.7,BOAT.hd);
   /* emission (scaled gently with playback speed) */
-  const em=Math.sqrt(sp);const bx=BOAT.pos.x+fx*.7,bz=BOAT.pos.y+fz*.7;
+  const em=run?Math.sqrt(sp):0;const bx=BOAT.pos.x+fx*.7,bz=BOAT.pos.y+fz*.7;
   for(let k=0;k<Math.round(4*em);k++){const sd=Math.random()<.5?-1:1,lat=R(.6,2.2)*sd,fwd=R(-.6,.3);bSpawn(bx+rx*.22*sd,-0.45,bz+rz*.22*sd,rx*lat+fx*fwd,0,rz*lat+fz*fwd,R(4,8),R(.08,.22),1)}
   for(let k=0;k<Math.round(3*em);k++){const a=Math.random()*6.283,s=R(.2,1.2);bSpawn(bx+R(-.2,.2),-0.85,bz+R(-.2,.2),Math.cos(a)*s,R(.05,.25),Math.sin(a)*s,R(4,7),R(.05,.16),0)}
   for(let k=0;k<Math.round(2*em);k++){const sd=Math.random()<.5?-1:1;const sx=BOAT.pos.x-fx*.8+rx*.3*sd,sz=BOAT.pos.y-fz*.8+rz*.3*sd;bSpawn(sx,-0.44,sz,-fx*.4+rx*R(-.25,.25)*sd,0,-fz*.4+rz*R(-.25,.25)*sd,R(3,5),R(.25,.5),2)}
@@ -1040,15 +1255,168 @@ function updateBoat(dt){if(!BOAT.on||!BOAT.grp)return;const sp=BOAT.speed,sdt=dt
   ['position','al','sz','kd'].forEach(a=>p.geo.attributes[a].needsUpdate=true);
   /* paint the clean mask (accumulates where the plume passes), slow regrowth */
   const c=BOAT.ctx,S=BOAT.S,px=(bx-BOAT.box[0])*BOAT.box[2],pz=(bz-BOAT.box[1])*BOAT.box[3],rp=BOAT.R*BOAT.box[2];
-  c.globalCompositeOperation='lighter';const gr=c.createRadialGradient(px,pz,0,px,pz,rp);const al=Math.min(1,sdt*.5);gr.addColorStop(0,`rgba(255,255,255,${al})`);gr.addColorStop(.6,`rgba(255,255,255,${al*.6})`);gr.addColorStop(1,'rgba(255,255,255,0)');
-  c.fillStyle=gr;c.beginPath();c.arc(px,pz,rp,0,7);c.fill();
+  if(run){c.globalCompositeOperation='lighter';const gr=c.createRadialGradient(px,pz,0,px,pz,rp);const al=Math.min(1,sdt*.5);gr.addColorStop(0,`rgba(255,255,255,${al})`);gr.addColorStop(.6,`rgba(255,255,255,${al*.6})`);gr.addColorStop(1,'rgba(255,255,255,0)');
+  c.fillStyle=gr;c.beginPath();c.arc(px,pz,rp,0,7);c.fill()}
   BOAT.tRegrow+=sdt;if(BOAT.tRegrow>20){BOAT.tRegrow=0;c.globalCompositeOperation='source-over';c.fillStyle='rgba(0,0,0,0.02)';c.fillRect(0,0,S,S)}
   if((++BOAT.frame)%3===0)BOAT.tex.needsUpdate=true;
   BOAT.tStat+=dt;if(BOAT.tStat>.8||!BOAT.stat){BOAT.tStat=0;BOAT.stat=c.getImageData(0,0,S,S).data;let k2=0;for(const ix of BOAT.lakePix)if(BOAT.stat[ix*4]>150)k2++;BOAT.pct=Math.round(k2/BOAT.lakePix.length*100);
-    const hb=$('#boatBar');if(hb){hb.style.width=BOAT.pct+'%';$('#boatPct').textContent=BOAT.pct+'%';$('#boatMsg').textContent=BOAT.pct>=90?T('boatDone'):T('boatRun',{v:(BOAT.v).toFixed(1)})}}
+    const hb=$('#boatBar');if(hb){hb.style.width=BOAT.pct+'%';$('#boatPct').textContent=BOAT.pct+'%';if(MS.ph===3)$('#boatMsg').textContent=MS.avoid?T('msAvoid',{d:MS.avoid.d.toFixed(1)}):BOAT.pct>=90?T('boatDone'):T('boatRun',{v:(BOAT.v).toFixed(1)})}}
   /* follow camera */
-  if(BOAT.follow&&!fly){const k=1-Math.exp(-dt*2.2);_bt.set(BOAT.pos.x,-0.3,BOAT.pos.y);_bc.set(BOAT.pos.x-fx*11+rx*5,5,BOAT.pos.y-fz*11+rz*5);controls.target.lerp(_bt,k);camera.position.lerp(_bc,k)}
+  updateSensorsViz(dt);
+  if(BOAT.follow&&!fly&&MS.ph===3){const k=1-Math.exp(-dt*2.2);_bt.set(BOAT.pos.x,-0.3,BOAT.pos.y);_bc.set(BOAT.pos.x-fx*11+rx*5,5,BOAT.pos.y-fz*11+rz*5);controls.target.lerp(_bt,k);camera.position.lerp(_bc,k)}
 }
+/* ===== 자율운항 미션: ① 수계 인식(위성영상+LiDAR) → ② 커버리지 경로 최적화 → ③ GNSS·LiDAR 자율운항/장애물 회피 ===== */
+const MS={ph:0,t:0,grid:null,path:[],pi:0,pass:0,avoid:null,obs:[],len:0,cov:0,area:0,nogo:[],near:99,nHit:0,encT:0,stuck:0,tCol:0,tTel:0,ang:0};
+const GEO={lat:37.5038,lon:126.7450};/* OSM 로컬좌표 원점(WGS84) — x=동, z=남 [m] */
+let LAKEC=[0,0];
+function msMat(c,o){return new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o,depthWrite:false,side:THREE.DoubleSide})}
+function buildMission(){
+  let cx=0,cz=0;LAKE.forEach(p=>{cx+=p[0];cz+=p[1]});LAKEC=[cx/LAKE.length,cz/LAKE.length];
+  let ar=0;for(let i=0,j=LAKE.length-1;i<LAKE.length;j=i++)ar+=(LAKE[j][0]+LAKE[i][0])*(LAKE[j][1]-LAKE[i][1]);MS.area=Math.abs(ar/2);
+  const xs=LAKE.map(p=>p[0]),zs=LAKE.map(p=>p[1]);const cs=3.5,x0=Math.min(...xs),z0=Math.min(...zs),nx=Math.ceil((Math.max(...xs)-x0)/cs)+1,nz=Math.ceil((Math.max(...zs)-z0)/cs)+1;
+  const v=new Uint8Array(nx*nz);for(let j=0;j<nz;j++)for(let i=0;i<nx;i++)v[j*nx+i]=boatValid([x0+i*cs,z0+j*cs])?1:0;MS.grid={cs,x0,z0,nx,nz,v};
+  const G=new THREE.Group();G.visible=false;scene.add(G);MS.G=G;
+  /* scan overlay */
+  {const g=new THREE.ShapeGeometry(shapeOf(LAKE),2);g.rotateX(-Math.PI/2);
+   const u={uScan:{value:0},uFade:{value:1},uZ0:{value:Math.min(...zs)-4},uZ1:{value:Math.max(...zs)+4}};MS.su=u;
+   const m=new THREE.ShaderMaterial({uniforms:u,transparent:true,depthWrite:false,side:THREE.DoubleSide,
+     vertexShader:pVS+`varying vec3 vW;void main(){vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;`+pVE+`}`,
+     fragmentShader:pFS+`uniform float uScan,uFade,uZ0,uZ1;varying vec3 vW;void main(){`+pFE+`float sz=mix(uZ0,uZ1,uScan);float done=step(vW.z,sz);
+       vec2 g=abs(fract(vW.xz/4.)-.5);float ln=smoothstep(.43,.5,max(g.x,g.y));float band=exp(-pow((vW.z-sz)/2.4,2.))*step(uScan,.999);
+       vec3 col=mix(vec3(.25,.85,1.),vec3(.92,1.,1.),band);float a=done*(.07+ln*.42)*uFade+band*.85;if(a<.004)discard;gl_FragColor=vec4(col,a);}`});
+   const mesh=new THREE.Mesh(g,m);mesh.position.y=-0.40;mesh.renderOrder=4;G.add(mesh)}
+  /* recognised shoreline */
+  {const P=[];LAKE.forEach(p=>P.push(p[0],-0.33,p[1]));const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));
+   const l=new THREE.Line(g,new THREE.LineBasicMaterial({color:0x7fe9ff,transparent:true,opacity:.95,depthWrite:false}));l.renderOrder=5;G.add(l);MS.shore=l;MS.shoreN=LAKE.length}
+  /* no-go zones (fountains, buoys, outlets, decks) */
+  const ring=(p,r)=>{const m=new THREE.Mesh(new THREE.RingGeometry(r-.3,r,48),msMat(0xff5a5a,.6));m.rotation.x=-Math.PI/2;m.position.set(p[0],-0.36,p[1]);m.userData.z=p[1];G.add(m);MS.nogo.push(m)};
+  FOUNT.forEach(f=>ring(f,8));SENS.forEach(s=>ring(s.p,4.5));UNITS.forEach(u=>{ring(u.ret,6);ring(u.int,6)});
+  deckSegs.forEach(s=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute([s[0][0],-0.3,s[0][1],s[1][0],-0.3,s[1][1]],3));
+    const l=new THREE.Line(g,new THREE.LineBasicMaterial({color:0xff6a5a,transparent:true,opacity:.9,depthWrite:false}));l.userData.z=Math.min(s[0][1],s[1][1]);l.userData.line=1;G.add(l);MS.nogo.push(l)});
+  /* planned path: ribbon 2.2 m wide (6 verts / segment) */
+  {const N=9000;const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(N*18),3));g.setAttribute('color',new THREE.BufferAttribute(new Float32Array(N*18),3));g.setDrawRange(0,0);
+   const l=new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,opacity:.85,depthWrite:false,side:THREE.DoubleSide}));l.renderOrder=6;l.frustumCulled=false;G.add(l);MS.pl=l;MS.plN=N}
+  /* LiDAR: rotating fan + range ring + hit cloud */
+  {const fan=new THREE.Mesh(new THREE.CircleGeometry(15,24,0,.42),new THREE.MeshBasicMaterial({color:0x7dff9e,transparent:true,opacity:.16,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+   fan.geometry.rotateX(-Math.PI/2);G.add(fan);MS.fan=fan;
+   const rr=new THREE.Mesh(new THREE.RingGeometry(14.85,15,96),msMat(0x7dff9e,.35));rr.rotation.x=-Math.PI/2;G.add(rr);MS.rr=rr;
+   const N=1400;const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(N*3),3));g.setAttribute('col',new THREE.BufferAttribute(new Float32Array(N*3),3));g.setAttribute('al',new THREE.BufferAttribute(new Float32Array(N),1));
+   const m=new THREE.ShaderMaterial({uniforms:PUR.u,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+     vertexShader:pVS+`uniform float uScale;attribute vec3 col;attribute float al;varying vec3 vC;varying float vA;void main(){vC=col;vA=al;vec4 mv=modelViewMatrix*vec4(position,1.);gl_PointSize=clamp(.42*uScale/-mv.z,2.,16.);gl_Position=projectionMatrix*mv;`+pVE+`}`,
+     fragmentShader:pFS+`varying vec3 vC;varying float vA;void main(){`+pFE+`float r=length(gl_PointCoord-.5);float a=smoothstep(.5,.1,r)*vA;if(a<.01)discard;gl_FragColor=vec4(vC*a,a);}`});
+   const pts=new THREE.Points(g,m);pts.frustumCulled=false;G.add(pts);MS.hp={g,N,head:0,L:new Float32Array(N)};MS.hpMat=m}
+  /* GNSS constellation + downlink */
+  {MS.sats=[];const bm=new THREE.MeshLambertMaterial({color:C(0xd9b44a)}),pm=new THREE.MeshLambertMaterial({color:C(0x2d5a8a)});
+   for(let k=0;k<6;k++){const a=k*1.047+.4,r=230+30*(k%2);const s=new THREE.Group();s.add(new THREE.Mesh(new THREE.BoxGeometry(5,5,7),bm));
+     const pn=new THREE.Mesh(new THREE.BoxGeometry(24,.4,6),pm);s.add(pn);s.position.set(LAKEC[0]+Math.cos(a)*r,150+(k*37)%70,LAKEC[1]+Math.sin(a)*r);G.add(s);MS.sats.push(s)}
+   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(36),3));
+   const l=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0x9fd8ff,transparent:true,opacity:.28,depthWrite:false}));l.frustumCulled=false;G.add(l);MS.gl=l;
+   const N=6*6;const g2=new THREE.BufferGeometry();g2.setAttribute('position',new THREE.BufferAttribute(new Float32Array(N*3),3));const C2=new Float32Array(N*3),A2=new Float32Array(N).fill(1);for(let i=0;i<N;i++)C2.set([.75,.92,1.],i*3);
+   g2.setAttribute('col',new THREE.BufferAttribute(C2,3));g2.setAttribute('al',new THREE.BufferAttribute(A2,1));const pk=new THREE.Points(g2,MS.hpMat);pk.frustumCulled=false;G.add(pk);MS.pk=pk}
+  /* floating obstacles (drift log, duck family, debris cluster) */
+  {const mk2=(r,build)=>{const o={grp:new THREE.Group(),p:[0,0],v:[0,0],r,fade:1};build(o.grp);G.add(o.grp);MS.obs.push(o);return o};
+   mk2(1.4,g=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(.22,.26,2.4,10),new THREE.MeshLambertMaterial({color:C(0x5a4632)}));m.rotation.z=Math.PI/2;m.position.y=.05;g.add(m)});
+   mk2(1.6,g=>{const bm=new THREE.MeshLambertMaterial({color:C(0x8a6b4a)}),hm=new THREE.MeshLambertMaterial({color:C(0x2f5a2a)});[[0,0,1],[-.7,.35,.6],[-.8,-.4,.6],[-1.4,0,.6]].forEach(d=>{
+     const b=new THREE.Mesh(new THREE.SphereGeometry(.2*d[2]+.05,10,8),bm);b.scale.set(1.5,.8,1);b.position.set(d[0],.08,d[1]);g.add(b);const h=new THREE.Mesh(new THREE.SphereGeometry(.09*d[2]+.03,8,6),hm);h.position.set(d[0]+.28*d[2],.25*d[2]+.05,d[1]);g.add(h)})});
+   mk2(1.5,g=>{const cols=[0xe8eef2,0x3f8fd8,0xd94a3a,0xf2d24a,0x7a8a3a];for(let i=0;i<9;i++){const m=new THREE.Mesh(new THREE.BoxGeometry(R(.15,.4),R(.08,.2),R(.15,.5)),new THREE.MeshLambertMaterial({color:C(cols[i%5])}));m.position.set(R(-.9,.9),.03,R(-.7,.7));m.rotation.y=R(0,3);g.add(m)}});
+   const or=new THREE.Mesh(new THREE.RingGeometry(1,1.12,40),msMat(0xff4d5e,.9));or.rotation.x=-Math.PI/2;or.visible=false;G.add(or);MS.oring=or;
+   MS.alertLbl=addLabel(()=>T('obsLbl'),0,2.6,0,'module','boat');MS.alertLbl.hidden=true}
+}
+function cellOf(p){const g=MS.grid;return [clamp(Math.round((p[0]-g.x0)/g.cs),0,g.nx-1),clamp(Math.round((p[1]-g.z0)/g.cs),0,g.nz-1)]}
+function cellW(i,j){const g=MS.grid;return [g.x0+i*g.cs,g.z0+j*g.cs]}
+function nearValid(c){const g=MS.grid;if(g.v[c[1]*g.nx+c[0]])return c;for(let r=1;r<20;r++)for(let dj=-r;dj<=r;dj++)for(let di=-r;di<=r;di++){const i=c[0]+di,j=c[1]+dj;if(i>=0&&j>=0&&i<g.nx&&j<g.nz&&g.v[j*g.nx+i])return [i,j]}return c}
+function astar(pa,pb){const g=MS.grid,nx=g.nx,N=nx*g.nz;const s=nearValid(cellOf(pa)),e=nearValid(cellOf(pb));const si=s[1]*nx+s[0],ei=e[1]*nx+e[0];
+  const gs=new Float32Array(N).fill(1e9),from=new Int32Array(N).fill(-1),cl=new Uint8Array(N);const h=[];const push=(i,f)=>{h.push([f,i]);let k=h.length-1;while(k>0){const p=(k-1)>>1;if(h[p][0]<=h[k][0])break;[h[p],h[k]]=[h[k],h[p]];k=p}};
+  const pop=()=>{const t=h[0],l=h.pop();if(h.length){h[0]=l;let k=0;for(;;){const a=2*k+1,b=a+1;let m=k;if(a<h.length&&h[a][0]<h[m][0])m=a;if(b<h.length&&h[b][0]<h[m][0])m=b;if(m===k)break;[h[m],h[k]]=[h[k],h[m]];k=m}}return t};
+  const ex=e[0],ez=e[1];gs[si]=0;push(si,0);
+  while(h.length){const [,c]=pop();if(c===ei)break;if(cl[c])continue;cl[c]=1;const ci=c%nx,cj=(c/nx)|0;
+    for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++){if(!di&&!dj)continue;const i=ci+di,j=cj+dj;if(i<0||j<0||i>=nx||j>=g.nz)continue;const n=j*nx+i;if(!g.v[n]||cl[n])continue;
+      const w=gs[c]+(di&&dj?1.4142:1);if(w<gs[n]){gs[n]=w;from[n]=c;push(n,w+Math.hypot(i-ex,j-ez))}}}
+  const out=[];let c=ei;if(from[c]<0&&c!==si)return [pa,pb];while(c>=0){out.push(cellW(c%nx,(c/nx)|0));if(c===si)break;c=from[c]}out.reverse();out[0]=pa;out.push(pb);
+  /* string pulling */
+  const sp=[out[0]];let i=0;while(i<out.length-1){let j=Math.min(out.length-1,i+40);while(j>i+1&&!boatPath(out[i],out[j]))j--;sp.push(out[j]);i=j}return sp}
+function densify(pts,out){for(let k=0;k<pts.length-1;k++){const a=pts[k],b=pts[k+1],L=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.max(1,Math.ceil(L/2));for(let t=0;t<n;t++)out.push([a[0]+(b[0]-a[0])*t/n,a[1]+(b[1]-a[1])*t/n])}}
+function computePath(pass){const g=MS.grid,vert=pass%2===1,segs=[];const NA=vert?g.nx:g.nz,NB=vert?g.nz:g.nx;
+  for(let L=2;L<NA;L+=4){let run=null;for(let k=0;k<=NB;k++){const i=vert?L:k,j=vert?k:L;const ok=k<NB&&g.v[j*g.nx+i];if(ok&&!run)run=[k,k];else if(ok)run[1]=k;
+      if(!ok&&run){if(run[1]-run[0]>=2)segs.push(vert?[cellW(L,run[0]),cellW(L,run[1])]:[cellW(run[0],L),cellW(run[1],L)]);run=null}}}
+  let cur=[BOAT.pos.x,BOAT.pos.y];const pts=[];const used=new Uint8Array(segs.length);
+  for(let n=0;n<segs.length;n++){let bi=-1,be=0,bd=1e9;segs.forEach((s,i)=>{if(used[i])return;for(let e=0;e<2;e++){const d=Math.hypot(s[e][0]-cur[0],s[e][1]-cur[1]);if(d<bd){bd=d;bi=i;be=e}}});
+    used[bi]=1;const s=segs[bi],a=s[be],b=s[1-be];const con=boatPath(cur,a)?[cur,a]:astar(cur,a);densify(con,pts);densify([a,b],pts);cur=b}
+  pts.push(cur);MS.path=pts;MS.pi=0;let len=0;for(let k=1;k<pts.length;k++)len+=Math.hypot(pts[k][0]-pts[k-1][0],pts[k][1]-pts[k-1][1]);MS.len=len;
+  const cov=new Uint8Array(g.nx*g.nz),rc=Math.floor(BOAT.R*.9/g.cs);pts.forEach((p,k)=>{if(k%2)return;const c=cellOf(p);for(let dj=-rc;dj<=rc;dj++)for(let di=-rc;di<=rc;di++){if(di*di+dj*dj>rc*rc)continue;const i=c[0]+di,j=c[1]+dj;if(i>=0&&j>=0&&i<g.nx&&j<g.nz)cov[j*g.nx+i]=1}});
+  let nv=0,nc=0;for(let i=0;i<cov.length;i++)if(g.v[i]){nv++;if(cov[i])nc++}MS.cov=Math.round(nc/Math.max(1,nv)*100);
+  const P=MS.pl.geometry.attributes.position.array,Cc=MS.pl.geometry.attributes.color.array,n=Math.min(pts.length-1,MS.plN),W=1.1;
+  for(let k=0;k<n;k++){const a=pts[k],b=pts[k+1];let dx=b[0]-a[0],dz=b[1]-a[1];const L=Math.hypot(dx,dz)||1;const ox=-dz/L*W,oz=dx/L*W;
+    const V=[a[0]+ox,a[1]+oz,a[0]-ox,a[1]-oz,b[0]+ox,b[1]+oz,a[0]-ox,a[1]-oz,b[0]-ox,b[1]-oz,b[0]+ox,b[1]+oz];
+    const w=k%6<3?1:.7;for(let v=0;v<6;v++){P[(k*6+v)*3]=V[v*2];P[(k*6+v)*3+1]=-0.36;P[(k*6+v)*3+2]=V[v*2+1];Cc[(k*6+v)*3]=.35*w;Cc[(k*6+v)*3+1]=.95*w;Cc[(k*6+v)*3+2]=1*w}}
+  MS.plSeg=n;MS.pl.geometry.attributes.position.needsUpdate=true;MS.pl.geometry.attributes.color.needsUpdate=true;MS.pl.geometry.setDrawRange(0,0);MS.pl.visible=true}
+function msSteps(){document.querySelectorAll('#boatBody [data-ms]').forEach(e=>{const k=+e.dataset.ms;e.dataset.st=k<MS.ph?'done':k===MS.ph?'on':''})}
+function missionStart(){if(!MS.G)return;MS.G.visible=true;MS.ph=1;MS.t=0;MS.pass=0;MS.avoid=null;MS.encT=0;MS.su.uScan.value=0;MS.su.uFade.value=1;MS.shore.geometry.setDrawRange(0,0);
+  MS.nogo.forEach(o=>{o.visible=false;o.scale.set(1,1,1)});MS.pl.visible=false;MS.oring.visible=false;MS.alertLbl.hidden=true;
+  const a=[BOAT.pos.x,BOAT.pos.y];MS.obs.forEach((o,k)=>{for(let t=0;t<200;t++){const s=PUR.samples[(Math.random()*PUR.samples.length)|0];if(boatValid([s[0],s[2]])&&Math.hypot(s[0]-a[0],s[2]-a[1])>40){o.p=[s[0],s[2]];break}}const an=Math.random()*6.283;o.v=[Math.cos(an)*.18,Math.sin(an)*.18]});
+  flyTo([LAKEC[0]+30,250,LAKEC[1]+220],[LAKEC[0],0,LAKEC[1]],1800,48);msSteps()}
+function missionHide(){if(MS.G)MS.G.visible=false;if(MS.alertLbl)MS.alertLbl.hidden=true;MS.ph=0}
+function missionStep(dt,sdt){if(!MS.G)return false;MS.t+=dt;const tot=MS.path.length;
+  if(MS.ph===1){const s=Math.min(1,MS.t/7);MS.su.uScan.value=s;const sz=MS.su.uZ0.value+(MS.su.uZ1.value-MS.su.uZ0.value)*s;
+    MS.shore.geometry.setDrawRange(0,Math.floor(MS.shoreN*s));MS.nogo.forEach(o=>{if(!o.visible&&o.userData.z<sz){o.visible=true;o.userData.t0=MS.t}if(o.visible&&!o.userData.line){const k=Math.min(1,(MS.t-o.userData.t0)/.5);const sc=1+.6*Math.sin(k*Math.PI)*(1-k);o.scale.set(sc,sc,sc)}});
+    $('#boatMsg').textContent=s<1?T('ms1',{p:Math.round(s*100)}):T('ms1done',{a:Math.round(MS.area).toLocaleString(),n:MS.nogo.length});
+    BOAT.v*=.95;if(MS.t>8.5){MS.ph=2;MS.t=0;computePath(MS.pass);msSteps()}return false}
+  if(MS.ph===2){const k=Math.min(1,MS.t/4);MS.pl.geometry.setDrawRange(0,Math.floor(MS.plSeg*k)*6);MS.su.uFade.value=1-.7*k;
+    $('#boatMsg').textContent=T('ms2',{pat:T(MS.pass%2?'patV':'patH'),L:Math.round(MS.len).toLocaleString(),C:MS.cov});
+    BOAT.v*=.95;if(MS.t>5.5){MS.ph=3;MS.t=0;BOAT.follow=true;const fb=$('#bFollow');if(fb)fb.setAttribute('aria-pressed','true');msSteps()}return false}
+  if(MS.ph!==3)return false;
+  const PW=MS.path,pos=[BOAT.pos.x,BOAT.pos.y];while(MS.pi<tot-1&&Math.hypot(pos[0]-PW[MS.pi][0],pos[1]-PW[MS.pi][1])<4)MS.pi++;
+  if(MS.pi>=tot-1&&Math.hypot(pos[0]-PW[tot-1][0],pos[1]-PW[tot-1][1])<4){MS.pass++;MS.ph=2;MS.t=0;computePath(MS.pass);msSteps();return false}
+  let tg=PW[Math.min(MS.pi+1,tot-1)];const fx=Math.cos(BOAT.hd),fz=Math.sin(BOAT.hd);
+  /* LiDAR-based avoidance of floating obstacles */
+  if(!MS.avoid){for(const o of MS.obs){const dx=o.p[0]-pos[0],dz=o.p[1]-pos[1],d=Math.hypot(dx,dz)-o.r;if(d>10||o.fade<1)continue;const ang=Math.atan2(dx*fz-dz*fx,dx*fx+dz*fz);
+      if(Math.abs(ang)<.75){MS.avoid={o,side:ang>0?1:-1,d,flip:0};break}}}
+  let slow=1;if(MS.avoid){const A=MS.avoid,o=A.o,dx=o.p[0]-pos[0],dz=o.p[1]-pos[1],dd=Math.hypot(dx,dz);A.d=Math.max(0,dd-o.r);const ux=dx/dd,uz=dz/dd;
+    let px=-uz*A.side,pz=ux*A.side;/* side: steer to the opposite side of the obstacle bearing */
+    let c=[o.p[0]-px*(o.r+4.5)+ux*2,o.p[1]-pz*(o.r+4.5)+uz*2];if(!boatValid(c)&&A.flip<1){A.side*=-1;A.flip++;c=[o.p[0]+px*(o.r+4.5)+ux*2,o.p[1]+pz*(o.r+4.5)+uz*2]}
+    if(boatValid(c))tg=c;else slow=.15;
+    if((dx*fx+dz*fz)<-1&&dd>o.r+3||dd>17){MS.avoid=null;let bi=MS.pi,bd=1e9;for(let k=MS.pi;k<Math.min(tot,MS.pi+40);k++){const d=Math.hypot(PW[k][0]-pos[0],PW[k][1]-pos[1]);if(d<bd){bd=d;bi=k}}MS.pi=bi}
+    else slow*=.7}
+  const des=Math.atan2(tg[1]-pos[1],tg[0]-pos[0]);let dh=des-BOAT.hd;dh=Math.atan2(Math.sin(dh),Math.cos(dh));BOAT.hd+=clamp(dh,-.6*sdt,.6*sdt);
+  const vt=BOAT.base*slow*(1-Math.min(Math.abs(dh)/1.3,.8));BOAT.v+=(vt-BOAT.v)*Math.min(1,sdt*.8);
+  const nx=pos[0]+Math.cos(BOAT.hd)*BOAT.v*sdt,nz=pos[1]+Math.sin(BOAT.hd)*BOAT.v*sdt;let blocked=false;for(const o of MS.obs)if(Math.hypot(nx-o.p[0],nz-o.p[1])<o.r+1)blocked=true;
+  if(!blocked&&(boatValid([nx,nz])||!boatValid(pos))){BOAT.pos.set(nx,nz);MS.stuck=0}else{BOAT.v*=.3;MS.stuck+=sdt;if(MS.stuck>4){MS.pi=Math.min(tot-1,MS.pi+3);MS.stuck=0}}
+  /* bring a drifting obstacle onto the route now and then (to exercise avoidance) */
+  MS.encT+=sdt;if(MS.encT>50&&!MS.avoid&&MS.pi+16<tot){let far=null,fd=60;MS.obs.forEach(o=>{const d=Math.hypot(o.p[0]-pos[0],o.p[1]-pos[1]);if(d>fd){fd=d;far=o}});
+    const q=PW[MS.pi+15];if(far&&boatValid(q)){far.p=[q[0],q[1]];far.fade=0;MS.encT=0}}
+  MS.tCol+=dt;if(MS.tCol>.4){MS.tCol=0;const Cc=MS.pl.geometry.attributes.color.array;for(let k=0;k<Math.min(MS.pi,MS.plN)*6;k++){Cc[k*3]=.22;Cc[k*3+1]=.3;Cc[k*3+2]=.32}MS.pl.geometry.attributes.color.needsUpdate=true}
+  return true}
+/* 2D ray cast against shoreline, decks, fixed structures and floating obstacles */
+function segHit(ox,oz,dx,dz,a,b){const ex=b[0]-a[0],ez=b[1]-a[1],den=dx*ez-dz*ex;if(Math.abs(den)<1e-9)return 1e9;const t=((a[0]-ox)*ez-(a[1]-oz)*ex)/den,u=((a[0]-ox)*dz-(a[1]-oz)*dx)/den;return t>0&&u>=0&&u<=1?t:1e9}
+function cirHit(ox,oz,dx,dz,c,r){const fx=ox-c[0],fz=oz-c[1],b=fx*dx+fz*dz,cc=fx*fx+fz*fz-r*r,h=b*b-cc;if(h<0)return 1e9;const t=-b-Math.sqrt(h);return t>0?t:1e9}
+function lidarRay(ox,oz,a,maxR){const dx=Math.cos(a),dz=Math.sin(a);let t=maxR,ty=0;
+  for(let i=0;i<LAKE.length-1;i++){const h=segHit(ox,oz,dx,dz,LAKE[i],LAKE[i+1]);if(h<t){t=h;ty=1}}
+  for(const s of deckSegs){const h=segHit(ox,oz,dx,dz,s[0],s[1]);if(h<t){t=h;ty=2}}
+  for(const f of FOUNT){const h=cirHit(ox,oz,dx,dz,f,2.5);if(h<t){t=h;ty=2}}for(const s of SENS){const h=cirHit(ox,oz,dx,dz,s.p,.7);if(h<t){t=h;ty=2}}
+  for(const o of MS.obs){const h=cirHit(ox,oz,dx,dz,o.p,o.r*.8);if(h<t){t=h;ty=3}}return ty?[ox+dx*t,oz+dz*t,ty,t]:null}
+const LCOL=[null,[.35,.9,1.],[1.,.82,.35],[1.,.3,.36]];
+function updateSensorsViz(dt){if(!MS.G||!MS.G.visible)return;const bx=BOAT.pos.x,bz=BOAT.pos.y,Tm=U.time.value,sdt=dt*BOAT.speed;
+  /* floating obstacles drift */
+  MS.obs.forEach((o,k)=>{const nx=o.p[0]+o.v[0]*sdt,nz=o.p[1]+o.v[1]*sdt;if(boatValid([nx,nz])&&Math.hypot(nx-bx,nz-bz)>o.r+1.6)o.p=[nx,nz];else{const an=Math.random()*6.283;o.v=[Math.cos(an)*.18,Math.sin(an)*.18]}
+    o.fade=Math.min(1,o.fade+dt*.8);const s=o.fade;o.grp.scale.set(s,s,s);o.grp.position.set(o.p[0],-0.5+.03*Math.sin(Tm*1.6+k*2),o.p[1]);o.grp.rotation.y=-Math.atan2(o.v[1],o.v[0])});
+  /* LiDAR */
+  MS.ang+=dt*12.566;MS.fan.position.set(bx,-0.28,bz);MS.fan.rotation.y=-MS.ang;MS.rr.position.set(bx,-0.32,bz);
+  const hp=MS.hp,P=hp.g.attributes.position.array,Cc=hp.g.attributes.col.array,A=hp.g.attributes.al.array;let near=99,nh=0;
+  for(let k=0;k<28;k++){const a=MS.ang+k*(6.2832/28)+Math.random()*.2;const h=lidarRay(bx,bz,a,15);if(!h)continue;const i=hp.head;hp.head=(hp.head+1)%hp.N;
+    P[i*3]=h[0]+R(-.1,.1);P[i*3+1]=h[2]===3?-0.25+Math.random()*.35:-0.3+Math.random()*.5;P[i*3+2]=h[1]+R(-.1,.1);Cc.set(LCOL[h[2]],i*3);hp.L[i]=1.3;if(h[2]===3){near=Math.min(near,h[3]);nh++}}
+  for(let i=0;i<hp.N;i++){if(hp.L[i]>0){hp.L[i]-=dt;A[i]=Math.max(0,hp.L[i]/1.3)}else A[i]=0}
+  ['position','col','al'].forEach(k=>hp.g.attributes[k].needsUpdate=true);MS.near=near;
+  /* avoidance marker */
+  const av=MS.avoid;MS.oring.visible=!!av;MS.alertLbl.hidden=!av;if(av){const r=av.o.r+.6;MS.oring.scale.set(r,r,r);MS.oring.position.set(av.o.p[0],-0.3,av.o.p[1]);MS.oring.material.opacity=.55+.4*Math.sin(Tm*10);MS.alertLbl.v.set(av.o.p[0],2.6,av.o.p[1])}
+  /* GNSS downlink */
+  const mast=[bx,0.9,bz],GP=MS.gl.geometry.attributes.position.array,PP=MS.pk.geometry.attributes.position.array;
+  MS.sats.forEach((s,k)=>{s.rotation.y=Tm*.05+k;GP.set([s.position.x,s.position.y,s.position.z,mast[0],mast[1],mast[2]],k*6);
+    for(let j=0;j<6;j++){const t=(Tm*.45+j/6+k*.13)%1;PP.set([s.position.x+(mast[0]-s.position.x)*t,s.position.y+(mast[1]-s.position.y)*t,s.position.z+(mast[2]-s.position.z)*t],(k*6+j)*3)}});
+  MS.gl.geometry.attributes.position.needsUpdate=true;MS.pk.geometry.attributes.position.needsUpdate=true;MS.gl.material.opacity=.2+.12*Math.sin(Tm*4);
+  /* telemetry */
+  MS.tTel+=dt;if(MS.tTel>.25){MS.tTel=0;const lat=GEO.lat-bz/111320,lon=GEO.lon+bx/(111320*Math.cos(GEO.lat*Math.PI/180));
+    const e1=$('#bGnss'),e2=$('#bLidar');if(e1)e1.textContent=T('gnssLn',{n:9+((Tm/7|0)%3),lat:(lat+R(-1,1)*1e-7).toFixed(6),lon:(lon+R(-1,1)*1e-7).toFixed(6),h:(0.7+0.1*Math.sin(Tm*.3)).toFixed(1)});
+    if(e2)e2.textContent=T('lidarLn',{n:nh,d:near<99?near.toFixed(1)+' m':'—'})}}
 
 function updatePurify(dt){if(!PUR.u.uR)return;const u=PUR.u;const Tm=U.time.value;u.uScale.value=innerHeight/(2*Math.tan(camera.fov*Math.PI/360));
   controls.maxPolarAngle=controls.target.y<-0.5?Math.PI*0.78:Math.PI*0.497;
@@ -1183,6 +1551,7 @@ function setMode(m){if(m===true)m='pur';if(m===false)m='normal';MODE=m;const on=
 $('#mPur').addEventListener('click',()=>setMode('pur'));$('#mNormal').addEventListener('click',()=>setMode('normal'));$('#mBoat').addEventListener('click',()=>setMode('boat'));
 document.querySelectorAll('#boatBody [data-bs]').forEach(b=>b.addEventListener('click',()=>{BOAT.speed=+b.dataset.bs;document.querySelectorAll('#boatBody [data-bs]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))}));
 $('#bFollow').addEventListener('click',()=>{BOAT.follow=!BOAT.follow;$('#bFollow').setAttribute('aria-pressed',String(BOAT.follow))});
+$('#bRestart').addEventListener('click',()=>{boatReset();missionStart()});
 controls.addEventListener('start',()=>{if(BOAT.follow){BOAT.follow=false;$('#bFollow').setAttribute('aria-pressed','false')}});
 addEventListener('keydown',e=>{if((e.key==='p'||e.key==='P'||e.key==='ㅔ')&&!e.metaKey&&!e.ctrlKey&&e.target.tagName!=='INPUT')setMode(!PUR.on);if((e.key==='b'||e.key==='B'||e.key==='ㅠ')&&!e.metaKey&&!e.ctrlKey&&e.target.tagName!=='INPUT')setMode(MODE==='boat'?'pur':'boat')});
 bind('#lyRot',v=>{controls.autoRotate=v;controls.autoRotateSpeed=.5});
@@ -1220,6 +1589,123 @@ step(.68,T('ld6'),buildVegetation);
 step(.86,T('ld7'),()=>{buildFountains();buildCars();buildTestbed();buildPurify();buildBoat();buildLabels()});
 step(.97,T('ld8'),()=>{setTime(14);render();setInterval(drift,500);ready=true;loop();setTimeout(()=>$('#loading').classList.add('done'),200)});
 runSteps(0);
-window.__dt={scene,camera,controls,openCompare,setTime,flyTo,U,PUR,BOAT,setMode};
+
+/* ================= 스플래시 · 회원 인증 · 최고관리자 접속자 관리 ================= */
+(function(){
+const API=location.protocol.startsWith('http');            /* file:// 오프라인 실행은 로컬 전용 → 인증 생략 */
+const TK='sd_token';let token=null,me=null,splashMin=false,sceneReady=false,authDone=false,admTab='members',admData=null,admTimer=null,tempPw={};
+try{token=localStorage.getItem(TK)}catch(e){}
+const sp=$('#splash'),au=$('#auth'),msg=$('#aMsg');
+/* splash decoration */
+(function(){const n=matchMedia('(prefers-reduced-motion: reduce)').matches?0:26;for(let i=0;i<n;i++){const b=document.createElement('i');b.className='bub';const s=6+Math.random()*34;
+  b.style.cssText=`left:${Math.random()*100}%;width:${s}px;height:${s}px;animation-duration:${7+Math.random()*9}s;animation-delay:${-Math.random()*12}s;opacity:${.35+Math.random()*.5}`;sp.appendChild(b)}
+  for(let i=0;i<n;i++){const r=document.createElement('i');r.className='ros';r.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${-Math.random()*2.4}s;background:${Math.random()<.5?'#bdefff':'#c99bff'}`;sp.appendChild(r)}})();
+setTimeout(()=>{splashMin=true;maybeOpen()},2200);
+/* mirror loading progress */
+const lb=$('#ldbar'),lt=$('#ldtxt');setInterval(()=>{if(lb)$('#spBar').style.width=Math.max(4,parseFloat(lb.style.width)||0)+'%';if(lt)$('#spTxt').textContent=lt.textContent;
+  if(!sceneReady&&$('#loading').classList.contains('done')){sceneReady=true;$('#spBar').style.width='100%';maybeOpen()}},150);
+function maybeOpen(){if(!splashMin||!authDone)return;if(me||!API){if(sceneReady){sp.classList.add('out');au.hidden=true}}else{au.hidden=false}}
+async function api(path,opt={}){const h={'Content-Type':'application/json'};if(token)h.Authorization='Bearer '+token;
+  try{const r=await fetch('/api/'+path,{method:opt.body?'POST':'GET',headers:h,body:opt.body?JSON.stringify(opt.body):undefined,cache:'no-store'});
+    let j=null;try{j=await r.json()}catch(e){}return j||{success:false,error:{code:'HTTP_'+r.status,message:'HTTP '+r.status}}}
+  catch(e){return {success:false,error:{code:'NETWORK',message:String(e)}}}}
+const errMsg=e=>{const k='er_'+((e&&e.code)||'X');const v=T(k);return v===k?((e&&e.message)||T('er_X')):v};
+function say(text,good){msg.textContent=text;msg.className='msg '+(good?'okm':'err')}
+function clearMsg(){msg.className='msg';msg.textContent=''}
+function view(v){document.querySelectorAll('#auth form').forEach(f=>f.hidden=f.dataset.v!==v);document.querySelectorAll('#aTabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.v===v)));
+  $('#aTabs').hidden=!(v==='login'||v==='register');clearMsg();const f=document.querySelector(`#auth form[data-v="${v}"] input`);if(f)setTimeout(()=>f.focus(),50)}
+document.querySelectorAll('#aTabs button').forEach(b=>b.onclick=()=>view(b.dataset.v));
+document.querySelectorAll('#auth [data-go]').forEach(b=>b.onclick=()=>view(b.dataset.go));
+document.querySelectorAll('#auth .alangs button').forEach(b=>b.onclick=()=>{setLang(b.dataset.lang);syncLang()});
+function syncLang(){document.querySelectorAll('#auth .alangs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===LANG)));if(!$('#adm').hidden)admRender();renderWho()}
+document.querySelectorAll('#langs button').forEach(b=>b.addEventListener('click',syncLang));
+const fd=f=>Object.fromEntries(new FormData(f).entries());
+async function busy(f,fn){const b=f.querySelector('.go');b.disabled=true;try{await fn()}finally{b.disabled=false}}
+let lastEmail='';
+$('#fLogin').onsubmit=e=>{e.preventDefault();const f=e.target;busy(f,async()=>{const d=fd(f);lastEmail=d.email;const r=await api('auth?a=login',{body:d});
+  if(r.success){token=r.data.token;try{localStorage.setItem(TK,token)}catch(e){}me=r.data.member;f.reset();onAuthed()}else{say(errMsg(r.error));$('#aResend').hidden=r.error.code!=='EMAIL_UNVERIFIED'}})};
+$('#aResend').onclick=async()=>{const r=await api('auth?a=resend',{body:{email:lastEmail}});say(r.success?T('auResent'):errMsg(r.error),r.success)};
+$('#fRegister').onsubmit=e=>{e.preventDefault();const f=e.target;const d=fd(f);if(d.password!==d.password2)return say(T('er_PWMATCH'));busy(f,async()=>{
+  const r=await api('auth?a=register',{body:d});if(r.success){f.reset();view('login');say(r.data.verificationSent?T('auRegMail'):T('auRegPending'),true)}else say(errMsg(r.error))})};
+$('#fForgot').onsubmit=e=>{e.preventDefault();const f=e.target;busy(f,async()=>{const r=await api('auth?a=forgot',{body:fd(f)});
+  if(r.success)say(r.data.mail?T('auForgotSent'):T('auForgotNoMail'),!!r.data.mail);else say(errMsg(r.error))})};
+const qs=new URLSearchParams(location.search);const resetTok=qs.get('reset'),verifyTok=qs.get('verify');
+function cleanUrl(){try{const u=new URL(location.href);['reset','verify'].forEach(k=>u.searchParams.delete(k));history.replaceState(null,'',u.pathname+(u.search||'')+u.hash)}catch(e){}}
+$('#fReset').onsubmit=e=>{e.preventDefault();const f=e.target;const d=fd(f);if(d.password!==d.password2)return say(T('er_PWMATCH'));busy(f,async()=>{
+  const r=await api('auth?a=reset',{body:{token:resetTok,password:d.password}});if(r.success){cleanUrl();f.reset();view('login');say(r.data.status==='pending'?T('auResetDonePending'):T('auResetDone'),true)}else say(errMsg(r.error))})};
+$('#fChange').onsubmit=e=>{e.preventDefault();const f=e.target;const d=fd(f);if(d.password!==d.password2)return say(T('er_PWMATCH'));busy(f,async()=>{
+  const r=await api('auth?a=password',{body:{current:d.current,password:d.password}});if(r.success){f.reset();say(T('auPwChanged'),true);setTimeout(()=>{au.hidden=true;view('login')},1300)}else say(errMsg(r.error))})};
+$('#aCancel').onclick=()=>{au.hidden=true;view('login')};
+/* who chip in head panel */
+const who=document.createElement('div');who.id='who';who.hidden=true;$('#head').appendChild(who);
+function renderWho(){if(!me){who.hidden=true;return}who.hidden=false;const pend=(admData&&admData.members||[]).filter(m=>m.status==='pending').length;
+  who.innerHTML=`<span>👤 <b></b>${me.role==='admin'?' · '+T('adSuper'):''}</span><button id="wPw">${T('auChangePw')}</button><button id="wOut">${T('auLogout')}</button>${me.superAdmin?`<button id="wAdmin">👥 ${T('adTitle')}${pend?`<span class="pend">${pend}</span>`:''}</button>`:''}`;
+  who.querySelector('b').textContent=me.name;$('#wOut').onclick=logout;$('#wPw').onclick=()=>{au.hidden=false;view('change')};if(me.superAdmin)$('#wAdmin').onclick=openAdm;layoutPanels()}
+function logout(){api('auth?a=logout',{body:{}});token=null;me=null;try{localStorage.removeItem(TK)}catch(e){}closeAdm();renderWho();sp.classList.remove('out');au.hidden=false;view('login')}
+/* heartbeat / blocking */
+async function beat(){if(!API)return;const r=await api('track',{body:{p:location.pathname}});if(r.success&&r.data.blocked){$('#blockedScr').hidden=false;au.hidden=true}}
+setInterval(()=>{if(!document.hidden)beat()},45000);
+function onAuthed(){authDone=true;clearMsg();au.hidden=me?true:au.hidden;renderWho();beat();maybeOpen();
+  if(me&&me.superAdmin){admLoad(true);if(qs.get('admin')==='1')setTimeout(openAdm,400)}}
+/* boot */
+(async()=>{applyI18n();syncLang();
+  if(!API){authDone=true;maybeOpen();return}
+  beat();
+  if(verifyTok){const r=await api('auth?a=verify',{body:{token:verifyTok}});cleanUrl();authDone=true;view('login');
+    say(r.success?(r.data.status==='pending'?T('auVerifiedPending'):T('auVerified')):errMsg(r.error),r.success);maybeOpen();return}
+  if(resetTok){authDone=true;view('reset');maybeOpen();return}
+  if(token){const r=await api('auth?a=me');if(r.success){me=r.data.member;onAuthed();return}
+    if(r.error&&r.error.code==='AUTH_DISABLED'){me={name:'guest',role:'user'};authDone=true;maybeOpen();return}
+    if(r.error&&r.error.code==='IP_BLOCKED'){$('#blockedScr').hidden=false;return}
+    token=null;try{localStorage.removeItem(TK)}catch(e){}}
+  else{const r=await api('auth?a=me');if(r.error&&r.error.code==='AUTH_DISABLED'){me=null;authDone=true;au.hidden=true;sp.dataset.open=1;
+      /* 서버 회원 기능 미설정: 열람 허용(롤아웃 유예) */ me={name:'guest',role:'user'};maybeOpen();return}}
+  authDone=true;view('login');maybeOpen()})();
+/* ---------- admin panel (최고관리자 전용 — 서버에서도 superAdmin 토큰만 허용) ---------- */
+const fmt=ms=>{if(!ms)return '—';const d=new Date(ms);return d.toLocaleString(LANG==='ko'?'ko-KR':LANG==='ja'?'ja-JP':'en-US',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})};
+const ago=ms=>{const s=Math.max(0,(Date.now()-ms)/1000);return s<60?T('adSec',{n:Math.round(s)}):s<3600?T('adMin',{n:Math.round(s/60)}):s<86400?T('adHour',{n:Math.round(s/3600)}):T('adDay',{n:Math.round(s/86400)})};
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function uaShort(u){u=u||'';const os=/iPhone|iPad/.test(u)?'iOS':/Android/.test(u)?'Android':/Mac OS/.test(u)?'macOS':/Windows/.test(u)?'Windows':/Linux/.test(u)?'Linux':'?';
+  const br=/Edg\//.test(u)?'Edge':/Whale/.test(u)?'Whale':/SamsungBrowser/.test(u)?'Samsung':/Chrome\//.test(u)?'Chrome':/Safari\//.test(u)?'Safari':/Firefox/.test(u)?'Firefox':/bot|crawl|spider/i.test(u)?'Bot':'?';return br+' · '+os}
+async function admLoad(silent){const r=await api('admin?a=overview');if(r.success){admData=r.data;renderWho();if(!$('#adm').hidden)admRender()}else if(!silent){$('#admBody').innerHTML=`<p class="note">${esc(errMsg(r.error))}</p>`}}
+function openAdm(){$('#adm').hidden=false;admRender();admLoad();clearInterval(admTimer);admTimer=setInterval(()=>admLoad(true),15000)}
+function closeAdm(){$('#adm').hidden=true;clearInterval(admTimer)}
+$('#admX').onclick=closeAdm;$('#admRef').onclick=()=>admLoad();addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#adm').hidden)closeAdm()});
+document.querySelectorAll('#adm .tabs button').forEach(b=>b.onclick=()=>{admTab=b.dataset.t;admRender()});
+async function act(a,payload,confirmKey){if(confirmKey&&!confirm(T(confirmKey,payload)))return;const r=await api('admin?a='+a,{body:payload});
+  if(!r.success){alert(errMsg(r.error));return}if(r.data&&r.data.tempPassword)tempPw[payload.id]=r.data.tempPassword;await admLoad()}
+function admRender(){const d=admData;const tb=document.querySelectorAll('#adm .tabs button');
+  const pend=d?d.members.filter(m=>m.status==='pending').length:0,onl=d?d.visitors.filter(v=>v.online).length:0;
+  tb[0].textContent=`${T('adMembers')}${d?` (${d.members.length})`:''}${pend?` · ${T('adPendingN',{n:pend})}`:''}`;tb[1].textContent=`${T('adVisitors')}${d?` · ${T('adOnlineN',{n:onl})}`:''}`;tb[2].textContent=`${T('adBlocked')}${d?` (${d.blocked.length})`:''}`;
+  tb.forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===admTab)));const el=$('#admBody');if(!d){el.innerHTML=`<p class="note">${T('adLoading')}</p>`;return}
+  if(admTab==='members'){const st={pending:T('stPending'),active:T('stActive'),blocked:T('stBlocked')};
+    el.innerHTML=`<div class="kpis"><div class="kpi"><b>${d.members.length}</b>${T('adTotal')}</div><div class="kpi"><b style="color:#ffd15a">${pend}</b>${T('stPending')}</div><div class="kpi"><b style="color:#7ff0b0">${d.members.filter(m=>m.status==='active').length}</b>${T('stActive')}</div><div class="kpi"><b style="color:#ff8a95">${d.members.filter(m=>m.status==='blocked').length}</b>${T('stBlocked')}</div><div class="kpi"><b>${d.mail?'ON':'OFF'}</b>${T('adMail')}</div></div>
+    <table><thead><tr><th>${T('auName')} / ${T('auEmail')}</th><th>${T('auOrg')} · ${T('auPhone')}</th><th>${T('auMemo')}</th><th>${T('adState')}</th><th>${T('adJoined')}</th><th>${T('adLastLogin')}</th><th>${T('adActions')}</th></tr></thead><tbody>
+    ${d.members.map(m=>`<tr><td><b>${esc(m.name)}</b> ${m.superAdmin?`<span class="tag t-adm">${T('adSuper')}</span>`:''}<div class="s">${esc(m.email)}</div></td><td>${esc(m.org||'—')}<div class="s">${esc(m.phone||'')}</div></td><td class="s" style="max-width:220px">${esc(m.memo||'')}</td>
+      <td><span class="tag t-${m.status}">${st[m.status]||m.status}</span>${m.emailVerified?'':` <span class="tag t-nv">${T('adUnverified')}</span>`}</td><td class="s">${fmt(m.createdAt)}</td><td class="s">${m.lastLogin?fmt(m.lastLogin):'—'}<div>${esc(m.lastIp||'')}</div></td>
+      <td>${m.superAdmin?'<span class="s">—</span>':`<div class="acts">${m.status==='pending'?`<button class="ok" data-a="approve" data-id="${m.id}">${T('acApprove')}</button>`:''}${m.status==='active'?`<button class="no" data-a="block" data-id="${m.id}">${T('acBlock')}</button>`:''}${m.status==='blocked'?`<button class="ok" data-a="unblock" data-id="${m.id}">${T('acUnblock')}</button>`:''}${m.emailVerified?'':`<button class="warn" data-a="verify" data-id="${m.id}">${T('acVerify')}</button>`}<button data-a="temp-password" data-id="${m.id}">${T('acTemp')}</button><button data-a="delete" data-id="${m.id}">${T('acDelete')}</button></div>${tempPw[m.id]?`<div class="s" style="margin-top:4px">${T('adTempIs')} <span class="tp">${esc(tempPw[m.id])}</span></div>`:''}`}</td></tr>`).join('')}
+    </tbody></table><p class="note">${T('adMemberNote')}</p>`;
+    el.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const a=b.dataset.a,id=+b.dataset.id,m=d.members.find(x=>x.id===id);
+      if(a==='delete'){const c=prompt(T('cfDelete',{e:m.email}));if(c===null)return;act('delete',{id,confirm:c.trim()});return}
+      act(a,{id,e:m.email,n:m.name},a==='block'?'cfBlock':a==='temp-password'?'cfTemp':null)})}
+  else if(admTab==='visitors'){
+    el.innerHTML=`<div class="kpis"><div class="kpi"><b style="color:#3fe08a">${onl}</b>${T('adOnline')}</div><div class="kpi"><b>${d.visitors.length}</b>${T('adRecent14')}</div><div class="kpi"><b>${d.visitors.filter(v=>v.email).length}</b>${T('adMemberIps')}</div><div class="kpi"><b style="font-size:13px">${esc(d.me.ip)}</b>${T('adMyIp')}</div></div>
+    <table><thead><tr><th>IP</th><th>${T('adWhere')}</th><th>${T('adMember')}</th><th>${T('adDevice')}</th><th>${T('adFirst')}</th><th>${T('adLast')}</th><th>${T('adHits')}</th><th>${T('adActions')}</th></tr></thead><tbody>
+    ${d.visitors.map(v=>`<tr><td><span class="dot ${v.online?'on':''}"></span>${esc(v.ip)}${v.ip===d.me.ip?` <span class="tag t-adm">${T('adMe')}</span>`:''}${v.blocked?` <span class="tag t-blocked">${T('stBlocked')}</span>`:''}</td>
+      <td class="s">${esc([v.city,v.country].filter(Boolean).join(', ')||'—')}</td><td>${v.email?`${esc(v.name||'')}<div class="s">${esc(v.email)}</div>`:`<span class="s">${T('adGuest')}</span>`}</td><td class="s">${esc(uaShort(v.ua))}</td>
+      <td class="s">${fmt(v.firstSeen)}</td><td class="s">${v.online?`<b style="color:#3fe08a">${T('adNow')}</b>`:ago(v.lastSeen)}</td><td class="s">${v.hits}</td>
+      <td>${v.ip===d.me.ip?'<span class="s">—</span>':`<div class="acts">${v.blocked?`<button class="ok" data-ip="${esc(v.ip)}" data-a="ip-unblock">${T('acIpUnblock')}</button>`:`<button class="no" data-ip="${esc(v.ip)}" data-a="ip-block">${T('acIpBlock')}</button>`}</div>`}</td></tr>`).join('')}
+    </tbody></table><p class="note">${T('adVisitNote')}</p>`;
+    el.querySelectorAll('[data-ip]').forEach(b=>b.onclick=()=>{const ip=b.dataset.ip;if(b.dataset.a==='ip-block'){const rs=prompt(T('cfIpBlock',{ip}),'');if(rs===null)return;act('ip-block',{ip,reason:rs})}else act('ip-unblock',{ip})})}
+  else{el.innerHTML=`<div class="kpis"><div class="kpi"><b>${d.blocked.length}</b>${T('adBlocked')}</div></div>
+    <div style="display:flex;gap:6px;margin:4px 0 10px"><input id="admIp" placeholder="IP" style="font:500 12.5px var(--mono);color:var(--ink);background:rgba(255,255,255,.05);border:1px solid var(--glass-line);border-radius:6px;padding:6px 8px;width:200px"><input id="admRs" data-ph="adReason" placeholder="${T('adReason')}" style="flex:1;font:500 12.5px var(--ui);color:var(--ink);background:rgba(255,255,255,.05);border:1px solid var(--glass-line);border-radius:6px;padding:6px 8px"><div class="acts"><button class="no" id="admAddIp">${T('acIpBlock')}</button></div></div>
+    <table><thead><tr><th>IP</th><th>${T('adReason')}</th><th>${T('adBlockedAt')}</th><th>${T('adBy')}</th><th>${T('adActions')}</th></tr></thead><tbody>
+    ${d.blocked.map(b=>`<tr><td>${esc(b.ip)}</td><td class="s">${esc(b.reason||'—')}</td><td class="s">${fmt(b.at)}</td><td class="s">${esc(b.by||'')}</td><td><div class="acts"><button class="ok" data-ip="${esc(b.ip)}">${T('acIpUnblock')}</button></div></td></tr>`).join('')||`<tr><td colspan="5" class="s">${T('adNone')}</td></tr>`}
+    </tbody></table>`;
+    $('#admAddIp').onclick=()=>{const ip=$('#admIp').value.trim();if(ip)act('ip-block',{ip,reason:$('#admRs').value.trim()})};
+    el.querySelectorAll('[data-ip]').forEach(b=>b.onclick=()=>act('ip-unblock',{ip:b.dataset.ip}))}}
+})();
+
+window.__dt={scene,camera,controls,openCompare,setTime,flyTo,U,PUR,BOAT,MS,setMode};
 })();
 </script>
