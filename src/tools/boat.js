@@ -57,7 +57,7 @@ const deckSegs=[];let MODE='pur';
 let DECK_PILES=[],DECK_WOOD=[],BANDS=[];
 function buildBands(){BANDS=[];DECK_WOOD.forEach(d=>{const hw=d.w/2;for(let i=0;i<d.pts.length-1;i++){const a=d.pts[i],b=d.pts[i+1];const L=Math.hypot(b[0]-a[0],b[1]-a[1]);if(L<1)continue;
     const mid=[(a[0]+b[0])/2,(a[1]+b[1])/2];if(!(inPoly(a,LAKE)||inPoly(b,LAKE)||inPoly(mid,LAKE)||edgeDist(mid,LAKE)<hw+3))continue;
-    const gaps=[];for(let s=0;s+4<=L+1e-6;s+=4)gaps.push(s+2);BANDS.push({a,b,L,ux:(b[0]-a[0])/L,uz:(b[1]-a[1])/L,hw,gaps})}})}
+    const gaps=[];for(let s=0;s+4<=L+1e-6;s+=4)gaps.push(s+2);BANDS.push({a,b,L,ux:(b[0]-a[0])/L,uz:(b[1]-a[1])/L,hw,gaps,y:d.y||0.85})}})}
 function bandInfo(p,extra){for(const B of BANDS){const dx=p[0]-B.a[0],dz=p[1]-B.a[1];const s=dx*B.ux+dz*B.uz;if(s<-1.5||s>B.L+1.5)continue;const d=-dx*B.uz+dz*B.ux;
     if(Math.abs(d)<B.hw+extra){let g=null,gd=1e9;for(const q of B.gaps){const e=Math.abs(q-s);if(e<gd){gd=e;g=q}}return {B,s,d,g,gd}}}return null}
 function nearPile(p,r){for(const q of DECK_PILES){const dx=q[0]-p[0],dz=q[1]-p[1];if(dx*dx+dz*dz<r*r)return true}return false}
@@ -103,10 +103,10 @@ function updateBoat(dt){if(!BOAT.on||!BOAT.grp)return;const sp=BOAT.speed,sdt=dt
   BOAT.tRegrow+=sdt;if(BOAT.tRegrow>20){BOAT.tRegrow=0;c.globalCompositeOperation='source-over';c.fillStyle='rgba(0,0,0,0.02)';c.fillRect(0,0,S,S)}
   if((++BOAT.frame)%3===0)BOAT.tex.needsUpdate=true;
   BOAT.tStat+=dt;if(BOAT.tStat>.8||!BOAT.stat){BOAT.tStat=0;BOAT.stat=c.getImageData(0,0,S,S).data;let k2=0;for(const ix of BOAT.lakePix)if(BOAT.stat[ix*4]>150)k2++;BOAT.pct=Math.round(k2/BOAT.lakePix.length*100);
-    const hb=$('#boatBar');if(hb){hb.style.width=BOAT.pct+'%';$('#boatPct').textContent=BOAT.pct+'%';if(MS.ph===3)$('#boatMsg').textContent=MS.man?rcMsg():(MS.rcBackT&&performance.now()-MS.rcBackT<4000)?T('msRcBack'):MS.rec?T('msRecover'):MS.avoid?T('msAvoid',{d:MS.avoid.d.toFixed(1)}):BOAT.pct>=90?T('boatDone'):T('boatRun',{v:(BOAT.v).toFixed(1)})}}
+    const hb=$('#boatBar');if(hb){hb.style.width=BOAT.pct+'%';$('#boatPct').textContent=BOAT.pct+'%';if(MS.ph===3)$('#boatMsg').textContent=MS.man?rcMsg():(MS.rcBackT&&performance.now()-MS.rcBackT<4000)?T('msRcBack'):MS.rec?T('msRecover'):MS.inGate?T('msGate',{c:MS.inGate.g.clr.toFixed(2),k:Math.min(3,MS.inGate.g.passes+1)}):MS.avoid?T('msAvoid',{d:MS.avoid.d.toFixed(1)}):BOAT.pct>=90?T('boatDone'):T('boatRun',{v:(BOAT.v).toFixed(1)})}}
   /* follow camera */
   updateSensorsViz(dt);
-  if(BOAT.follow&&!fly&&MS.ph===3){const k=1-Math.exp(-dt*2.2);_bt.set(BOAT.pos.x+fx*7,-0.3,BOAT.pos.y+fz*7);_bc.set(BOAT.pos.x-fx*12+rx*5,7.5,BOAT.pos.y-fz*12+rz*5);   /* 보트를 화면 아래쪽에 → 상단 패널에 가리지 않음 */controls.target.lerp(_bt,k);camera.position.lerp(_bc,k)}
+  if(BOAT.follow&&!fly&&MS.ph===3&&cineCam(dt)){}else if(BOAT.follow&&!fly&&MS.ph===3){const k=1-Math.exp(-dt*2.2);_bt.set(BOAT.pos.x+fx*7,-0.3,BOAT.pos.y+fz*7);_bc.set(BOAT.pos.x-fx*12+rx*5,7.5,BOAT.pos.y-fz*12+rz*5);   /* 보트를 화면 아래쪽에 → 상단 패널에 가리지 않음 */controls.target.lerp(_bt,k);camera.position.lerp(_bc,k)}
 }
 /* ===== 자율운항 미션: ① 수계 인식(위성영상+LiDAR) → ② 커버리지 경로 최적화 → ③ GNSS·LiDAR 자율운항/장애물 회피 ===== */
 const MS={ph:0,t:0,grid:null,path:[],pi:0,pass:0,avoid:null,obs:[],len:0,cov:0,area:0,nogo:[],near:99,nHit:0,encT:0,stuck:0,tCol:0,tTel:0,ang:0};
@@ -119,11 +119,13 @@ function buildMission(){
   const xs=LAKE.map(p=>p[0]),zs=LAKE.map(p=>p[1]);const cs=3.5,x0=Math.min(...xs),z0=Math.min(...zs),nx=Math.ceil((Math.max(...xs)-x0)/cs)+1,nz=Math.ceil((Math.max(...zs)-z0)/cs)+1;
   buildBands();
   const v=new Uint8Array(nx*nz);for(let j=0;j<nz;j++)for(let i=0;i<nx;i++)v[j*nx+i]=boatValid([x0+i*cs,z0+j*cs])?1:0;MS.grid={cs,x0,z0,nx,nz,v};
-  MS.gates=[];MS.gateMap=new Map();BANDS.forEach(B=>B.gaps.forEach(gp=>{const G=[B.a[0]+B.ux*gp,B.a[1]+B.uz*gp],nx2=-B.uz,nz2=B.ux,o=B.hw+2.2;
+  MS.gates=[];MS.lowGates=[];MS.gateMap=new Map();BANDS.forEach(B=>B.gaps.forEach(gp=>{const G=[B.a[0]+B.ux*gp,B.a[1]+B.uz*gp],nx2=-B.uz,nz2=B.ux,o=B.hw+2.2;
     const A=[G[0]-nx2*o,G[1]-nz2*o],Bp=[G[0]+nx2*o,G[1]+nz2*o];if(!inPoly(G,LAKE)||edgeDist(G,LAKE)<3||!boatValid(A)||!boatValid(Bp))return;
     for(let k=0;k<=40;k++){const q=[A[0]+(Bp[0]-A[0])*k/40,A[1]+(Bp[1]-A[1])*k/40];if(!deckOK(q,true)||!inPoly(q,LAKE))return}   /* 꺾인 데크 모서리 등 다른 구간을 스치는 게이트 제외 */
     const ca=nearValid(cellOf(A)),cb=nearValid(cellOf(Bp)),ia=ca[1]*nx+ca[0],ib=cb[1]*nx+cb[0];if(ia===ib)return;const cost=(2*o)/cs+1;
-    const gate={A,G,B:Bp};MS.gates.push(gate);[[ia,ib,A,Bp],[ib,ia,Bp,A]].forEach(([f,to,p0,p1])=>{if(!MS.gateMap.has(f))MS.gateMap.set(f,[]);MS.gateMap.get(f).push({to,cost,pts:[p0,G,p1]})})}));
+    const boatTop=-0.5+((BOATMESH.bbox_mm[1][2]-(BOATMESH.waterlineZ_mm||90))/1000),deckBot=(B.y||0.85)-0.12,clr=deckBot-boatTop;   /* 마스트 높이 검사 */
+    if(clr<0.15){MS.lowGates.push({G,clr});return}
+    const gate={A,G,B:Bp,hw:B.hw,clr,u:[B.ux,B.uz],passes:0,side:0};MS.gates.push(gate);[[ia,ib,A,Bp],[ib,ia,Bp,A]].forEach(([f,to,p0,p1])=>{if(!MS.gateMap.has(f))MS.gateMap.set(f,[]);MS.gateMap.get(f).push({to,cost,pts:[p0,G,p1]})})}));
   const G=new THREE.Group();G.visible=false;scene.add(G);MS.G=G;
   /* scan overlay */
   {const g=new THREE.ShapeGeometry(shapeOf(LAKE),2);g.rotateX(-Math.PI/2);
@@ -140,6 +142,7 @@ function buildMission(){
   /* no-go zones (fountains, buoys, outlets, decks) */
   const ring=(p,r)=>{const m=new THREE.Mesh(new THREE.RingGeometry(r-.3,r,48),msMat(0xff5a5a,.6));m.rotation.x=-Math.PI/2;m.position.set(p[0],-0.36,p[1]);m.userData.z=p[1];G.add(m);MS.nogo.push(m)};
   FOUNT.forEach(f=>ring(f,8));SENS.forEach(s=>ring(s.p,4.5));UNITS.forEach(u=>{ring(u.ret,6);ring(u.int,6)});
+  (MS.lowGates||[]).forEach(gt=>{const m=new THREE.Mesh(new THREE.RingGeometry(.45,.65,24),msMat(0xff4d5e,.9));m.rotation.x=-Math.PI/2;m.position.set(gt.G[0],-0.34,gt.G[1]);m.userData.z=gt.G[1];G.add(m);MS.nogo.push(m)});
   (MS.gates||[]).forEach(gt=>{const m=new THREE.Mesh(new THREE.RingGeometry(.45,.65,24),msMat(0x7ff0b0,.85));m.rotation.x=-Math.PI/2;m.position.set(gt.G[0],-0.34,gt.G[1]);m.userData.z=gt.G[1];m.userData.gate=1;G.add(m);MS.nogo.push(m)});
   deckSegs.forEach(s=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute([s[0][0],-0.3,s[0][1],s[1][0],-0.3,s[1][1]],3));
     const l=new THREE.Line(g,new THREE.LineBasicMaterial({color:0xff6a5a,transparent:true,opacity:.9,depthWrite:false}));l.userData.z=Math.min(s[0][1],s[1][1]);l.userData.line=1;G.add(l);MS.nogo.push(l)});
@@ -198,10 +201,12 @@ function routeOK(r){/* 연결 경로 전 구간이 수면·기둥 이격·데크
 function computePath(pass){const g=MS.grid,vert=pass%2===1,segs=[];const NA=vert?g.nx:g.nz,NB=vert?g.nz:g.nx;
   for(let L=2;L<NA;L+=4){let run=null;for(let k=0;k<=NB;k++){const i=vert?L:k,j=vert?k:L;const ok=k<NB&&g.v[j*g.nx+i];if(ok&&!run)run=[k,k];else if(ok)run[1]=k;
       if(!ok&&run){if(run[1]-run[0]>=2)splitSeg(vert?cellW(L,run[0]):cellW(run[0],L),vert?cellW(L,run[1]):cellW(run[1],L)).forEach(sg=>segs.push(sg));run=null}}}
-  let cur=[BOAT.pos.x,BOAT.pos.y];const pts=[];const used=new Uint8Array(segs.length);
+  (MS.gates||[]).forEach(gt=>{const s=[gt.A,gt.B];s.gate=gt;segs.push(s)});   /* 기둥 주변 세정: 모든 게이트 포함 */
+  let cur=[BOAT.pos.x,BOAT.pos.y];const pts=[];const used=new Uint8Array(segs.length);const hard=new Set();
   for(let n=0;n<segs.length;n++){let bi=-1,be=0,bd=1e9;segs.forEach((s,i)=>{if(used[i])return;for(let e=0;e<2;e++){const d=Math.hypot(s[e][0]-cur[0],s[e][1]-cur[1]);if(d<bd){bd=d;bi=i;be=e}}});
-    used[bi]=1;const s=segs[bi],a=s[be],b=s[1-be];const con=boatPath(cur,a)?[cur,a]:astar(cur,a);if(!routeOK(con))continue;densify(con,pts);densify([a,b],pts);cur=b}
-  pts.push(cur);MS.path=pts;MS.pi=0;let len=0;for(let k=1;k<pts.length;k++)len+=Math.hypot(pts[k][0]-pts[k-1][0],pts[k][1]-pts[k-1][1]);MS.len=len;
+    used[bi]=1;const s=segs[bi],a=s[be],b=s[1-be];const con=boatPath(cur,a)?[cur,a]:astar(cur,a);if(!routeOK(con))continue;densify(con,pts);
+    if(s.gate){const Gp=s.gate.G,seq=[a,Gp,b,Gp,a,Gp,b];for(let q=0;q<seq.length-1;q++){hard.add(pts.length);densify([seq[q],seq[q+1]],pts)}hard.add(pts.length);pts.push([b[0],b[1]])}else densify([a,b],pts);cur=b}   /* 게이트는 3회 왕복 통과 */
+  pts.push(cur);MS.path=pts;MS.hard=hard;MS.pi=0;let len=0;for(let k=1;k<pts.length;k++)len+=Math.hypot(pts[k][0]-pts[k-1][0],pts[k][1]-pts[k-1][1]);MS.len=len;
   const cov=new Uint8Array(g.nx*g.nz),rc=Math.floor(BOAT.R*.9/g.cs);pts.forEach((p,k)=>{if(k%2)return;const c=cellOf(p);for(let dj=-rc;dj<=rc;dj++)for(let di=-rc;di<=rc;di++){if(di*di+dj*dj>rc*rc)continue;const i=c[0]+di,j=c[1]+dj;if(i>=0&&j>=0&&i<g.nx&&j<g.nz)cov[j*g.nx+i]=1}});
   let nv=0,nc=0;for(let i=0;i<cov.length;i++)if(g.v[i]){nv++;if(cov[i])nc++}MS.cov=Math.round(nc/Math.max(1,nv)*100);
   const P=MS.pl.geometry.attributes.position.array,Cc=MS.pl.geometry.attributes.color.array,n=Math.min(pts.length-1,MS.plN),W=0.45;
@@ -210,7 +215,7 @@ function computePath(pass){const g=MS.grid,vert=pass%2===1,segs=[];const NA=vert
     const w=k%6<3?1:.7;for(let v=0;v<6;v++){P[(k*6+v)*3]=V[v*2];P[(k*6+v)*3+1]=-0.36;P[(k*6+v)*3+2]=V[v*2+1];Cc[(k*6+v)*3]=.22*w;Cc[(k*6+v)*3+1]=.62*w;Cc[(k*6+v)*3+2]=.7*w}}
   MS.plSeg=n;MS.pl.geometry.attributes.position.needsUpdate=true;MS.pl.geometry.attributes.color.needsUpdate=true;MS.pl.geometry.setDrawRange(0,0);MS.pl.visible=true}
 function msSteps(){document.querySelectorAll('#boatBody [data-ms]').forEach(e=>{const k=+e.dataset.ms;e.dataset.st=k<MS.ph?'done':k===MS.ph?'on':''})}
-function missionStart(){if(!MS.G)return;MS.man=null;MS.rec=null;MS.prog=null;MS.stuckN=0;MS.G.visible=true;MS.pl.material.opacity=.7;MS.shore.material.opacity=.95;MS.nogo.forEach(o=>o.material.opacity=o.userData.line?.9:.6);MS.ph=1;MS.t=0;MS.pass=0;MS.avoid=null;MS.encT=0;MS.su.uScan.value=0;MS.su.uFade.value=1;MS.shore.geometry.setDrawRange(0,0);
+function missionStart(){if(!MS.G)return;MS.man=null;MS.inGate=null;(MS.gates||[]).forEach(g=>{g.passes=0;g.side=0});MS.rec=null;MS.prog=null;MS.stuckN=0;MS.G.visible=true;MS.pl.material.opacity=.7;MS.shore.material.opacity=.95;MS.nogo.forEach(o=>o.material.opacity=o.userData.line?.9:.6);MS.ph=1;MS.t=0;MS.pass=0;MS.avoid=null;MS.encT=0;MS.su.uScan.value=0;MS.su.uFade.value=1;MS.shore.geometry.setDrawRange(0,0);
   MS.nogo.forEach(o=>{o.visible=false;o.scale.set(1,1,1)});MS.pl.visible=false;MS.oring.visible=false;MS.alertLbl.hidden=true;
   const a=[BOAT.pos.x,BOAT.pos.y];MS.obs.forEach((o,k)=>{for(let t=0;t<200;t++){const s=PUR.samples[(Math.random()*PUR.samples.length)|0];if(boatValid([s[0],s[2]])&&Math.hypot(s[0]-a[0],s[2]-a[1])>40){o.p=[s[0],s[2]];break}}const an=Math.random()*6.283;o.v=[Math.cos(an)*.18,Math.sin(an)*.18]});
   flyTo([LAKEC[0]+30,250,LAKEC[1]+220],[LAKEC[0],0,LAKEC[1]],1800,48);msSteps()}
@@ -226,13 +231,13 @@ function missionStep(dt,sdt){if(!MS.G)return false;MS.t+=dt;const tot=MS.path.le
   if(MS.ph!==3)return false;
   {const k=Math.min(1,dt*.8);MS.su.uFade.value+=(0.06-MS.su.uFade.value)*k;MS.pl.material.opacity+=(0.32-MS.pl.material.opacity)*k;
    MS.shore.material.opacity+=(0.3-MS.shore.material.opacity)*k;MS.nogo.forEach(o=>{o.material.opacity+=((o.userData.line?0.35:0.22)-o.material.opacity)*k})}   /* 운항 중엔 경로·호안선·금지구역을 은은하게 */   /* 운항 중엔 인식 격자를 옅게 → 수면이 잘 보이게 */
-  const PW=MS.path,pos=[BOAT.pos.x,BOAT.pos.y];while(MS.pi<tot-1&&Math.hypot(pos[0]-PW[MS.pi][0],pos[1]-PW[MS.pi][1])<4)MS.pi++;
+  const PW=MS.path,pos=[BOAT.pos.x,BOAT.pos.y];while(MS.pi<tot-1){const hd=MS.hard&&MS.hard.has(MS.pi);if(Math.hypot(pos[0]-PW[MS.pi][0],pos[1]-PW[MS.pi][1])<(hd?1.3:4))MS.pi++;else break}   /* 게이트 왕복 꼭짓점은 반드시 도달 */
   if(MS.pi>=tot-1&&Math.hypot(pos[0]-PW[tot-1][0],pos[1]-PW[tot-1][1])<4){MS.pass++;MS.ph=2;MS.t=0;computePath(MS.pass);msSteps();return false}
   if(MS.man)return manualStep(dt,pos);
   if(!MS.prog)MS.prog={t:0,x:pos[0],z:pos[1]};MS.prog.t+=sdt;
   if(MS.prog.t>6){if(!MS.rec&&Math.hypot(pos[0]-MS.prog.x,pos[1]-MS.prog.z)<1.5)startRecover(pos);MS.prog={t:0,x:pos[0],z:pos[1]}}   /* 6초간 1.5 m 미만 이동 = 고착 */
   if(MS.rec)return recoverStep(dt,sdt,pos);
-  let tg=PW[Math.min(MS.pi+1,tot-1)];const fx=Math.cos(BOAT.hd),fz=Math.sin(BOAT.hd);
+  let tg=(MS.hard&&MS.hard.has(MS.pi))?PW[MS.pi]:PW[Math.min(MS.pi+1,tot-1)];const fx=Math.cos(BOAT.hd),fz=Math.sin(BOAT.hd);
   /* LiDAR-based avoidance of floating obstacles */
   if(!MS.avoid){for(const o of MS.obs){const dx=o.p[0]-pos[0],dz=o.p[1]-pos[1],d=Math.hypot(dx,dz)-o.r;if(d>10||o.fade<1)continue;const ang=Math.atan2(dx*fz-dz*fx,dx*fx+dz*fz);
       if(Math.abs(ang)<.75){MS.avoid={o,side:ang>0?1:-1,d,flip:0};break}}}
@@ -244,8 +249,9 @@ function missionStep(dt,sdt){if(!MS.G)return false;MS.t+=dt;const tot=MS.path.le
     if(A.t>25){let q=null;for(let k=0;k<80&&!q;k++){const s=PUR.samples[(Math.random()*PUR.samples.length)|0];if(boatValid([s[0],s[2]])&&Math.hypot(s[0]-pos[0],s[2]-pos[1])>45)q=[s[0],s[2]]}if(q){o.p=q;o.fade=0}dd=99}   /* 장기 교착 시 장애물이 흘러감 */
     if((dx*fx+dz*fz)<-1&&dd>o.r+3||dd>17){MS.avoid=null;let bi=MS.pi,bd=1e9;for(let k=MS.pi;k<Math.min(tot,MS.pi+40);k++){const d=Math.hypot(PW[k][0]-pos[0],PW[k][1]-pos[1]);if(d<bd){bd=d;bi=k}}MS.pi=bi}
     else slow*=.7}
+  if(gateWatch(pos))slow*=.5;   /* 게이트 서행 통과 */
   const des=Math.atan2(tg[1]-pos[1],tg[0]-pos[0]);let dh=des-BOAT.hd;dh=Math.atan2(Math.sin(dh),Math.cos(dh));BOAT.hd+=clamp(dh,-.6*sdt,.6*sdt);
-  const vt=BOAT.base*slow*(1-Math.min(Math.abs(dh)/1.3,.8));BOAT.v+=(vt-BOAT.v)*Math.min(1,sdt*.8);
+  const vt=BOAT.base*slow*(1-Math.min(Math.abs(dh)/1.3,.8));BOAT.v+=(vt-BOAT.v)*Math.min(1,sdt*.8);if(MS.inGate)BOAT.v=Math.min(BOAT.v,BOAT.base*.5);
   const nx=pos[0]+Math.cos(BOAT.hd)*BOAT.v*sdt,nz=pos[1]+Math.sin(BOAT.hd)*BOAT.v*sdt;let blocked=false;for(const o of MS.obs){const dn=Math.hypot(nx-o.p[0],nz-o.p[1]),dc=Math.hypot(pos[0]-o.p[0],pos[1]-o.p[1]);if(dn<o.r+1&&dn<dc)blocked=true}   /* 장애물에 더 다가가는 이동만 차단(멀어지는 이동 허용) */
   if(!blocked&&subOK(pos,[nx,nz])){BOAT.pos.set(nx,nz);MS.stuck=0}else{BOAT.v*=.3;MS.stuck+=sdt;if(MS.stuck>4){MS.pi=Math.min(tot-1,MS.pi+3);MS.stuck=0}}
   /* bring a drifting obstacle onto the route now and then (to exercise avoidance) */
@@ -255,6 +261,16 @@ function missionStep(dt,sdt){if(!MS.G)return false;MS.t+=dt;const tot=MS.path.le
   return true}
 
 
+/* ---- 게이트 서행·통과 횟수·시네마틱 ---- */
+function gateWatch(pos){let best=null,bd=1e9;for(const g of MS.gates||[]){const d=Math.hypot(g.G[0]-pos[0],g.G[1]-pos[1]);if(d<bd){bd=d;best=g}}
+  if(!best||bd>best.hw+3.5){if(MS.inGate)MS.inGate.g.side=0;MS.inGate=null;return false}
+  const nx=best.B[0]-best.A[0],nz=best.B[1]-best.A[1],sd=Math.sign((pos[0]-best.G[0])*nx+(pos[1]-best.G[1])*nz)||1;
+  if(best.side&&sd!==best.side)best.passes++;best.side=sd;MS.inGate={g:best,d:bd};return true}
+const _cp=new THREE.Vector3(),_ct=new THREE.Vector3();
+function cineCam(dt){const ig=MS.inGate;if(!ig||MS.cine===false)return false;const g=ig.g;const n=[g.B[0]-g.A[0],g.B[1]-g.A[1]],nl=Math.hypot(n[0],n[1])||1;
+  const side=g.side||1;/* 데크 옆 수면 높이: 기둥 열을 따라 7 m 떨어진 곳, 보트가 나오는 쪽으로 살짝 */
+  _cp.set(g.G[0]+g.u[0]*7.5+n[0]/nl*(g.hw+1.2)*side,0.25,g.G[1]+g.u[1]*7.5+n[1]/nl*(g.hw+1.2)*side);_ct.set(g.G[0],-0.25,g.G[1]);
+  const k=1-Math.exp(-dt*3);camera.position.lerp(_cp,k);controls.target.lerp(_ct,k);return true}
 /* ---- 리모콘 수동 조종 ---- */
 const RC={up:false,down:false,left:false,right:false,stop:false,jx:0,jy:0};const RC_TIMEOUT=5000;
 function rcActive(){return RC.up||RC.down||RC.left||RC.right||RC.stop||Math.hypot(RC.jx,RC.jy)>.08}
@@ -275,6 +291,7 @@ function manualStep(dt,pos){const M=MS.man,now=performance.now();if(rcActive())M
   if(BOAT.v>0)for(const o of MS.obs){const dx=o.p[0]-pos[0],dz=o.p[1]-pos[1],d=Math.hypot(dx,dz);if(d<o.r+2.2&&(dx*fx+dz*fz)>0){BOAT.v=0;M.warn=now+1200}}   /* LiDAR 자동 정지 */
   const nx=pos[0]+fx*BOAT.v*s,nz=pos[1]+fz*BOAT.v*s;
   if(subOK(pos,[nx,nz]))BOAT.pos.set(nx,nz);else{BOAT.v=0;M.warn=now+1200}   /* 수면 밖·구조물 앞 정지 */
+  if(gateWatch(pos))BOAT.v=clamp(BOAT.v,-.3,BOAT.base*.5);   /* 리모콘도 게이트 서행 */
   M.tm+=dt;if(M.tm>.25){M.tm=0;const m=$('#boatMsg');if(m)m.textContent=rcMsg()}
   return true}
 /* ---- 고착 감지·탈출 루틴 ---- */
