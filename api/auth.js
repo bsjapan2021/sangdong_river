@@ -32,6 +32,7 @@ export default async function handler(req, res) {
       if (!r.rows[0]) return fail(res, 409, 'EMAIL_TAKEN', '이미 가입된 이메일입니다.');
       const id = r.rows[0].id; let sent = false;
       if (mail) { const t = await signPurpose(id, 'verify'); sent = await mailVerify(email, name, `${appUrl(req)}/?verify=${encodeURIComponent(t)}`); }
+      if (mail && !sent) await q('UPDATE sd_members SET email_verified=TRUE WHERE id=$1', [id]);   /* 메일 발송 실패 시 인증 대기에 갇히지 않게 — 관리자 승인으로 게이트 */
       mailAdminNotice({ name, email, org, phone, memo }, `${appUrl(req)}/?admin=1`).catch(() => {});
       return ok(res, { verificationSent: sent, pending: true, email });
     }

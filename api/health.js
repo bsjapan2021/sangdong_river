@@ -8,7 +8,8 @@ export default async function handler(req, res) {
   if (authEnabled()) { try { await seedAdmin(); out.db = true;
     const r = await q("SELECT 1 FROM sd_members WHERE email=$1 AND role='admin' AND status='active'", [ADMIN_EMAIL]); out.adminReady = r.rows.length > 0; } catch (e) { out.dbError = 'connection failed'; } }
   if (out.mailConfigured) { if (!mailCheck || Date.now() - mailCheck.t > 600e3) {
-      let okm = false; try { await nodemailer.createTransport({ service: 'gmail', auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_APP_PASSWORD } }).verify(); okm = true } catch (e) { okm = false }
-      mailCheck = { t: Date.now(), ok: okm } } out.mailLogin = mailCheck.ok; }
+      let okm = false, why = null; try { await nodemailer.createTransport({ service: 'gmail', auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_APP_PASSWORD } }).verify(); okm = true } catch (e) { okm = false; why = [e && e.code, e && e.responseCode, String((e && e.response) || '').slice(0, 90)].filter(Boolean).join(' ') }
+      mailCheck = { t: Date.now(), ok: okm, why } } out.mailLogin = mailCheck.ok; if (!mailCheck.ok) out.mailError = mailCheck.why;
+    const u = String(process.env.MAIL_USER || ''); out.mailUserHint = u.replace(/^(.{2}).*(@.*)$/, '$1***$2'); out.mailPassLen = String(process.env.MAIL_APP_PASSWORD || '').replace(/\s/g, '').length; }
   return ok(res, out);
 }
