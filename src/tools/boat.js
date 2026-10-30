@@ -53,9 +53,21 @@ function bSpawn(x,y,z,vx,vy,vz,life,size,kind){const p=BOAT.pp;const i=p.head;p.
 function cleanAt(x,z){if(!BOAT.stat)return 0;const i=Math.floor((x-BOAT.box[0])*BOAT.box[2]),j=Math.floor((z-BOAT.box[1])*BOAT.box[3]);if(i<0||j<0||i>=BOAT.S||j>=BOAT.S)return 0;return BOAT.stat[(j*BOAT.S+i)*4]/255}
 /* navigation: water only (lake polygon, shore margin), avoid fountains, buoys, outlets, lake decks/pier */
 const deckSegs=[];let MODE='pur';
+/* ---- 데크 밑 통과 게이트(기둥 사이) ---- */
+let DECK_PILES=[],DECK_WOOD=[],BANDS=[];
+function buildBands(){BANDS=[];DECK_WOOD.forEach(d=>{const hw=d.w/2;for(let i=0;i<d.pts.length-1;i++){const a=d.pts[i],b=d.pts[i+1];const L=Math.hypot(b[0]-a[0],b[1]-a[1]);if(L<1)continue;
+    const mid=[(a[0]+b[0])/2,(a[1]+b[1])/2];if(!(inPoly(a,LAKE)||inPoly(b,LAKE)||inPoly(mid,LAKE)||edgeDist(mid,LAKE)<hw+3))continue;
+    const gaps=[];for(let s=0;s+4<=L+1e-6;s+=4)gaps.push(s+2);BANDS.push({a,b,L,ux:(b[0]-a[0])/L,uz:(b[1]-a[1])/L,hw,gaps})}})}
+function bandInfo(p,extra){for(const B of BANDS){const dx=p[0]-B.a[0],dz=p[1]-B.a[1];const s=dx*B.ux+dz*B.uz;if(s<-1.5||s>B.L+1.5)continue;const d=-dx*B.uz+dz*B.ux;
+    if(Math.abs(d)<B.hw+extra){let g=null,gd=1e9;for(const q of B.gaps){const e=Math.abs(q-s);if(e<gd){gd=e;g=q}}return {B,s,d,g,gd}}}return null}
+function nearPile(p,r){for(const q of DECK_PILES){const dx=q[0]-p[0],dz=q[1]-p[1];if(dx*dx+dz*dz<r*r)return true}return false}
+function deckOK(p,strict){const ex=strict?1.4:0.6,cw=strict?1.1:1.5;for(const B of BANDS){const dx=p[0]-B.a[0],dz=p[1]-B.a[1];const s=dx*B.ux+dz*B.uz;if(s<-1.5||s>B.L+1.5)continue;
+    if(Math.abs(-dx*B.uz+dz*B.ux)>=B.hw+ex)continue;let gd=1e9;for(const q of B.gaps)gd=Math.min(gd,Math.abs(q-s));if(gd>=cw)return false}   /* 겹치는 모든 데크 구간에서 통로 안이어야 함 */
+  return !nearPile(p,strict?1.1:0.75)}
+
 function boatValid(p){if(!inPoly(p,LAKE)||edgeDist(p,LAKE)<5.5)return false;for(const f of FOUNT)if(Math.hypot(p[0]-f[0],p[1]-f[1])<8)return false;
-  for(const s of SENS)if(Math.hypot(p[0]-s.p[0],p[1]-s.p[1])<4.5)return false;for(const u of UNITS)if(Math.hypot(p[0]-u.ret[0],p[1]-u.ret[1])<6||Math.hypot(p[0]-u.int[0],p[1]-u.int[1])<6)return false;for(const s of deckSegs)if(segDist(p,s[0],s[1])<5)return false;return true}
-function boatPath(a,b){const L=Math.hypot(b[0]-a[0],b[1]-a[1]);const n=Math.max(2,Math.ceil(L/2));for(let k=1;k<=n;k++){const t=k/n;if(!boatValid([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]))return false}return true}
+  for(const s of SENS)if(Math.hypot(p[0]-s.p[0],p[1]-s.p[1])<4.5)return false;for(const u of UNITS)if(Math.hypot(p[0]-u.ret[0],p[1]-u.ret[1])<6||Math.hypot(p[0]-u.int[0],p[1]-u.int[1])<6)return false;return deckOK(p,true)}
+function boatPath(a,b){const L=Math.hypot(b[0]-a[0],b[1]-a[1]);const n=Math.max(2,Math.ceil(L/0.7));for(let k=1;k<=n;k++){const t=k/n;if(!boatValid([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]))return false}return true}
 function boatPick(){const a=[BOAT.pos.x,BOAT.pos.y];let best=null,bs=-1e9;
   for(let k=0;k<40;k++){const s=PUR.samples[(Math.random()*PUR.samples.length)|0];const p=[s[0],s[2]];if(!boatValid(p))continue;const d=Math.hypot(p[0]-a[0],p[1]-a[1]);if(d<12)continue;
     let dirt=0;for(let j=0;j<5;j++){const ang=j*1.2566;dirt+=1-cleanAt(p[0]+Math.cos(ang)*6,p[1]+Math.sin(ang)*6)}dirt=dirt/5+(1-cleanAt(p[0],p[1]));
@@ -105,7 +117,13 @@ function buildMission(){
   let cx=0,cz=0;LAKE.forEach(p=>{cx+=p[0];cz+=p[1]});LAKEC=[cx/LAKE.length,cz/LAKE.length];
   let ar=0;for(let i=0,j=LAKE.length-1;i<LAKE.length;j=i++)ar+=(LAKE[j][0]+LAKE[i][0])*(LAKE[j][1]-LAKE[i][1]);MS.area=Math.abs(ar/2);
   const xs=LAKE.map(p=>p[0]),zs=LAKE.map(p=>p[1]);const cs=3.5,x0=Math.min(...xs),z0=Math.min(...zs),nx=Math.ceil((Math.max(...xs)-x0)/cs)+1,nz=Math.ceil((Math.max(...zs)-z0)/cs)+1;
+  buildBands();
   const v=new Uint8Array(nx*nz);for(let j=0;j<nz;j++)for(let i=0;i<nx;i++)v[j*nx+i]=boatValid([x0+i*cs,z0+j*cs])?1:0;MS.grid={cs,x0,z0,nx,nz,v};
+  MS.gates=[];MS.gateMap=new Map();BANDS.forEach(B=>B.gaps.forEach(gp=>{const G=[B.a[0]+B.ux*gp,B.a[1]+B.uz*gp],nx2=-B.uz,nz2=B.ux,o=B.hw+2.2;
+    const A=[G[0]-nx2*o,G[1]-nz2*o],Bp=[G[0]+nx2*o,G[1]+nz2*o];if(!inPoly(G,LAKE)||edgeDist(G,LAKE)<3||!boatValid(A)||!boatValid(Bp))return;
+    for(let k=0;k<=40;k++){const q=[A[0]+(Bp[0]-A[0])*k/40,A[1]+(Bp[1]-A[1])*k/40];if(!deckOK(q,true)||!inPoly(q,LAKE))return}   /* 꺾인 데크 모서리 등 다른 구간을 스치는 게이트 제외 */
+    const ca=nearValid(cellOf(A)),cb=nearValid(cellOf(Bp)),ia=ca[1]*nx+ca[0],ib=cb[1]*nx+cb[0];if(ia===ib)return;const cost=(2*o)/cs+1;
+    const gate={A,G,B:Bp};MS.gates.push(gate);[[ia,ib,A,Bp],[ib,ia,Bp,A]].forEach(([f,to,p0,p1])=>{if(!MS.gateMap.has(f))MS.gateMap.set(f,[]);MS.gateMap.get(f).push({to,cost,pts:[p0,G,p1]})})}));
   const G=new THREE.Group();G.visible=false;scene.add(G);MS.G=G;
   /* scan overlay */
   {const g=new THREE.ShapeGeometry(shapeOf(LAKE),2);g.rotateX(-Math.PI/2);
@@ -122,6 +140,7 @@ function buildMission(){
   /* no-go zones (fountains, buoys, outlets, decks) */
   const ring=(p,r)=>{const m=new THREE.Mesh(new THREE.RingGeometry(r-.3,r,48),msMat(0xff5a5a,.6));m.rotation.x=-Math.PI/2;m.position.set(p[0],-0.36,p[1]);m.userData.z=p[1];G.add(m);MS.nogo.push(m)};
   FOUNT.forEach(f=>ring(f,8));SENS.forEach(s=>ring(s.p,4.5));UNITS.forEach(u=>{ring(u.ret,6);ring(u.int,6)});
+  (MS.gates||[]).forEach(gt=>{const m=new THREE.Mesh(new THREE.RingGeometry(.45,.65,24),msMat(0x7ff0b0,.85));m.rotation.x=-Math.PI/2;m.position.set(gt.G[0],-0.34,gt.G[1]);m.userData.z=gt.G[1];m.userData.gate=1;G.add(m);MS.nogo.push(m)});
   deckSegs.forEach(s=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute([s[0][0],-0.3,s[0][1],s[1][0],-0.3,s[1][1]],3));
     const l=new THREE.Line(g,new THREE.LineBasicMaterial({color:0xff6a5a,transparent:true,opacity:.9,depthWrite:false}));l.userData.z=Math.min(s[0][1],s[1][1]);l.userData.line=1;G.add(l);MS.nogo.push(l)});
   /* planned path: ribbon 2.2 m wide (6 verts / segment) */
@@ -156,23 +175,32 @@ function buildMission(){
 function cellOf(p){const g=MS.grid;return [clamp(Math.round((p[0]-g.x0)/g.cs),0,g.nx-1),clamp(Math.round((p[1]-g.z0)/g.cs),0,g.nz-1)]}
 function cellW(i,j){const g=MS.grid;return [g.x0+i*g.cs,g.z0+j*g.cs]}
 function nearValid(c){const g=MS.grid;if(g.v[c[1]*g.nx+c[0]])return c;for(let r=1;r<20;r++)for(let dj=-r;dj<=r;dj++)for(let di=-r;di<=r;di++){const i=c[0]+di,j=c[1]+dj;if(i>=0&&j>=0&&i<g.nx&&j<g.nz&&g.v[j*g.nx+i])return [i,j]}return c}
-function astar(pa,pb){const g=MS.grid,nx=g.nx,N=nx*g.nz;const s=nearValid(cellOf(pa)),e=nearValid(cellOf(pb));const si=s[1]*nx+s[0],ei=e[1]*nx+e[0];
-  const gs=new Float32Array(N).fill(1e9),from=new Int32Array(N).fill(-1),cl=new Uint8Array(N);const h=[];const push=(i,f)=>{h.push([f,i]);let k=h.length-1;while(k>0){const p=(k-1)>>1;if(h[p][0]<=h[k][0])break;[h[p],h[k]]=[h[k],h[p]];k=p}};
+function nearValidLOS(p){/* 시야가 트인(직선 이동 가능한) 가장 가까운 유효 셀 — 데크 너머 셀을 잡지 않게 */const g=MS.grid,c=cellOf(p);if(g.v[c[1]*g.nx+c[0]]&&boatPath(p,cellW(c[0],c[1])))return c;
+  for(let r=1;r<12;r++){let best=null,bd=1e9;for(let dj=-r;dj<=r;dj++)for(let di=-r;di<=r;di++){if(Math.max(Math.abs(di),Math.abs(dj))!==r)continue;const i=c[0]+di,j=c[1]+dj;if(i<0||j<0||i>=g.nx||j>=g.nz||!g.v[j*g.nx+i])continue;
+    const w=cellW(i,j),d=Math.hypot(w[0]-p[0],w[1]-p[1]);if(d<bd&&boatPath(p,w)){bd=d;best=[i,j]}}if(best)return best}return nearValid(c)}
+function astar(pa,pb){const g=MS.grid,nx=g.nx,N=nx*g.nz;const s=nearValidLOS(pa),e=nearValidLOS(pb);const si=s[1]*nx+s[0],ei=e[1]*nx+e[0];
+  const gs=new Float32Array(N).fill(1e9),from=new Int32Array(N).fill(-1),cl=new Uint8Array(N),via=new Map();const h=[];const push=(i,f)=>{h.push([f,i]);let k=h.length-1;while(k>0){const p=(k-1)>>1;if(h[p][0]<=h[k][0])break;[h[p],h[k]]=[h[k],h[p]];k=p}};
   const pop=()=>{const t=h[0],l=h.pop();if(h.length){h[0]=l;let k=0;for(;;){const a=2*k+1,b=a+1;let m=k;if(a<h.length&&h[a][0]<h[m][0])m=a;if(b<h.length&&h[b][0]<h[m][0])m=b;if(m===k)break;[h[m],h[k]]=[h[k],h[m]];k=m}}return t};
   const ex=e[0],ez=e[1];gs[si]=0;push(si,0);
   while(h.length){const [,c]=pop();if(c===ei)break;if(cl[c])continue;cl[c]=1;const ci=c%nx,cj=(c/nx)|0;
     for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++){if(!di&&!dj)continue;const i=ci+di,j=cj+dj;if(i<0||j<0||i>=nx||j>=g.nz)continue;const n=j*nx+i;if(!g.v[n]||cl[n])continue;
-      const w=gs[c]+(di&&dj?1.4142:1);if(w<gs[n]){gs[n]=w;from[n]=c;push(n,w+Math.hypot(i-ex,j-ez))}}}
-  const out=[];let c=ei;if(from[c]<0&&c!==si)return [pa,pb];while(c>=0){out.push(cellW(c%nx,(c/nx)|0));if(c===si)break;c=from[c]}out.reverse();out[0]=pa;out.push(pb);
+      const w=gs[c]+(di&&dj?1.4142:1);if(w<gs[n]){gs[n]=w;from[n]=c;via.delete(n);push(n,w+Math.hypot(i-ex,j-ez))}}
+    const gl=MS.gateMap&&MS.gateMap.get(c);if(gl)for(const L of gl){const n=L.to;if(cl[n])continue;const w=gs[c]+L.cost;if(w<gs[n]){gs[n]=w;from[n]=c;via.set(n,L.pts);push(n,w+Math.hypot(n%nx-ex,((n/nx)|0)-ez))}}}   /* 데크 횡단 = 게이트 링크만 */
+  const out=[];let c=ei;if(from[c]<0&&c!==si)return [pa,pb];while(c>=0){out.push(cellW(c%nx,(c/nx)|0));if(via.has(c)){const vp=via.get(c);out.push(vp[2],vp[1],vp[0])}if(c===si)break;c=from[c]}out.reverse();out[0]=pa;out.push(pb);
   /* string pulling */
   const sp=[out[0]];let i=0;while(i<out.length-1){let j=Math.min(out.length-1,i+40);while(j>i+1&&!boatPath(out[i],out[j]))j--;sp.push(out[j]);i=j}return sp}
 function densify(pts,out){for(let k=0;k<pts.length-1;k++){const a=pts[k],b=pts[k+1],L=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.max(1,Math.ceil(L/2));for(let t=0;t<n;t++)out.push([a[0]+(b[0]-a[0])*t/n,a[1]+(b[1]-a[1])*t/n])}}
+function splitSeg(a,b){/* 레인을 0.5 m 간격으로 검사해 데크 밑·기둥 구간에서 끊음 */const L=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.max(1,Math.ceil(L/0.5)),out=[];let st=null,last=null;
+  for(let k=0;k<=n;k++){const q=[a[0]+(b[0]-a[0])*k/n,a[1]+(b[1]-a[1])*k/n];if(boatValid(q)){if(!st)st=q;last=q}else{if(st&&Math.hypot(last[0]-st[0],last[1]-st[1])>=4)out.push([st,last]);st=null}}
+  if(st&&Math.hypot(last[0]-st[0],last[1]-st[1])>=4)out.push([st,last]);return out}
+function routeOK(r){/* 연결 경로 전 구간이 수면·기둥 이격·데크 통로 규칙을 지키는지 0.5 m 단위 확인(못 지키면 그 레인은 건너뜀) */for(let i=0;i<r.length-1;i++){const a=r[i],b=r[i+1],n=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/0.5));
+  for(let k=0;k<=n;k++){const q=[a[0]+(b[0]-a[0])*k/n,a[1]+(b[1]-a[1])*k/n];if(!inPoly(q,LAKE)||!deckOK(q,false))return false}}return true}
 function computePath(pass){const g=MS.grid,vert=pass%2===1,segs=[];const NA=vert?g.nx:g.nz,NB=vert?g.nz:g.nx;
   for(let L=2;L<NA;L+=4){let run=null;for(let k=0;k<=NB;k++){const i=vert?L:k,j=vert?k:L;const ok=k<NB&&g.v[j*g.nx+i];if(ok&&!run)run=[k,k];else if(ok)run[1]=k;
-      if(!ok&&run){if(run[1]-run[0]>=2)segs.push(vert?[cellW(L,run[0]),cellW(L,run[1])]:[cellW(run[0],L),cellW(run[1],L)]);run=null}}}
+      if(!ok&&run){if(run[1]-run[0]>=2)splitSeg(vert?cellW(L,run[0]):cellW(run[0],L),vert?cellW(L,run[1]):cellW(run[1],L)).forEach(sg=>segs.push(sg));run=null}}}
   let cur=[BOAT.pos.x,BOAT.pos.y];const pts=[];const used=new Uint8Array(segs.length);
   for(let n=0;n<segs.length;n++){let bi=-1,be=0,bd=1e9;segs.forEach((s,i)=>{if(used[i])return;for(let e=0;e<2;e++){const d=Math.hypot(s[e][0]-cur[0],s[e][1]-cur[1]);if(d<bd){bd=d;bi=i;be=e}}});
-    used[bi]=1;const s=segs[bi],a=s[be],b=s[1-be];const con=boatPath(cur,a)?[cur,a]:astar(cur,a);densify(con,pts);densify([a,b],pts);cur=b}
+    used[bi]=1;const s=segs[bi],a=s[be],b=s[1-be];const con=boatPath(cur,a)?[cur,a]:astar(cur,a);if(!routeOK(con))continue;densify(con,pts);densify([a,b],pts);cur=b}
   pts.push(cur);MS.path=pts;MS.pi=0;let len=0;for(let k=1;k<pts.length;k++)len+=Math.hypot(pts[k][0]-pts[k-1][0],pts[k][1]-pts[k-1][1]);MS.len=len;
   const cov=new Uint8Array(g.nx*g.nz),rc=Math.floor(BOAT.R*.9/g.cs);pts.forEach((p,k)=>{if(k%2)return;const c=cellOf(p);for(let dj=-rc;dj<=rc;dj++)for(let di=-rc;di<=rc;di++){if(di*di+dj*dj>rc*rc)continue;const i=c[0]+di,j=c[1]+dj;if(i>=0&&j>=0&&i<g.nx&&j<g.nz)cov[j*g.nx+i]=1}});
   let nv=0,nc=0;for(let i=0;i<cov.length;i++)if(g.v[i]){nv++;if(cov[i])nc++}MS.cov=Math.round(nc/Math.max(1,nv)*100);
@@ -219,7 +247,7 @@ function missionStep(dt,sdt){if(!MS.G)return false;MS.t+=dt;const tot=MS.path.le
   const des=Math.atan2(tg[1]-pos[1],tg[0]-pos[0]);let dh=des-BOAT.hd;dh=Math.atan2(Math.sin(dh),Math.cos(dh));BOAT.hd+=clamp(dh,-.6*sdt,.6*sdt);
   const vt=BOAT.base*slow*(1-Math.min(Math.abs(dh)/1.3,.8));BOAT.v+=(vt-BOAT.v)*Math.min(1,sdt*.8);
   const nx=pos[0]+Math.cos(BOAT.hd)*BOAT.v*sdt,nz=pos[1]+Math.sin(BOAT.hd)*BOAT.v*sdt;let blocked=false;for(const o of MS.obs){const dn=Math.hypot(nx-o.p[0],nz-o.p[1]),dc=Math.hypot(pos[0]-o.p[0],pos[1]-o.p[1]);if(dn<o.r+1&&dn<dc)blocked=true}   /* 장애물에 더 다가가는 이동만 차단(멀어지는 이동 허용) */
-  if(!blocked&&(boatSoft([nx,nz])||!boatSoft(pos))){BOAT.pos.set(nx,nz);MS.stuck=0}else{BOAT.v*=.3;MS.stuck+=sdt;if(MS.stuck>4){MS.pi=Math.min(tot-1,MS.pi+3);MS.stuck=0}}
+  if(!blocked&&subOK(pos,[nx,nz])){BOAT.pos.set(nx,nz);MS.stuck=0}else{BOAT.v*=.3;MS.stuck+=sdt;if(MS.stuck>4){MS.pi=Math.min(tot-1,MS.pi+3);MS.stuck=0}}
   /* bring a drifting obstacle onto the route now and then (to exercise avoidance) */
   MS.encT+=sdt;if(MS.encT>50&&!MS.avoid&&MS.pi+16<tot){let far=null,fd=60;MS.obs.forEach(o=>{const d=Math.hypot(o.p[0]-pos[0],o.p[1]-pos[1]);if(d>fd){fd=d;far=o}});
     const q=PW[MS.pi+15];if(far&&boatValid(q)){far.p=[q[0],q[1]];far.fade=0;MS.encT=0}}
@@ -228,8 +256,8 @@ function missionStep(dt,sdt){if(!MS.G)return false;MS.t+=dt;const tot=MS.path.le
 
 
 /* ---- 리모콘 수동 조종 ---- */
-const RC={up:false,down:false,left:false,right:false,stop:false};const RC_TIMEOUT=5000;
-function rcActive(){return RC.up||RC.down||RC.left||RC.right||RC.stop}
+const RC={up:false,down:false,left:false,right:false,stop:false,jx:0,jy:0};const RC_TIMEOUT=5000;
+function rcActive(){return RC.up||RC.down||RC.left||RC.right||RC.stop||Math.hypot(RC.jx,RC.jy)>.08}
 function rcInput(){if(!BOAT.on||MS.ph!==3)return;const now=performance.now();if(!MS.man){MS.man={last:now,v:BOAT.v,warn:0,tm:0};MS.rec=null;MS.avoid=null;BOAT.follow=true;const fb=$('#bFollow');if(fb)fb.setAttribute('aria-pressed','true');rcUi()}else MS.man.last=now}
 function rcRelease(){MS.man=null;MS.prog=null;const tot=MS.path.length,pos=[BOAT.pos.x,BOAT.pos.y];let k=MS.pi,bd=1e9;
   for(let i=Math.max(0,MS.pi-10);i<Math.min(tot,MS.pi+60);i++){const d=Math.hypot(MS.path[i][0]-pos[0],MS.path[i][1]-pos[1]);if(d<bd-1e-6){bd=d;k=i}}   /* 우선 현재 구간 근처에서 재개 */
@@ -241,17 +269,18 @@ function rcUi(){const el=$('#rc');if(!el)return;el.classList.toggle('man',!!MS.m
 function manualStep(dt,pos){const M=MS.man,now=performance.now();if(rcActive())M.last=now;
   if(now-M.last>RC_TIMEOUT){rcRelease();return true}   /* 리모콘 신호 끊김 → 자율 복귀 */
   const s=dt*Math.min(BOAT.speed,3);   /* 수동 조종은 최대 ×3 배속 */
-  const turn=(RC.left?-1:0)+(RC.right?1:0);BOAT.hd+=turn*.85*s;
-  const vt=RC.stop?0:RC.up?BOAT.base:RC.down?-.6:BOAT.v*.97;BOAT.v+=(vt-BOAT.v)*Math.min(1,s*1.2);
+  const jOn=Math.hypot(RC.jx,RC.jy)>.08;const turn=clamp((RC.left?-1:0)+(RC.right?1:0)+(jOn?RC.jx:0),-1,1);BOAT.hd+=turn*.85*s;   /* 조이스틱: 좌우=선회(아날로그) */
+  const vt=RC.stop?0:RC.up?BOAT.base:RC.down?-.6:(jOn&&Math.abs(RC.jy)>.12)?(RC.jy<0?BOAT.base*-RC.jy:-.6*RC.jy):BOAT.v*.97;   /* 위=전진·아래=후진(밀어낸 만큼 속도) */BOAT.v+=(vt-BOAT.v)*Math.min(1,s*1.2);
   const fx=Math.cos(BOAT.hd),fz=Math.sin(BOAT.hd);
   if(BOAT.v>0)for(const o of MS.obs){const dx=o.p[0]-pos[0],dz=o.p[1]-pos[1],d=Math.hypot(dx,dz);if(d<o.r+2.2&&(dx*fx+dz*fz)>0){BOAT.v=0;M.warn=now+1200}}   /* LiDAR 자동 정지 */
   const nx=pos[0]+fx*BOAT.v*s,nz=pos[1]+fz*BOAT.v*s;
-  if(boatSoft([nx,nz])||!boatSoft(pos))BOAT.pos.set(nx,nz);else{BOAT.v=0;M.warn=now+1200}   /* 수면 밖·구조물 앞 정지 */
+  if(subOK(pos,[nx,nz]))BOAT.pos.set(nx,nz);else{BOAT.v=0;M.warn=now+1200}   /* 수면 밖·구조물 앞 정지 */
   M.tm+=dt;if(M.tm>.25){M.tm=0;const m=$('#boatMsg');if(m)m.textContent=rcMsg()}
   return true}
 /* ---- 고착 감지·탈출 루틴 ---- */
+function subOK(a,b){/* 고배속에서도 기둥·데크·호안을 뛰어넘지 않게 0.4 m 단위로 검사 */if(!boatSoft(a))return true;const L=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.max(1,Math.ceil(L/0.4));for(let k=1;k<=n;k++){if(!boatSoft([a[0]+(b[0]-a[0])*k/n,a[1]+(b[1]-a[1])*k/n]))return false}return true}
 function boatSoft(p){if(!inPoly(p,LAKE)||edgeDist(p,LAKE)<2.2)return false;for(const f of FOUNT)if(Math.hypot(p[0]-f[0],p[1]-f[1])<4)return false;
-  for(const s of deckSegs)if(segDist(p,s[0],s[1])<2.2)return false;return true}
+  return deckOK(p,false)}
 function clearCell(i,j){const g=MS.grid;for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++){const a=i+di,b=j+dj;if(a<0||b<0||a>=g.nx||b>=g.nz||!g.v[b*g.nx+a])return false}return true}
 function startRecover(pos){const g=MS.grid,c=cellOf(pos);let best=null,bd=1e9;
   for(let j=Math.max(0,c[1]-10);j<=Math.min(g.nz-1,c[1]+10);j++)for(let i=Math.max(0,c[0]-10);i<=Math.min(g.nx-1,c[0]+10);i++){if(!clearCell(i,j))continue;const w=cellW(i,j),d=Math.hypot(w[0]-pos[0],w[1]-pos[1]);if(d>4&&d<bd){bd=d;best=w}}
@@ -268,7 +297,7 @@ function recoverStep(dt,sdt,pos){const R=MS.rec,tot=MS.path.length;R.t+=sdt;R.tt
   const des=Math.atan2(tg[1]-pos[1],tg[0]-pos[0]);let dh=des-BOAT.hd;dh=Math.atan2(Math.sin(dh),Math.cos(dh));BOAT.hd+=clamp(dh,-.9*sdt,.9*sdt);
   const vt=BOAT.base*.8*(1-Math.min(Math.abs(dh)/1.4,.85));BOAT.v+=(vt-BOAT.v)*Math.min(1,sdt*.8);
   const nx=pos[0]+Math.cos(BOAT.hd)*BOAT.v*sdt,nz=pos[1]+Math.sin(BOAT.hd)*BOAT.v*sdt;
-  if(boatSoft([nx,nz])||!boatSoft(pos))BOAT.pos.set(nx,nz);
+  if(subOK(pos,[nx,nz]))BOAT.pos.set(nx,nz);
   else if(R.tt>14){const d=Math.hypot(tg[0]-pos[0],tg[1]-pos[1])||1,s=Math.min(d,.6*sdt);BOAT.pos.set(pos[0]+(tg[0]-pos[0])/d*s,pos[1]+(tg[1]-pos[1])/d*s)}   /* 최후 수단: 탈출 지점으로 서서히 이동 */
   return true}
 /* 2D ray cast against shoreline, decks, fixed structures and floating obstacles */
@@ -276,7 +305,7 @@ function segHit(ox,oz,dx,dz,a,b){const ex=b[0]-a[0],ez=b[1]-a[1],den=dx*ez-dz*ex
 function cirHit(ox,oz,dx,dz,c,r){const fx=ox-c[0],fz=oz-c[1],b=fx*dx+fz*dz,cc=fx*fx+fz*fz-r*r,h=b*b-cc;if(h<0)return 1e9;const t=-b-Math.sqrt(h);return t>0?t:1e9}
 function lidarRay(ox,oz,a,maxR){const dx=Math.cos(a),dz=Math.sin(a);let t=maxR,ty=0;
   for(let i=0;i<LAKE.length-1;i++){const h=segHit(ox,oz,dx,dz,LAKE[i],LAKE[i+1]);if(h<t){t=h;ty=1}}
-  for(const s of deckSegs){const h=segHit(ox,oz,dx,dz,s[0],s[1]);if(h<t){t=h;ty=2}}
+  for(const q of DECK_PILES){if(Math.abs(q[0]-ox)>maxR+1||Math.abs(q[1]-oz)>maxR+1)continue;const h=cirHit(ox,oz,dx,dz,q,.2);if(h<t){t=h;ty=2}}   /* 수면 높이 = 데크 기둥 */
   for(const f of FOUNT){const h=cirHit(ox,oz,dx,dz,f,2.5);if(h<t){t=h;ty=2}}for(const s of SENS){const h=cirHit(ox,oz,dx,dz,s.p,.7);if(h<t){t=h;ty=2}}
   for(const o of MS.obs){const h=cirHit(ox,oz,dx,dz,o.p,o.r*.8);if(h<t){t=h;ty=3}}return ty?[ox+dx*t,oz+dz*t,ty,t]:null}
 const LCOL=[null,[.35,.9,1.],[1.,.82,.35],[1.,.3,.36]];
