@@ -133,8 +133,11 @@ button:focus-visible,.tg input:focus-visible,input[type=range]:focus-visible{out
 #splash .eb{font:600 11px var(--mono);letter-spacing:.32em;color:#7fe3ff}
 #splash h1{font:700 clamp(26px,5vw,40px)/1.15 var(--ui);margin:14px 0 6px;letter-spacing:-.01em}
 #splash .sub{font-size:13px;color:var(--ink-2)}
-#splash .logo{width:74px;height:74px;margin:0 auto 4px;border-radius:50%;display:grid;place-items:center;
-  background:radial-gradient(circle at 35% 30%,#bff6ff,#3fb7cf 55%,#0d5160);box-shadow:0 0 40px rgba(110,220,240,.45),inset 0 -6px 14px rgba(0,0,0,.3);font:800 20px var(--ui);color:#04222a}
+.nhlogo{background:url("__LOGO__") center/contain no-repeat}
+#splash .logo{width:min(260px,62vw);aspect-ratio:298/230;margin:0 auto 10px;filter:drop-shadow(0 0 24px rgba(120,225,245,.35));animation:lgIn 1.2s ease-out both}
+@keyframes lgIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+#auth .alogo{width:118px;aspect-ratio:298/230;margin:0 auto 10px}
+#head .hlogo{width:62px;aspect-ratio:298/230;float:right;margin:-2px 0 0 8px;opacity:.92}
 #splash .pg{width:min(300px,70vw);height:3px;background:rgba(255,255,255,.1);margin:22px auto 8px;border-radius:2px;overflow:hidden}
 #splash .pg i{display:block;height:100%;width:4%;background:linear-gradient(90deg,#7fe3ff,#e8fbff);transition:width .25s}
 #splash .st{font:500 11px var(--mono);color:var(--ink-3);min-height:16px}
@@ -202,8 +205,7 @@ button:focus-visible,.tg input:focus-visible,input[type=range]:focus-visible{out
 <div id="stage"></div>
 <div id="splash" role="status" aria-live="polite">
   <div class="sp">
-    <div class="logo">NHI</div>
-    <div class="eb">NANOHYDROIN CO., LTD.</div>
+    <div class="logo nhlogo" role="img" aria-label="NANOHYDROIN — 79nm : The Next Dimension"></div>
     <h1 data-i18n="spTitle">상동호수공원 디지털트윈</h1>
     <div class="sub" data-i18n="spSub">NHI PhotoNano · UFB × TiO₂/UVA 광촉매 수질개선 · K-테스트베드 2026</div>
     <div class="pg"><i id="spBar"></i></div>
@@ -213,6 +215,7 @@ button:focus-visible,.tg input:focus-visible,input[type=range]:focus-visible{out
 </div>
 <div id="auth" hidden>
   <div class="card">
+    <div class="alogo nhlogo" role="img" aria-label="NANOHYDROIN"></div>
     <div class="top"><b data-i18n="spTitle">상동호수공원 디지털트윈</b><div class="alangs"><button data-lang="ko">한국어</button><button data-lang="en">EN</button><button data-lang="ja">日本語</button></div></div>
     <div class="tabs" role="tablist" id="aTabs"><button role="tab" data-v="login" data-i18n="auLogin">로그인</button><button role="tab" data-v="register" data-i18n="auRegister">회원가입</button></div>
     <form id="fLogin" data-v="login">
@@ -269,6 +272,7 @@ button:focus-visible,.tg input:focus-visible,input[type=range]:focus-visible{out
 <div id="loading"><div><div id="ldtxt" data-i18n="loading">실사 텍스처와 지형을 생성하는 중…</div><div class="bar"><i id="ldbar"></i></div></div></div>
 
 <div id="head" class="panel">
+  <div class="hlogo nhlogo" role="img" aria-label="NANOHYDROIN"></div>
   <div class="eyebrow">K-TESTBED 2026 · NHI PhotoNano</div>
   <div id="langs" role="group" aria-label="Language"><button data-lang="ko" aria-pressed="true">한국어</button><button data-lang="en" aria-pressed="false">EN</button><button data-lang="ja" aria-pressed="false">日本語</button></div>
   <h1 data-i18n="title">상동호수공원 디지털트윈</h1>

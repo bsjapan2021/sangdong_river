@@ -14,7 +14,8 @@ photos = [uri(A/f'photo_{i}.jpg','image/jpeg') for i in range(1,9)]
 h = (tpl.replace('__DATA__', json.dumps(data, ensure_ascii=False, separators=(',',':')))
         .replace('__SKYLINE__', uri(A/'skyline_cut.png','image/png'))
         .replace('__PHOTOS__', json.dumps(photos))
-        .replace('__BOAT__', (A/'boat_mesh.json').read_text()))
+        .replace('__BOAT__', (A/'boat_mesh.json').read_text())
+        .replace('__LOGO__', uri(A/'logo_nanohydroin_light.svg','image/svg+xml')))
 (R/'sangdong_dt_v2.html').write_text(h, encoding='utf-8')
 V = R/'src/vendor'
 off = h
