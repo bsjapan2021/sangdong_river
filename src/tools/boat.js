@@ -26,6 +26,9 @@ function buildBoat(){
   /* locator ring (boat is real-scale 1.6 m) */
   const ring=new THREE.Mesh(new THREE.RingGeometry(2.6,3.0,48),new THREE.MeshBasicMaterial({color:0x9ff0b8,transparent:true,opacity:.7,depthWrite:false,side:THREE.DoubleSide}));
   ring.rotation.x=-Math.PI/2;ring.position.y=.06;grp.add(ring);BOAT.ring=ring;
+  {const tx=canvasTex(128,128,(x,w,h)=>{const g=x.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,'rgba(200,150,255,1)');g.addColorStop(.35,'rgba(150,90,255,.55)');g.addColorStop(1,'rgba(120,60,255,0)');x.fillStyle=g;x.fillRect(0,0,w,h)});
+   const gl=new THREE.Mesh(new THREE.CircleGeometry(3.4,40),new THREE.MeshBasicMaterial({map:tx,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}));gl.rotation.x=-Math.PI/2;gl.position.y=.04;grp.add(gl);BOAT.uvGlow=gl;
+   const lt=new THREE.PointLight(0x9a6bff,0,9,1.6);lt.position.set(.6,.15,0);grp.add(lt);BOAT.uvLight=lt}   /* UVA 365 nm 램프(그늘 보강 시 강해짐) */
   grp.position.set(BOAT.pos.x,-0.5,BOAT.pos.y);grp.visible=false;scene.add(grp);BOAT.grp=grp;BOAT.body=body;
   BOAT.lbl=addLabel(()=>T('boatLbl'),BOAT.pos.x,3.4,BOAT.pos.y,'module','boat');BOAT.lbl.hidden=true;
   /* --- clean mask over the lake (canvas → texture used by purify shaders) --- */
@@ -85,11 +88,13 @@ function updateBoat(dt){if(!BOAT.on||!BOAT.grp)return;const sp=BOAT.speed,sdt=dt
   const g=BOAT.grp;g.position.set(BOAT.pos.x,-0.5+.025*Math.sin(T0*2.1),BOAT.pos.y);g.rotation.set(0,-BOAT.hd,0);BOAT.body.rotation.set(.018*Math.sin(T0*1.7),0,.012*Math.sin(T0*1.3+1));
   BOAT.ring.material.opacity=.45+.3*Math.sin(T0*3);BOAT.lbl.v.set(BOAT.pos.x,3.4,BOAT.pos.y);PUR.u.uBoat.value.set(BOAT.pos.x+fx*.7,BOAT.pos.y+fz*.7,BOAT.hd);
   /* emission (scaled gently with playback speed) */
-  const em=run?Math.sqrt(sp):0;const bx=BOAT.pos.x+fx*.7,bz=BOAT.pos.y+fz*.7;
+  const em=run?Math.sqrt(sp):0;
+  const shade=run&&!!bandInfo([BOAT.pos.x,BOAT.pos.y],0.6);MS.uva=(MS.uva||.6)+((run?(shade?1:.6):0)-(MS.uva||.6))*Math.min(1,dt*6);   /* 데크 밑 그늘 → UVA 100% */
+  const boost=clamp((MS.uva-.6)/.4,0,1);if(BOAT.uvGlow){BOAT.uvGlow.material.opacity=boost*(.8+.2*Math.sin(BOAT.t*9));BOAT.uvLight.intensity=boost*4*(.85+.15*Math.sin(BOAT.t*7))}const bx=BOAT.pos.x+fx*.7,bz=BOAT.pos.y+fz*.7;
   for(let k=0;k<Math.round(4*em);k++){const sd=Math.random()<.5?-1:1,lat=R(.6,2.2)*sd,fwd=R(-.6,.3);bSpawn(bx+rx*.22*sd,-0.45,bz+rz*.22*sd,rx*lat+fx*fwd,0,rz*lat+fz*fwd,R(4,8),R(.08,.22),1)}
   for(let k=0;k<Math.round(3*em);k++){const a=Math.random()*6.283,s=R(.2,1.2);bSpawn(bx+R(-.2,.2),-0.85,bz+R(-.2,.2),Math.cos(a)*s,R(.05,.25),Math.sin(a)*s,R(4,7),R(.05,.16),0)}
   for(let k=0;k<Math.round(2*em);k++){const sd=Math.random()<.5?-1:1;const sx=BOAT.pos.x-fx*.8+rx*.3*sd,sz=BOAT.pos.y-fz*.8+rz*.3*sd;bSpawn(sx,-0.44,sz,-fx*.4+rx*R(-.25,.25)*sd,0,-fz*.4+rz*R(-.25,.25)*sd,R(3,5),R(.25,.5),2)}
-  for(let k=0;k<Math.round(3*em);k++){const a=Math.random()*6.283,r0=R(.5,7);bSpawn(bx+Math.cos(a)*r0,R(-2.4,-0.6),bz+Math.sin(a)*r0,R(-.2,.2),R(-.05,.1),R(-.2,.2),R(.6,1.6),R(.12,.26),Math.random()<.55?3:4)}
+  for(let k=0;k<Math.round(3*em*(1+2*boost));k++){const a=Math.random()*6.283,r0=R(.5,7-2*boost);bSpawn(bx+Math.cos(a)*r0,R(-2.4,-0.6),bz+Math.sin(a)*r0,R(-.2,.2),R(-.05,.1),R(-.2,.2),R(.6,1.6),R(.12,.26)*(1+.3*boost),Math.random()<(.55-.25*boost)?3:4)}   /* 그늘 보강 시 ROS 3배·보라(O₂⁻) 비중↑ */
   /* integrate particles */
   const p=BOAT.pp;for(let i=0;i<p.N;i++){if(p.L[i]<=0){p.A[i]=0;continue}p.AG[i]+=dt;const t=p.AG[i];if(t>=p.L[i]){p.L[i]=0;p.A[i]=0;continue}
     const k=p.K[i],dk=Math.exp(-dt*(k===0?.5:k===1?.35:.9));p.V[i*3]*=dk;p.V[i*3+2]*=dk;if(k===0){p.V[i*3+1]+=dt*.12;}
@@ -98,12 +103,12 @@ function updateBoat(dt){if(!BOAT.on||!BOAT.grp)return;const sp=BOAT.speed,sdt=dt
   ['position','al','sz','kd'].forEach(a=>p.geo.attributes[a].needsUpdate=true);
   /* paint the clean mask (accumulates where the plume passes), slow regrowth */
   const c=BOAT.ctx,S=BOAT.S,px=(bx-BOAT.box[0])*BOAT.box[2],pz=(bz-BOAT.box[1])*BOAT.box[3],rp=BOAT.R*BOAT.box[2];
-  if(run){c.globalCompositeOperation='lighter';const gr=c.createRadialGradient(px,pz,0,px,pz,rp);const al=Math.min(1,sdt*.5);gr.addColorStop(0,`rgba(255,255,255,${al})`);gr.addColorStop(.6,`rgba(255,255,255,${al*.6})`);gr.addColorStop(1,'rgba(255,255,255,0)');
+  if(run){c.globalCompositeOperation='lighter';const gr=c.createRadialGradient(px,pz,0,px,pz,rp);const al=Math.min(1,sdt*.5*(1+.8*boost));gr.addColorStop(0,`rgba(255,255,255,${al})`);gr.addColorStop(.6,`rgba(255,255,255,${al*.6})`);gr.addColorStop(1,'rgba(255,255,255,0)');
   c.fillStyle=gr;c.beginPath();c.arc(px,pz,rp,0,7);c.fill()}
   BOAT.tRegrow+=sdt;if(BOAT.tRegrow>20){BOAT.tRegrow=0;c.globalCompositeOperation='source-over';c.fillStyle='rgba(0,0,0,0.02)';c.fillRect(0,0,S,S)}
   if((++BOAT.frame)%3===0)BOAT.tex.needsUpdate=true;
   BOAT.tStat+=dt;if(BOAT.tStat>.8||!BOAT.stat){BOAT.tStat=0;BOAT.stat=c.getImageData(0,0,S,S).data;let k2=0;for(const ix of BOAT.lakePix)if(BOAT.stat[ix*4]>150)k2++;BOAT.pct=Math.round(k2/BOAT.lakePix.length*100);
-    const hb=$('#boatBar');if(hb){hb.style.width=BOAT.pct+'%';$('#boatPct').textContent=BOAT.pct+'%';if(MS.ph===3)$('#boatMsg').textContent=MS.man?rcMsg():(MS.rcBackT&&performance.now()-MS.rcBackT<4000)?T('msRcBack'):MS.rec?T('msRecover'):MS.inGate?T('msGate',{c:MS.inGate.g.clr.toFixed(2),k:Math.min(3,MS.inGate.g.passes+1)}):MS.avoid?T('msAvoid',{d:MS.avoid.d.toFixed(1)}):BOAT.pct>=90?T('boatDone'):T('boatRun',{v:(BOAT.v).toFixed(1)})}}
+    const hb=$('#boatBar');if(hb){hb.style.width=BOAT.pct+'%';$('#boatPct').textContent=BOAT.pct+'%';if(MS.ph===3)$('#boatMsg').textContent=MS.man?rcMsg():(MS.rcBackT&&performance.now()-MS.rcBackT<4000)?T('msRcBack'):MS.rec?T('msRecover'):MS.inGate?T('msGate',{c:MS.inGate.g.clr.toFixed(2),k:Math.min(3,MS.inGate.g.passes+1),p:Math.round((MS.uva||.6)*100)}):MS.avoid?T('msAvoid',{d:MS.avoid.d.toFixed(1)}):BOAT.pct>=90?T('boatDone'):T('boatRun',{v:(BOAT.v).toFixed(1)})}}
   /* follow camera */
   updateSensorsViz(dt);
   if(BOAT.follow&&!fly&&MS.ph===3&&cineCam(dt)){}else if(BOAT.follow&&!fly&&MS.ph===3){const k=1-Math.exp(-dt*2.2);_bt.set(BOAT.pos.x+fx*7,-0.3,BOAT.pos.y+fz*7);_bc.set(BOAT.pos.x-fx*12+rx*5,7.5,BOAT.pos.y-fz*12+rz*5);   /* 보트를 화면 아래쪽에 → 상단 패널에 가리지 않음 */controls.target.lerp(_bt,k);camera.position.lerp(_bc,k)}
@@ -267,10 +272,19 @@ function gateWatch(pos){let best=null,bd=1e9;for(const g of MS.gates||[]){const 
   const nx=best.B[0]-best.A[0],nz=best.B[1]-best.A[1],sd=Math.sign((pos[0]-best.G[0])*nx+(pos[1]-best.G[1])*nz)||1;
   if(best.side&&sd!==best.side)best.passes++;best.side=sd;MS.inGate={g:best,d:bd};return true}
 const _cp=new THREE.Vector3(),_ct=new THREE.Vector3();
-function cineCam(dt){const ig=MS.inGate;if(!ig||MS.cine===false)return false;const g=ig.g;const n=[g.B[0]-g.A[0],g.B[1]-g.A[1]],nl=Math.hypot(n[0],n[1])||1;
-  const side=g.side||1;/* 데크 옆 수면 높이: 기둥 열을 따라 7 m 떨어진 곳, 보트가 나오는 쪽으로 살짝 */
-  _cp.set(g.G[0]+g.u[0]*7.5+n[0]/nl*(g.hw+1.2)*side,0.25,g.G[1]+g.u[1]*7.5+n[1]/nl*(g.hw+1.2)*side);_ct.set(g.G[0],-0.25,g.G[1]);
-  const k=1-Math.exp(-dt*3);camera.position.lerp(_cp,k);controls.target.lerp(_ct,k);return true}
+function cineCam(dt){const ig=MS.inGate;const lb=$('#cineLB');
+  if(!ig||MS.cine===false){if(lb&&lb.classList.contains('on')){lb.classList.remove('on');document.body.classList.remove('cine')}MS.cut=0;return false}
+  const g=ig.g,nx=g.B[0]-g.A[0],nz=g.B[1]-g.A[1],nl=Math.hypot(nx,nz)||1,ux=nx/nl,uz=nz/nl;   /* u: 데크 수직(통과 방향 축) */
+  const fx=Math.cos(BOAT.hd),fz=Math.sin(BOAT.hd);const dir=Math.sign(fx*ux+fz*uz)||1;const tx=ux*dir,tz=uz*dir;   /* 진행 방향 */
+  const dn=(BOAT.pos.x-g.G[0])*tx+(BOAT.pos.y-g.G[1])*tz;const ax=g.u[0],az=g.u[1];   /* a: 데크 길이 방향 */
+  const cut=dn<-g.hw-0.3?1:dn<=g.hw+0.3?2:3;
+  if(cut===1){_cp.set(g.G[0]-tx*(g.hw+8)+ax*3.2,1.3,g.G[1]-tz*(g.hw+8)+az*3.2);_ct.set(g.G[0]+tx*1.5,0.1,g.G[1]+tz*1.5)}          /* CUT1 진입: 보트 뒤·옆 저각, 데크와 기둥을 정면에 */
+  else if(cut===2){_cp.set(g.G[0]+ax*6.5,0.12,g.G[1]+az*6.5);_ct.set(g.G[0]-ax*1,-0.25,g.G[1]-az*1)}                              /* CUT2 데크 밑: 기둥 열 사이 수면 높이에서 데크 아래를 따라 */
+  else{_cp.set(g.G[0]+tx*(g.hw+7.5)-ax*2.5,0.9,g.G[1]+tz*(g.hw+7.5)-az*2.5);_ct.set(g.G[0]+tx*(g.hw*.5),-0.1,g.G[1]+tz*(g.hw*.5))}  /* CUT3 빠져나오기: 출구 측 정면 */
+  if(cut!==MS.cut){MS.cut=cut;camera.position.copy(_cp);controls.target.copy(_ct);   /* 하드 컷 */
+    if(lb){lb.classList.add('on');document.body.classList.add('cine');const c=$('#cineCap');c.textContent=T('cut'+cut);c.classList.remove('flash');void c.offsetWidth;c.classList.add('flash')}}
+  else{const k=1-Math.exp(-dt*.6);camera.position.lerp(_cp,k);controls.target.lerp(_ct,1-Math.exp(-dt*4));camera.position.x+=Math.cos(U.time.value*.4)*.004;camera.position.y+=Math.sin(U.time.value*.5)*.002}   /* 느린 돌리 */
+  return true}
 /* ---- 리모콘 수동 조종 ---- */
 const RC={up:false,down:false,left:false,right:false,stop:false,jx:0,jy:0};const RC_TIMEOUT=5000;
 function rcActive(){return RC.up||RC.down||RC.left||RC.right||RC.stop||Math.hypot(RC.jx,RC.jy)>.08}
@@ -349,4 +363,4 @@ function updateSensorsViz(dt){if(!MS.G||!MS.G.visible)return;const bx=BOAT.pos.x
   /* telemetry */
   MS.tTel+=dt;if(MS.tTel>.25){MS.tTel=0;const lat=GEO.lat-bz/111320,lon=GEO.lon+bx/(111320*Math.cos(GEO.lat*Math.PI/180));
     const e1=$('#bGnss'),e2=$('#bLidar');if(e1)e1.textContent=T('gnssLn',{n:9+((Tm/7|0)%3),lat:(lat+R(-1,1)*1e-7).toFixed(6),lon:(lon+R(-1,1)*1e-7).toFixed(6),h:(0.7+0.1*Math.sin(Tm*.3)).toFixed(1)});
-    if(e2)e2.textContent=T('lidarLn',{n:nh,d:near<99?near.toFixed(1)+' m':'—'})}}
+    if(e2)e2.textContent=T('lidarLn',{n:nh,d:near<99?near.toFixed(1)+' m':'—'});const e3=$('#bUva');if(e3){const pc=Math.round((MS.uva||0)*100);e3.textContent=T(pc>=90?'uvaBoost':'uvaLn',{p:pc});e3.parentNode.classList.toggle('boost',pc>=90)}}}
