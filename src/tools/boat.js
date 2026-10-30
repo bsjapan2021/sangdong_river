@@ -91,7 +91,7 @@ function updateBoat(dt){if(!BOAT.on||!BOAT.grp)return;const sp=BOAT.speed,sdt=dt
   BOAT.tRegrow+=sdt;if(BOAT.tRegrow>20){BOAT.tRegrow=0;c.globalCompositeOperation='source-over';c.fillStyle='rgba(0,0,0,0.02)';c.fillRect(0,0,S,S)}
   if((++BOAT.frame)%3===0)BOAT.tex.needsUpdate=true;
   BOAT.tStat+=dt;if(BOAT.tStat>.8||!BOAT.stat){BOAT.tStat=0;BOAT.stat=c.getImageData(0,0,S,S).data;let k2=0;for(const ix of BOAT.lakePix)if(BOAT.stat[ix*4]>150)k2++;BOAT.pct=Math.round(k2/BOAT.lakePix.length*100);
-    const hb=$('#boatBar');if(hb){hb.style.width=BOAT.pct+'%';$('#boatPct').textContent=BOAT.pct+'%';if(MS.ph===3)$('#boatMsg').textContent=MS.avoid?T('msAvoid',{d:MS.avoid.d.toFixed(1)}):BOAT.pct>=90?T('boatDone'):T('boatRun',{v:(BOAT.v).toFixed(1)})}}
+    const hb=$('#boatBar');if(hb){hb.style.width=BOAT.pct+'%';$('#boatPct').textContent=BOAT.pct+'%';if(MS.ph===3)$('#boatMsg').textContent=MS.man?rcMsg():(MS.rcBackT&&performance.now()-MS.rcBackT<4000)?T('msRcBack'):MS.rec?T('msRecover'):MS.avoid?T('msAvoid',{d:MS.avoid.d.toFixed(1)}):BOAT.pct>=90?T('boatDone'):T('boatRun',{v:(BOAT.v).toFixed(1)})}}
   /* follow camera */
   updateSensorsViz(dt);
   if(BOAT.follow&&!fly&&MS.ph===3){const k=1-Math.exp(-dt*2.2);_bt.set(BOAT.pos.x+fx*7,-0.3,BOAT.pos.y+fz*7);_bc.set(BOAT.pos.x-fx*12+rx*5,7.5,BOAT.pos.y-fz*12+rz*5);   /* 보트를 화면 아래쪽에 → 상단 패널에 가리지 않음 */controls.target.lerp(_bt,k);camera.position.lerp(_bc,k)}
@@ -182,11 +182,11 @@ function computePath(pass){const g=MS.grid,vert=pass%2===1,segs=[];const NA=vert
     const w=k%6<3?1:.7;for(let v=0;v<6;v++){P[(k*6+v)*3]=V[v*2];P[(k*6+v)*3+1]=-0.36;P[(k*6+v)*3+2]=V[v*2+1];Cc[(k*6+v)*3]=.22*w;Cc[(k*6+v)*3+1]=.62*w;Cc[(k*6+v)*3+2]=.7*w}}
   MS.plSeg=n;MS.pl.geometry.attributes.position.needsUpdate=true;MS.pl.geometry.attributes.color.needsUpdate=true;MS.pl.geometry.setDrawRange(0,0);MS.pl.visible=true}
 function msSteps(){document.querySelectorAll('#boatBody [data-ms]').forEach(e=>{const k=+e.dataset.ms;e.dataset.st=k<MS.ph?'done':k===MS.ph?'on':''})}
-function missionStart(){if(!MS.G)return;MS.G.visible=true;MS.pl.material.opacity=.7;MS.shore.material.opacity=.95;MS.nogo.forEach(o=>o.material.opacity=o.userData.line?.9:.6);MS.ph=1;MS.t=0;MS.pass=0;MS.avoid=null;MS.encT=0;MS.su.uScan.value=0;MS.su.uFade.value=1;MS.shore.geometry.setDrawRange(0,0);
+function missionStart(){if(!MS.G)return;MS.man=null;MS.rec=null;MS.prog=null;MS.stuckN=0;MS.G.visible=true;MS.pl.material.opacity=.7;MS.shore.material.opacity=.95;MS.nogo.forEach(o=>o.material.opacity=o.userData.line?.9:.6);MS.ph=1;MS.t=0;MS.pass=0;MS.avoid=null;MS.encT=0;MS.su.uScan.value=0;MS.su.uFade.value=1;MS.shore.geometry.setDrawRange(0,0);
   MS.nogo.forEach(o=>{o.visible=false;o.scale.set(1,1,1)});MS.pl.visible=false;MS.oring.visible=false;MS.alertLbl.hidden=true;
   const a=[BOAT.pos.x,BOAT.pos.y];MS.obs.forEach((o,k)=>{for(let t=0;t<200;t++){const s=PUR.samples[(Math.random()*PUR.samples.length)|0];if(boatValid([s[0],s[2]])&&Math.hypot(s[0]-a[0],s[2]-a[1])>40){o.p=[s[0],s[2]];break}}const an=Math.random()*6.283;o.v=[Math.cos(an)*.18,Math.sin(an)*.18]});
   flyTo([LAKEC[0]+30,250,LAKEC[1]+220],[LAKEC[0],0,LAKEC[1]],1800,48);msSteps()}
-function missionHide(){if(MS.G)MS.G.visible=false;if(MS.alertLbl)MS.alertLbl.hidden=true;MS.ph=0}
+function missionHide(){MS.man=null;const r=$('#rc');if(r)r.hidden=true;if(MS.G)MS.G.visible=false;if(MS.alertLbl)MS.alertLbl.hidden=true;MS.ph=0}
 function missionStep(dt,sdt){if(!MS.G)return false;MS.t+=dt;const tot=MS.path.length;
   if(MS.ph===1){const s=Math.min(1,MS.t/7);MS.su.uScan.value=s;const sz=MS.su.uZ0.value+(MS.su.uZ1.value-MS.su.uZ0.value)*s;
     MS.shore.geometry.setDrawRange(0,Math.floor(MS.shoreN*s));MS.nogo.forEach(o=>{if(!o.visible&&o.userData.z<sz){o.visible=true;o.userData.t0=MS.t}if(o.visible&&!o.userData.line){const k=Math.min(1,(MS.t-o.userData.t0)/.5);const sc=1+.6*Math.sin(k*Math.PI)*(1-k);o.scale.set(sc,sc,sc)}});
@@ -200,6 +200,10 @@ function missionStep(dt,sdt){if(!MS.G)return false;MS.t+=dt;const tot=MS.path.le
    MS.shore.material.opacity+=(0.3-MS.shore.material.opacity)*k;MS.nogo.forEach(o=>{o.material.opacity+=((o.userData.line?0.35:0.22)-o.material.opacity)*k})}   /* 운항 중엔 경로·호안선·금지구역을 은은하게 */   /* 운항 중엔 인식 격자를 옅게 → 수면이 잘 보이게 */
   const PW=MS.path,pos=[BOAT.pos.x,BOAT.pos.y];while(MS.pi<tot-1&&Math.hypot(pos[0]-PW[MS.pi][0],pos[1]-PW[MS.pi][1])<4)MS.pi++;
   if(MS.pi>=tot-1&&Math.hypot(pos[0]-PW[tot-1][0],pos[1]-PW[tot-1][1])<4){MS.pass++;MS.ph=2;MS.t=0;computePath(MS.pass);msSteps();return false}
+  if(MS.man)return manualStep(dt,pos);
+  if(!MS.prog)MS.prog={t:0,x:pos[0],z:pos[1]};MS.prog.t+=sdt;
+  if(MS.prog.t>6){if(!MS.rec&&Math.hypot(pos[0]-MS.prog.x,pos[1]-MS.prog.z)<1.5)startRecover(pos);MS.prog={t:0,x:pos[0],z:pos[1]}}   /* 6초간 1.5 m 미만 이동 = 고착 */
+  if(MS.rec)return recoverStep(dt,sdt,pos);
   let tg=PW[Math.min(MS.pi+1,tot-1)];const fx=Math.cos(BOAT.hd),fz=Math.sin(BOAT.hd);
   /* LiDAR-based avoidance of floating obstacles */
   if(!MS.avoid){for(const o of MS.obs){const dx=o.p[0]-pos[0],dz=o.p[1]-pos[1],d=Math.hypot(dx,dz)-o.r;if(d>10||o.fade<1)continue;const ang=Math.atan2(dx*fz-dz*fx,dx*fx+dz*fz);
@@ -215,11 +219,57 @@ function missionStep(dt,sdt){if(!MS.G)return false;MS.t+=dt;const tot=MS.path.le
   const des=Math.atan2(tg[1]-pos[1],tg[0]-pos[0]);let dh=des-BOAT.hd;dh=Math.atan2(Math.sin(dh),Math.cos(dh));BOAT.hd+=clamp(dh,-.6*sdt,.6*sdt);
   const vt=BOAT.base*slow*(1-Math.min(Math.abs(dh)/1.3,.8));BOAT.v+=(vt-BOAT.v)*Math.min(1,sdt*.8);
   const nx=pos[0]+Math.cos(BOAT.hd)*BOAT.v*sdt,nz=pos[1]+Math.sin(BOAT.hd)*BOAT.v*sdt;let blocked=false;for(const o of MS.obs){const dn=Math.hypot(nx-o.p[0],nz-o.p[1]),dc=Math.hypot(pos[0]-o.p[0],pos[1]-o.p[1]);if(dn<o.r+1&&dn<dc)blocked=true}   /* 장애물에 더 다가가는 이동만 차단(멀어지는 이동 허용) */
-  if(!blocked&&(boatValid([nx,nz])||!boatValid(pos))){BOAT.pos.set(nx,nz);MS.stuck=0}else{BOAT.v*=.3;MS.stuck+=sdt;if(MS.stuck>4){MS.pi=Math.min(tot-1,MS.pi+3);MS.stuck=0}}
+  if(!blocked&&(boatSoft([nx,nz])||!boatSoft(pos))){BOAT.pos.set(nx,nz);MS.stuck=0}else{BOAT.v*=.3;MS.stuck+=sdt;if(MS.stuck>4){MS.pi=Math.min(tot-1,MS.pi+3);MS.stuck=0}}
   /* bring a drifting obstacle onto the route now and then (to exercise avoidance) */
   MS.encT+=sdt;if(MS.encT>50&&!MS.avoid&&MS.pi+16<tot){let far=null,fd=60;MS.obs.forEach(o=>{const d=Math.hypot(o.p[0]-pos[0],o.p[1]-pos[1]);if(d>fd){fd=d;far=o}});
     const q=PW[MS.pi+15];if(far&&boatValid(q)){far.p=[q[0],q[1]];far.fade=0;MS.encT=0}}
   MS.tCol+=dt;if(MS.tCol>.4){MS.tCol=0;const Cc=MS.pl.geometry.attributes.color.array;for(let k=0;k<Math.min(MS.pi,MS.plN)*6;k++){Cc[k*3]=0;Cc[k*3+1]=0;Cc[k*3+2]=0}MS.pl.geometry.attributes.color.needsUpdate=true}
+  return true}
+
+
+/* ---- 리모콘 수동 조종 ---- */
+const RC={up:false,down:false,left:false,right:false,stop:false};const RC_TIMEOUT=5000;
+function rcActive(){return RC.up||RC.down||RC.left||RC.right||RC.stop}
+function rcInput(){if(!BOAT.on||MS.ph!==3)return;const now=performance.now();if(!MS.man){MS.man={last:now,v:BOAT.v,warn:0,tm:0};MS.rec=null;MS.avoid=null;BOAT.follow=true;const fb=$('#bFollow');if(fb)fb.setAttribute('aria-pressed','true');rcUi()}else MS.man.last=now}
+function rcRelease(){MS.man=null;MS.prog=null;const tot=MS.path.length,pos=[BOAT.pos.x,BOAT.pos.y];let k=MS.pi,bd=1e9;
+  for(let i=Math.max(0,MS.pi-10);i<Math.min(tot,MS.pi+60);i++){const d=Math.hypot(MS.path[i][0]-pos[0],MS.path[i][1]-pos[1]);if(d<bd-1e-6){bd=d;k=i}}   /* 우선 현재 구간 근처에서 재개 */
+  if(bd>25){for(let i=MS.pi;i<tot;i++){const d=Math.hypot(MS.path[i][0]-pos[0],MS.path[i][1]-pos[1]);if(d<bd-1e-6){bd=d;k=i}}}   /* 멀리 벗어났으면 남은 경로 중 가장 가까운 지점 */
+  MS.pi=Math.min(tot-1,k);MS.rcBackT=performance.now();rcUi()}
+function rcMsg(){const M=MS.man;if(!M)return '';const idle=performance.now()-M.last;if(M.warn>performance.now())return T('msRcWall');
+  return rcActive()||idle<800?T('msManual'):T('msRcIdle',{s:Math.max(0,Math.ceil((RC_TIMEOUT-idle)/1000))})}
+function rcUi(){const el=$('#rc');if(!el)return;el.classList.toggle('man',!!MS.man);$('#rcSt').textContent=MS.man?T('rcManual'):T('rcAuto')}
+function manualStep(dt,pos){const M=MS.man,now=performance.now();if(rcActive())M.last=now;
+  if(now-M.last>RC_TIMEOUT){rcRelease();return true}   /* 리모콘 신호 끊김 → 자율 복귀 */
+  const s=dt*Math.min(BOAT.speed,3);   /* 수동 조종은 최대 ×3 배속 */
+  const turn=(RC.left?-1:0)+(RC.right?1:0);BOAT.hd+=turn*.85*s;
+  const vt=RC.stop?0:RC.up?BOAT.base:RC.down?-.6:BOAT.v*.97;BOAT.v+=(vt-BOAT.v)*Math.min(1,s*1.2);
+  const fx=Math.cos(BOAT.hd),fz=Math.sin(BOAT.hd);
+  if(BOAT.v>0)for(const o of MS.obs){const dx=o.p[0]-pos[0],dz=o.p[1]-pos[1],d=Math.hypot(dx,dz);if(d<o.r+2.2&&(dx*fx+dz*fz)>0){BOAT.v=0;M.warn=now+1200}}   /* LiDAR 자동 정지 */
+  const nx=pos[0]+fx*BOAT.v*s,nz=pos[1]+fz*BOAT.v*s;
+  if(boatSoft([nx,nz])||!boatSoft(pos))BOAT.pos.set(nx,nz);else{BOAT.v=0;M.warn=now+1200}   /* 수면 밖·구조물 앞 정지 */
+  M.tm+=dt;if(M.tm>.25){M.tm=0;const m=$('#boatMsg');if(m)m.textContent=rcMsg()}
+  return true}
+/* ---- 고착 감지·탈출 루틴 ---- */
+function boatSoft(p){if(!inPoly(p,LAKE)||edgeDist(p,LAKE)<2.2)return false;for(const f of FOUNT)if(Math.hypot(p[0]-f[0],p[1]-f[1])<4)return false;
+  for(const s of deckSegs)if(segDist(p,s[0],s[1])<2.2)return false;return true}
+function clearCell(i,j){const g=MS.grid;for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++){const a=i+di,b=j+dj;if(a<0||b<0||a>=g.nx||b>=g.nz||!g.v[b*g.nx+a])return false}return true}
+function startRecover(pos){const g=MS.grid,c=cellOf(pos);let best=null,bd=1e9;
+  for(let j=Math.max(0,c[1]-10);j<=Math.min(g.nz-1,c[1]+10);j++)for(let i=Math.max(0,c[0]-10);i<=Math.min(g.nx-1,c[0]+10);i++){if(!clearCell(i,j))continue;const w=cellW(i,j),d=Math.hypot(w[0]-pos[0],w[1]-pos[1]);if(d>4&&d<bd){bd=d;best=w}}
+  if(!best){const s=PUR.samples.find(s=>boatValid([s[0],s[2]]));best=s?[s[0],s[2]]:[LAKEC[0],LAKEC[1]]}
+  const same=MS.stuckAt&&Math.hypot(MS.stuckAt[0]-pos[0],MS.stuckAt[1]-pos[1])<8;MS.stuckN=same?(MS.stuckN||0)+1:1;MS.stuckAt=[pos[0],pos[1]];
+  MS.rec={ph:'back',t:0,goal:best,route:astar(pos,best),ri:1,tt:0};MS.avoid=null}
+function recoverStep(dt,sdt,pos){const R=MS.rec,tot=MS.path.length;R.t+=sdt;R.tt+=sdt;
+  if(R.ph==='back'){const bx=pos[0]-Math.cos(BOAT.hd)*.5*sdt,bz=pos[1]-Math.sin(BOAT.hd)*.5*sdt;if(boatSoft([bx,bz]))BOAT.pos.set(bx,bz);BOAT.v=-.5;if(R.t>3){R.ph='go';R.t=0;BOAT.v=0}return false}
+  const tg=R.route[Math.min(R.ri,R.route.length-1)];if(Math.hypot(tg[0]-pos[0],tg[1]-pos[1])<2.5)R.ri++;
+  if(R.ri>=R.route.length){/* 탈출 완료 → 경로 복귀(같은 곳 반복 고착이면 그 구간 건너뜀) */
+    let k=MS.pi,bd=1e9;for(let i=MS.pi;i<Math.min(tot,MS.pi+80);i++){const d=Math.hypot(MS.path[i][0]-pos[0],MS.path[i][1]-pos[1]);if(d<bd){bd=d;k=i}}
+    if(MS.stuckN>=2){while(k<tot-1&&Math.hypot(MS.path[k][0]-MS.stuckAt[0],MS.path[k][1]-MS.stuckAt[1])<16)k++}
+    MS.pi=k;MS.rec=null;MS.prog=null;return true}
+  const des=Math.atan2(tg[1]-pos[1],tg[0]-pos[0]);let dh=des-BOAT.hd;dh=Math.atan2(Math.sin(dh),Math.cos(dh));BOAT.hd+=clamp(dh,-.9*sdt,.9*sdt);
+  const vt=BOAT.base*.8*(1-Math.min(Math.abs(dh)/1.4,.85));BOAT.v+=(vt-BOAT.v)*Math.min(1,sdt*.8);
+  const nx=pos[0]+Math.cos(BOAT.hd)*BOAT.v*sdt,nz=pos[1]+Math.sin(BOAT.hd)*BOAT.v*sdt;
+  if(boatSoft([nx,nz])||!boatSoft(pos))BOAT.pos.set(nx,nz);
+  else if(R.tt>14){const d=Math.hypot(tg[0]-pos[0],tg[1]-pos[1])||1,s=Math.min(d,.6*sdt);BOAT.pos.set(pos[0]+(tg[0]-pos[0])/d*s,pos[1]+(tg[1]-pos[1])/d*s)}   /* 최후 수단: 탈출 지점으로 서서히 이동 */
   return true}
 /* 2D ray cast against shoreline, decks, fixed structures and floating obstacles */
 function segHit(ox,oz,dx,dz,a,b){const ex=b[0]-a[0],ez=b[1]-a[1],den=dx*ez-dz*ex;if(Math.abs(den)<1e-9)return 1e9;const t=((a[0]-ox)*ez-(a[1]-oz)*ex)/den,u=((a[0]-ox)*dz-(a[1]-oz)*dx)/den;return t>0&&u>=0&&u<=1?t:1e9}
@@ -235,6 +285,7 @@ function updateSensorsViz(dt){if(!MS.G||!MS.G.visible)return;const bx=BOAT.pos.x
   MS.obs.forEach((o,k)=>{const nx=o.p[0]+o.v[0]*sdt,nz=o.p[1]+o.v[1]*sdt;const db=Math.hypot(o.p[0]-bx,o.p[1]-bz);if(db<o.r+3.5){const ax=(o.p[0]-bx)/(db||1),az=(o.p[1]-bz)/(db||1);o.v=[ax*.4,az*.4]}   /* 보트가 다가오면 물결에 밀려 비켜남 */
     if(boatValid([nx,nz])&&Math.hypot(nx-bx,nz-bz)>o.r+1.2)o.p=[nx,nz];else{const an=Math.random()*6.283;o.v=[Math.cos(an)*.18,Math.sin(an)*.18]}
     o.fade=Math.min(1,o.fade+dt*.8);const s=o.fade;o.grp.scale.set(s,s,s);o.grp.position.set(o.p[0],-0.5+.03*Math.sin(Tm*1.6+k*2),o.p[1]);o.grp.rotation.y=-Math.atan2(o.v[1],o.v[0])});
+  {const r=$('#rc');if(r){const sh=BOAT.on&&MS.ph===3;if(r.hidden===sh)r.hidden=!sh}}
   /* LiDAR */
   MS.ang+=dt*12.566;MS.fan.position.set(bx,-0.28,bz);MS.fan.rotation.y=-MS.ang;MS.rr.position.set(bx,-0.32,bz);
   const hp=MS.hp,P=hp.g.attributes.position.array,Cc=hp.g.attributes.col.array,A=hp.g.attributes.al.array;let near=99,nh=0;
