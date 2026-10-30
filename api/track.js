@@ -1,5 +1,5 @@
 /* /api/track — 접속 하트비트(페이지 로드·45초 주기). IP·브라우저·지역·로그인 회원을 기록하고 차단 여부를 반환. */
-import { q, isIpBlocked } from '../lib/db.js';
+import { q, isIpBlocked, kvGet } from '../lib/db.js';
 import { ok, fail, clientIp, geo, authEnabled, currentMember } from '../lib/auth.js';
 export default async function handler(req, res) {
   if (!authEnabled()) return ok(res, { blocked: false, auth: false });
@@ -12,6 +12,7 @@ export default async function handler(req, res) {
         member_role=COALESCE(EXCLUDED.member_role, sd_visitors.member_role), country=COALESCE(EXCLUDED.country, sd_visitors.country), city=COALESCE(EXCLUDED.city, sd_visitors.city)`,
       [ip, ua, m ? m.email : null, m ? m.name : null, m ? m.role : null, g.country, g.city, now]);
     const blocked = (m && m.role === 'admin') ? false : await isIpBlocked(ip);
-    return ok(res, { blocked, auth: true, member: m ? { email: m.email, role: m.role } : null });
+    let release = null; try { const r = await kvGet('release'); if (r) { const j = JSON.parse(r); release = { version: j.version, note: j.note || '', at: j.at } } } catch {}
+    return ok(res, { blocked, auth: true, member: m ? { email: m.email, role: m.role } : null, release });
   } catch (e) { console.error('track error', e); return fail(res, 500, 'SERVER_ERROR', 'track failed'); }
 }

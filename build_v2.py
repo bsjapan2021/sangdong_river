@@ -15,7 +15,8 @@ h = (tpl.replace('__DATA__', json.dumps(data, ensure_ascii=False, separators=(',
         .replace('__SKYLINE__', uri(A/'skyline_cut.png','image/png'))
         .replace('__PHOTOS__', json.dumps(photos))
         .replace('__BOAT__', (A/'boat_mesh.json').read_text())
-        .replace('__LOGO__', uri(A/'logo_nanohydroin_light.svg','image/svg+xml')))
+        .replace('__LOGO__', uri(A/'logo_nanohydroin_light.svg','image/svg+xml'))
+        .replace('__BUILD__', __import__('datetime').datetime.utcnow().strftime('%Y%m%d-%H%M%S')))
 (R/'sangdong_dt_v2.html').write_text(h, encoding='utf-8')
 V = R/'src/vendor'
 off = h

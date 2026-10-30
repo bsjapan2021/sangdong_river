@@ -1,5 +1,5 @@
 /* /api/admin?a=overview|approve|block|unblock|verify|temp-password|delete|ip-block|ip-unblock — 최고관리자 전용 */
-import { q, memberById } from '../lib/db.js';
+import { q, memberById, kvGet, kvSet } from '../lib/db.js';
 import { ok, fail, body, clientIp, appUrl, authEnabled, requireAdmin, profile, hashPassword, tempPassword, seedAdmin, mailOn, mailApproved, ADMIN_EMAIL } from '../lib/auth.js';
 const ONLINE_MS = 120e3;
 
@@ -14,14 +14,18 @@ export default async function handler(req, res) {
         q('SELECT * FROM sd_members ORDER BY (status=\'pending\') DESC, created_at DESC LIMIT 500'),
         q('SELECT * FROM sd_visitors WHERE last_seen > $1 ORDER BY last_seen DESC LIMIT 400', [now - 14 * 86400e3]),
         q('SELECT * FROM sd_blocked ORDER BY at DESC')]);
-      const blocked = new Set(bl.rows.map(r => r.ip));
-      return ok(res, { me: { ip: myIp }, mail: mailOn(), now,
+      const blocked = new Set(bl.rows.map(r => r.ip)); let release = null; try { const r = await kvGet('release'); if (r) release = JSON.parse(r) } catch {}
+      return ok(res, { me: { ip: myIp }, mail: mailOn(), now, release,
         members: m.rows.map(profile),
         visitors: v.rows.map(r => ({ ip: r.ip, ua: r.ua, email: r.member_email, name: r.member_name, role: r.member_role, country: r.country, city: r.city,
           firstSeen: Number(r.first_seen), lastSeen: Number(r.last_seen), hits: r.hits, online: now - Number(r.last_seen) < ONLINE_MS, blocked: blocked.has(r.ip) })),
         blocked: bl.rows.map(r => ({ ip: r.ip, reason: r.reason, at: Number(r.at), by: r.by_email })) });
     }
     if (req.method !== 'POST') return fail(res, 405, 'METHOD', 'POST only');
+    if (a === 'release') {   /* 회원 화면 일괄 업데이트: 이 빌드보다 오래된 화면은 자동 새로고침 */
+      const version = String(b.version || '').trim(); if (!/^\d{8}-\d{6}$/.test(version)) return fail(res, 400, 'INVALID', '빌드 버전 형식이 올바르지 않습니다.');
+      await kvSet('release', JSON.stringify({ version, note: String(b.note || '').slice(0, 120), at: now, by: admin.email })); return ok(res, { version });
+    }
     if (a.startsWith('ip-')) {
       const ip = String(b.ip || '').trim().slice(0, 64); if (!ip) return fail(res, 400, 'INVALID', 'IP가 필요합니다.');
       if (a === 'ip-block') { if (ip === myIp) return fail(res, 400, 'SELF_BLOCK', '현재 사용 중인 내 IP는 차단할 수 없습니다.');
