@@ -94,7 +94,7 @@ function updateBoat(dt){if(!BOAT.on||!BOAT.grp)return;const sp=BOAT.speed,sdt=dt
     const hb=$('#boatBar');if(hb){hb.style.width=BOAT.pct+'%';$('#boatPct').textContent=BOAT.pct+'%';if(MS.ph===3)$('#boatMsg').textContent=MS.avoid?T('msAvoid',{d:MS.avoid.d.toFixed(1)}):BOAT.pct>=90?T('boatDone'):T('boatRun',{v:(BOAT.v).toFixed(1)})}}
   /* follow camera */
   updateSensorsViz(dt);
-  if(BOAT.follow&&!fly&&MS.ph===3){const k=1-Math.exp(-dt*2.2);_bt.set(BOAT.pos.x,-0.3,BOAT.pos.y);_bc.set(BOAT.pos.x-fx*11+rx*5,5,BOAT.pos.y-fz*11+rz*5);controls.target.lerp(_bt,k);camera.position.lerp(_bc,k)}
+  if(BOAT.follow&&!fly&&MS.ph===3){const k=1-Math.exp(-dt*2.2);_bt.set(BOAT.pos.x+fx*7,-0.3,BOAT.pos.y+fz*7);_bc.set(BOAT.pos.x-fx*12+rx*5,7.5,BOAT.pos.y-fz*12+rz*5);   /* 보트를 화면 아래쪽에 → 상단 패널에 가리지 않음 */controls.target.lerp(_bt,k);camera.position.lerp(_bc,k)}
 }
 /* ===== 자율운항 미션: ① 수계 인식(위성영상+LiDAR) → ② 커버리지 경로 최적화 → ③ GNSS·LiDAR 자율운항/장애물 회피 ===== */
 const MS={ph:0,t:0,grid:null,path:[],pi:0,pass:0,avoid:null,obs:[],len:0,cov:0,area:0,nogo:[],near:99,nHit:0,encT:0,stuck:0,tCol:0,tTel:0,ang:0};
@@ -194,23 +194,26 @@ function missionStep(dt,sdt){if(!MS.G)return false;MS.t+=dt;const tot=MS.path.le
     BOAT.v*=.95;if(MS.t>8.5){MS.ph=2;MS.t=0;computePath(MS.pass);msSteps()}return false}
   if(MS.ph===2){const k=Math.min(1,MS.t/4);MS.pl.geometry.setDrawRange(0,Math.floor(MS.plSeg*k)*6);MS.su.uFade.value=1-.7*k;
     $('#boatMsg').textContent=T('ms2',{pat:T(MS.pass%2?'patV':'patH'),L:Math.round(MS.len).toLocaleString(),C:MS.cov});
-    BOAT.v*=.95;if(MS.t>5.5){MS.ph=3;MS.t=0;BOAT.follow=true;const fb=$('#bFollow');if(fb)fb.setAttribute('aria-pressed','true');msSteps()}return false}
+    BOAT.v*=.95;if(MS.t>5.5){MS.ph=3;MS.t=0;BOAT.follow=true;const fb=$('#bFollow');if(fb)fb.setAttribute('aria-pressed','true');msSteps();if(typeof hudMin==='function'&&!MS.userHud)hudMin(true)}return false}
   if(MS.ph!==3)return false;
+  MS.su.uFade.value+=(0.1-MS.su.uFade.value)*Math.min(1,dt*.8);   /* 운항 중엔 인식 격자를 옅게 → 수면이 잘 보이게 */
   const PW=MS.path,pos=[BOAT.pos.x,BOAT.pos.y];while(MS.pi<tot-1&&Math.hypot(pos[0]-PW[MS.pi][0],pos[1]-PW[MS.pi][1])<4)MS.pi++;
   if(MS.pi>=tot-1&&Math.hypot(pos[0]-PW[tot-1][0],pos[1]-PW[tot-1][1])<4){MS.pass++;MS.ph=2;MS.t=0;computePath(MS.pass);msSteps();return false}
   let tg=PW[Math.min(MS.pi+1,tot-1)];const fx=Math.cos(BOAT.hd),fz=Math.sin(BOAT.hd);
   /* LiDAR-based avoidance of floating obstacles */
   if(!MS.avoid){for(const o of MS.obs){const dx=o.p[0]-pos[0],dz=o.p[1]-pos[1],d=Math.hypot(dx,dz)-o.r;if(d>10||o.fade<1)continue;const ang=Math.atan2(dx*fz-dz*fx,dx*fx+dz*fz);
       if(Math.abs(ang)<.75){MS.avoid={o,side:ang>0?1:-1,d,flip:0};break}}}
-  let slow=1;if(MS.avoid){const A=MS.avoid,o=A.o,dx=o.p[0]-pos[0],dz=o.p[1]-pos[1],dd=Math.hypot(dx,dz);A.d=Math.max(0,dd-o.r);const ux=dx/dd,uz=dz/dd;
+  let slow=1;if(MS.avoid){const A=MS.avoid,o=A.o,dx=o.p[0]-pos[0],dz=o.p[1]-pos[1];let dd=Math.hypot(dx,dz);A.d=Math.max(0,dd-o.r);const ux=dx/dd,uz=dz/dd;
     let px=-uz*A.side,pz=ux*A.side;/* side: steer to the opposite side of the obstacle bearing */
     let c=[o.p[0]-px*(o.r+4.5)+ux*2,o.p[1]-pz*(o.r+4.5)+uz*2];if(!boatValid(c)&&A.flip<1){A.side*=-1;A.flip++;c=[o.p[0]+px*(o.r+4.5)+ux*2,o.p[1]+pz*(o.r+4.5)+uz*2]}
-    if(boatValid(c))tg=c;else slow=.15;
+    if(boatValid(c))tg=c;else slow=.35;
+    A.t=(A.t||0)+sdt;if(dd<o.r+2.4){const e=[pos[0]-ux*6+px*2,pos[1]-uz*6+pz*2];if(boatValid(e)){tg=e;slow=.7}}   /* 너무 가까우면 후진·비켜서 간격 확보 */
+    if(A.t>25){let q=null;for(let k=0;k<80&&!q;k++){const s=PUR.samples[(Math.random()*PUR.samples.length)|0];if(boatValid([s[0],s[2]])&&Math.hypot(s[0]-pos[0],s[2]-pos[1])>45)q=[s[0],s[2]]}if(q){o.p=q;o.fade=0}dd=99}   /* 장기 교착 시 장애물이 흘러감 */
     if((dx*fx+dz*fz)<-1&&dd>o.r+3||dd>17){MS.avoid=null;let bi=MS.pi,bd=1e9;for(let k=MS.pi;k<Math.min(tot,MS.pi+40);k++){const d=Math.hypot(PW[k][0]-pos[0],PW[k][1]-pos[1]);if(d<bd){bd=d;bi=k}}MS.pi=bi}
     else slow*=.7}
   const des=Math.atan2(tg[1]-pos[1],tg[0]-pos[0]);let dh=des-BOAT.hd;dh=Math.atan2(Math.sin(dh),Math.cos(dh));BOAT.hd+=clamp(dh,-.6*sdt,.6*sdt);
   const vt=BOAT.base*slow*(1-Math.min(Math.abs(dh)/1.3,.8));BOAT.v+=(vt-BOAT.v)*Math.min(1,sdt*.8);
-  const nx=pos[0]+Math.cos(BOAT.hd)*BOAT.v*sdt,nz=pos[1]+Math.sin(BOAT.hd)*BOAT.v*sdt;let blocked=false;for(const o of MS.obs)if(Math.hypot(nx-o.p[0],nz-o.p[1])<o.r+1)blocked=true;
+  const nx=pos[0]+Math.cos(BOAT.hd)*BOAT.v*sdt,nz=pos[1]+Math.sin(BOAT.hd)*BOAT.v*sdt;let blocked=false;for(const o of MS.obs){const dn=Math.hypot(nx-o.p[0],nz-o.p[1]),dc=Math.hypot(pos[0]-o.p[0],pos[1]-o.p[1]);if(dn<o.r+1&&dn<dc)blocked=true}   /* 장애물에 더 다가가는 이동만 차단(멀어지는 이동 허용) */
   if(!blocked&&(boatValid([nx,nz])||!boatValid(pos))){BOAT.pos.set(nx,nz);MS.stuck=0}else{BOAT.v*=.3;MS.stuck+=sdt;if(MS.stuck>4){MS.pi=Math.min(tot-1,MS.pi+3);MS.stuck=0}}
   /* bring a drifting obstacle onto the route now and then (to exercise avoidance) */
   MS.encT+=sdt;if(MS.encT>50&&!MS.avoid&&MS.pi+16<tot){let far=null,fd=60;MS.obs.forEach(o=>{const d=Math.hypot(o.p[0]-pos[0],o.p[1]-pos[1]);if(d>fd){fd=d;far=o}});
@@ -228,7 +231,8 @@ function lidarRay(ox,oz,a,maxR){const dx=Math.cos(a),dz=Math.sin(a);let t=maxR,t
 const LCOL=[null,[.35,.9,1.],[1.,.82,.35],[1.,.3,.36]];
 function updateSensorsViz(dt){if(!MS.G||!MS.G.visible)return;const bx=BOAT.pos.x,bz=BOAT.pos.y,Tm=U.time.value,sdt=dt*BOAT.speed;
   /* floating obstacles drift */
-  MS.obs.forEach((o,k)=>{const nx=o.p[0]+o.v[0]*sdt,nz=o.p[1]+o.v[1]*sdt;if(boatValid([nx,nz])&&Math.hypot(nx-bx,nz-bz)>o.r+1.6)o.p=[nx,nz];else{const an=Math.random()*6.283;o.v=[Math.cos(an)*.18,Math.sin(an)*.18]}
+  MS.obs.forEach((o,k)=>{const nx=o.p[0]+o.v[0]*sdt,nz=o.p[1]+o.v[1]*sdt;const db=Math.hypot(o.p[0]-bx,o.p[1]-bz);if(db<o.r+3.5){const ax=(o.p[0]-bx)/(db||1),az=(o.p[1]-bz)/(db||1);o.v=[ax*.4,az*.4]}   /* 보트가 다가오면 물결에 밀려 비켜남 */
+    if(boatValid([nx,nz])&&Math.hypot(nx-bx,nz-bz)>o.r+1.2)o.p=[nx,nz];else{const an=Math.random()*6.283;o.v=[Math.cos(an)*.18,Math.sin(an)*.18]}
     o.fade=Math.min(1,o.fade+dt*.8);const s=o.fade;o.grp.scale.set(s,s,s);o.grp.position.set(o.p[0],-0.5+.03*Math.sin(Tm*1.6+k*2),o.p[1]);o.grp.rotation.y=-Math.atan2(o.v[1],o.v[0])});
   /* LiDAR */
   MS.ang+=dt*12.566;MS.fan.position.set(bx,-0.28,bz);MS.fan.rotation.y=-MS.ang;MS.rr.position.set(bx,-0.32,bz);
