@@ -1921,14 +1921,14 @@ function wxField(N,B,isSnow){const P=new Float32Array(N*(isSnow?3:6)),E=new Floa
      gl_PointSize=clamp((1.2+aR*1.6)*170./max(1.,-mv.z),1.5,8.);gl_Position=projectionMatrix*mv;\n#include <logdepthbuf_vertex>\n}`:
    `${LD_V}uniform vec3 uCam;uniform float uTime,uB;uniform vec2 uWind;attribute float aR,aE;varying float vA;
     void main(){float sp=11.+aR*4.;vec3 o=uCam-uB*.5;vec3 b=position;b.y-=uTime*sp;b.xz-=uWind*uTime;vec3 w=o+mod(b-o,uB);
-     float L=.55+aR*.5;w.y+=aE*L;w.xz-=uWind/sp*L*aE;
+     float L=1.+aR*.9;w.y+=aE*L;w.xz-=uWind/sp*L*aE;
      vA=step(-.45,w.y-aE*L)*(1.-smoothstep(uB*.3,uB*.5,distance(w,uCam)))*(.35+.65*aE);
      gl_Position=projectionMatrix*viewMatrix*vec4(w,1.);\n#include <logdepthbuf_vertex>\n}`;
   const fs=isSnow?`${LD_F}uniform float uA;varying float vA;void main(){\n#include <logdepthbuf_fragment>\nfloat d=length(gl_PointCoord-.5);float a=smoothstep(.5,.15,d)*uA*vA;if(a<.01)discard;gl_FragColor=vec4(.96,.97,1.,a);}`
-                 :`${LD_F}uniform float uA;varying float vA;void main(){\n#include <logdepthbuf_fragment>\nfloat a=uA*vA*.5;if(a<.01)discard;gl_FragColor=vec4(.78,.83,.9,a);}`;
+                 :`${LD_F}uniform float uA;varying float vA;void main(){\n#include <logdepthbuf_fragment>\nfloat a=uA*vA*.7;if(a<.01)discard;gl_FragColor=vec4(.82,.87,.94,a);}`;
   const m=new THREE.ShaderMaterial({uniforms:u,vertexShader:vs,fragmentShader:fs,transparent:true,depthWrite:false,fog:false});
   const o=isSnow?new THREE.Points(g,m):new THREE.LineSegments(g,m);o.frustumCulled=false;o.renderOrder=5;o.visible=false;scene.add(o);return o}
-const WX_RAIN=wxField(LOW?2600:7000,70,false),WX_SNOW=wxField(LOW?3200:9000,60,true);
+const WX_RAIN=wxField(LOW?5000:9000,60,false),WX_SNOW=wxField(LOW?3200:9000,60,true);
 /* 수면 빗방울 파문 — 호수 형상 오버레이(근거리에서 동심원, 원거리는 수면 왜곡으로 표현) */
 const WX_RIP=(()=>{const g=new THREE.ShapeGeometry(shapeOf(LAKE),2);g.rotateX(-Math.PI/2);
   const m=new THREE.ShaderMaterial({uniforms:{uTime:WXU.uTime,uA:{value:0},uD:{value:.5}},transparent:true,depthWrite:false,
