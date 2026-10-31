@@ -1,0 +1,63 @@
+<div id="splash" role="status" aria-live="polite">
+  <div class="sp">
+    <div class="logo nhlogo" role="img" aria-label="NANOHYDROIN — 79nm : The Next Dimension"></div>
+    <h1 data-i18n="spTitle">__APP_TITLE__</h1>
+    <div class="sub" data-i18n="spSub">__APP_SUB__</div>
+    <div class="pg"><i id="spBar"></i></div>
+    <div class="st" id="spTxt"></div>
+  </div>
+  <div class="cp" data-i18n="credit">© 2026 주식회사 나노하이드로인 (NanoHydroIn Co., Ltd.) · All rights reserved</div>
+</div>
+<div id="auth" hidden>
+  <div class="card">
+    <div class="alogo nhlogo" role="img" aria-label="NANOHYDROIN"></div>
+    <div class="top"><b data-i18n="spTitle">__APP_TITLE__</b><div class="alangs"><button data-lang="ko">한국어</button><button data-lang="en">EN</button><button data-lang="ja">日本語</button></div></div>
+    <div class="tabs" role="tablist" id="aTabs"><button role="tab" data-v="login" data-i18n="auLogin">로그인</button><button role="tab" data-v="register" data-i18n="auRegister">회원가입</button></div>
+    <form id="fLogin" data-v="login">
+      <label data-i18n="auEmail">이메일</label><input name="email" type="email" autocomplete="username" required>
+      <label data-i18n="auPw">비밀번호</label><input name="password" type="password" autocomplete="current-password" required>
+      <button class="go" type="submit" data-i18n="auLogin">로그인</button>
+      <div class="links"><button type="button" class="lnk" data-go="forgot" data-i18n="auForgot">비밀번호를 잊으셨나요?</button><button type="button" class="lnk" id="aResend" hidden data-i18n="auResend">인증 메일 다시 보내기</button></div>
+    </form>
+    <form id="fRegister" data-v="register" hidden>
+      <div class="row2"><div><label data-i18n="auName">이름</label><input name="name" required maxlength="60" autocomplete="name"></div>
+        <div><label data-i18n="auPhone">연락처</label><input name="phone" required maxlength="40" autocomplete="tel"></div></div>
+      <label data-i18n="auEmail">이메일</label><input name="email" type="email" required autocomplete="email">
+      <div class="row2"><div><label data-i18n="auPw8">비밀번호(8자 이상)</label><input name="password" type="password" minlength="8" required autocomplete="new-password"></div>
+        <div><label data-i18n="auPw2">비밀번호 확인</label><input name="password2" type="password" minlength="8" required autocomplete="new-password"></div></div>
+      <label data-i18n="auOrg">소속(기관·회사)</label><input name="org" maxlength="80" autocomplete="organization">
+      <label data-i18n="auMemo">이용 목적</label><textarea name="memo" maxlength="300"></textarea>
+      <div class="chk"><input type="checkbox" name="agree" id="aAgree" required><label for="aAgree" style="margin:0" data-i18n="auAgree">개인정보(이름·이메일·연락처·소속·접속 IP) 수집·이용에 동의합니다. 가입 후 이메일 인증과 관리자 승인을 거쳐 이용할 수 있습니다.</label></div>
+      <button class="go" type="submit" data-i18n="auRegister">회원가입</button>
+    </form>
+    <form id="fForgot" data-v="forgot" hidden>
+      <p style="font-size:12.5px;color:var(--ink-2);margin:0 0 4px" data-i18n="auForgotP">가입한 이메일을 입력하면 비밀번호 재설정 링크를 보내드립니다.</p>
+      <label data-i18n="auEmail">이메일</label><input name="email" type="email" required>
+      <button class="go" type="submit" data-i18n="auSendLink">재설정 링크 보내기</button>
+      <div class="links"><button type="button" class="lnk" data-go="login" data-i18n="auBack">로그인으로 돌아가기</button></div>
+    </form>
+    <form id="fReset" data-v="reset" hidden>
+      <p style="font-size:12.5px;color:var(--ink-2);margin:0 0 4px" data-i18n="auResetP">새 비밀번호를 입력하세요.</p>
+      <label data-i18n="auPw8">비밀번호(8자 이상)</label><input name="password" type="password" minlength="8" required autocomplete="new-password">
+      <label data-i18n="auPw2">비밀번호 확인</label><input name="password2" type="password" minlength="8" required autocomplete="new-password">
+      <button class="go" type="submit" data-i18n="auSetPw">비밀번호 변경</button>
+    </form>
+    <form id="fChange" data-v="change" hidden>
+      <label data-i18n="auCurPw">현재 비밀번호</label><input name="current" type="password" required autocomplete="current-password">
+      <label data-i18n="auPw8">비밀번호(8자 이상)</label><input name="password" type="password" minlength="8" required autocomplete="new-password">
+      <label data-i18n="auPw2">비밀번호 확인</label><input name="password2" type="password" minlength="8" required autocomplete="new-password">
+      <button class="go" type="submit" data-i18n="auSetPw">비밀번호 변경</button>
+      <div class="links"><button type="button" class="lnk" id="aCancel" data-i18n="auClose">닫기</button></div>
+    </form>
+    <div class="msg" id="aMsg" role="alert"></div>
+    <div class="cp" data-i18n="credit">© 2026 주식회사 나노하이드로인 (NanoHydroIn Co., Ltd.) · All rights reserved</div>
+  </div>
+</div>
+<div id="adm" hidden role="dialog" aria-modal="true" aria-labelledby="admT">
+  <div class="box">
+    <div class="hd"><b id="admT" data-i18n="adTitle">접속자 관리</b><span class="sm" data-i18n="adOnly">최고관리자 전용 · 일반 회원에게는 보이지 않습니다</span><button id="admRef" data-i18n="adRefresh">새로고침</button><button id="admX" data-i18n="auClose">닫기</button></div>
+    <div class="tabs" role="tablist"><button data-t="members" aria-selected="true"></button><button data-t="visitors" aria-selected="false"></button><button data-t="update" aria-selected="false"></button><button data-t="blocked" aria-selected="false"></button></div>
+    <div class="bd" id="admBody"></div>
+  </div>
+</div>
+<div id="blockedScr" hidden><div><div style="font-size:44px">⛔</div><h2 data-i18n="blkTitle">접속이 차단되었습니다</h2><p style="color:var(--ink-2);font-size:13px" data-i18n="blkP">이 IP 또는 계정의 접속이 관리자에 의해 차단되었습니다. 문의: 주식회사 나노하이드로인</p></div></div>
